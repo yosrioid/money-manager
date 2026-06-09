@@ -9,6 +9,10 @@ Indonesian users who are comfortable entering transactions manually.
 The product may learn from common money-management workflows, but it must not
 copy another application's branding, icon, text, screenshots, or visual design.
 
+`docs/FEATURE_CATALOG.md` is the authoritative detailed product inventory.
+`docs/MASTER_PLAN.md` defines the approved delivery phases and release gates.
+This document defines product intent and release boundaries.
+
 ## Initial Users
 
 - Individuals tracking cash, bank accounts, and e-wallets
@@ -16,62 +20,33 @@ copy another application's branding, icon, text, screenshots, or visual design.
 - Users tracking credit cards, installments, savings, and debts
 - Couples or families sharing a finance workspace in a later release
 
-## MVP Features
+## MVP Boundary
 
-### Authentication And Workspace
+The MVP requires the approved `MVP` capabilities through Phase 4 of
+`docs/MASTER_PLAN.md`, followed by the applicable Phase 8 release gates.
 
-- Register, login, logout, password reset, and email verification
-- Two-factor authentication
-- One personal workspace per new user
-- Strict workspace-level data isolation
+At minimum, it provides:
 
-### Accounts
+- Secure identity, personal workspace, and strict workspace isolation
+- Accounts, categories, merchants, tags, currency, timezone, and preferences
+- Balanced income, expense, transfer, reversal, and transaction history
+- Daily-use search, filters, calendar navigation, and fast-entry workflows
+- Budgets, dashboard, statistics, reports, and supported data exchange
+- Required production security, performance, recovery, and acceptance gates
 
-- Cash, bank, e-wallet, savings, investment, asset, loan, and credit-card
-  accounts
-- Account groups, ordering, archive, and visibility settings
-- Opening balance entered as a ledger transaction
-- Asset, liability, and net-worth summaries
+## Parity Boundary
 
-### Categories
+The parity release requires all approved `Parity` capabilities in
+`docs/FEATURE_CATALOG.md` or an explicit approved deferral recorded during the
+Phase 8 parity audit.
 
-- Income and expense categories
-- Optional subcategories
-- Custom name, icon, color, and display order
-- Archive instead of destructive deletion after use
+## Extended Boundary
 
-### Transactions
+Capabilities marked `Extended` are intentionally beyond reference parity or
+require additional platform complexity. They are released only through explicit
+scope approval and Phase 8 gates.
 
-- Income, expense, and transfer transactions
-- Balanced double-entry ledger
-- Merchant, notes, tags, transaction date, and optional attachment
-- Draft, posted, voided, and reversed lifecycle
-- Search and filters
-- Transaction templates or bookmarks
-
-### Budgets And Reports
-
-- Monthly expense budget per category
-- Actual versus budget progress
-- Monthly income and expense summary
-- Spending breakdown by category
-- Account balance and net-worth trend
-- CSV export
-
-## Post-MVP Features
-
-- Recurring transactions
-- Installment plans
-- Credit-card billing cycles and settlements
-- Multi-currency accounts and exchange rates
-- Receipt attachment and OCR
-- Excel import
-- Shared workspaces and member roles
-- Budget carry-over
-- PWA installation and offline transaction drafts
-- Bank or e-wallet integrations after security and provider evaluation
-
-## Explicitly Out Of Scope For MVP
+## Explicitly Deferred
 
 - Automatic Indonesian bank synchronization
 - Automatic e-wallet or QRIS transaction capture
@@ -79,6 +54,9 @@ copy another application's branding, icon, text, screenshots, or visual design.
 - Investment market-price feeds
 - Accounting reports for registered businesses
 - Offline-first synchronization
+
+The full deferred inventory and reasons are maintained in
+`docs/FEATURE_CATALOG.md`.
 
 ## Non-Functional Requirements
 
@@ -98,4 +76,3 @@ copy another application's branding, icon, text, screenshots, or visual design.
 - A user can create a monthly budget and compare it with actual spending.
 - A user can export their transaction history.
 - Automated tests protect all financial posting rules.
-

@@ -44,6 +44,9 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
+      - name: Validate project governance
+        run: bash scripts/check-governance.sh
+
       - name: Run quality checks
         run: composer ci:check
 

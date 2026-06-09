@@ -1,3 +1,14 @@
+<!-- Project governance must remain above generated Laravel Boost guidelines. -->
+
+# Money Manager Repository Instructions
+
+At the start of every new repository chat or session, the first action before
+answering a project task or performing work is to read and follow
+`docs/AI_WORKFLOW.md`.
+
+Do not implement uncataloged scope. Follow approved feature IDs, phase
+dependencies, documentation precedence, quality gates, and approval rules.
+
 <laravel-boost-guidelines>
 === foundation rules ===
 
