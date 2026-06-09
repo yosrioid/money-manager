@@ -47,9 +47,6 @@ jobs:
       - name: Run quality checks
         run: composer ci:check
 
-      - name: Build production assets
-        run: npm run build
-
   browser:
     runs-on: ubuntu-latest
     env:

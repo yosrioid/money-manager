@@ -79,7 +79,8 @@ pull request that completes a feature or milestone.
 - **Fixes:** Aligned the declared PHP minimum with the Symfony 8 lockfile,
   classified aliased frontend imports consistently, and isolated browser tests
   with SQLite and in-memory application services. CI generates ignored
-  Wayfinder TypeScript modules before frontend type-checking.
+  Wayfinder TypeScript modules before frontend type-checking and builds the
+  Vite manifest before Laravel feature tests.
 - **Tests:** `composer validate --strict`, `composer ci:check`, `npm run build`,
   and the Chromium Playwright smoke test passed.
 - **Git:** Changes remain uncommitted on `docs/git-safety-rules`.
