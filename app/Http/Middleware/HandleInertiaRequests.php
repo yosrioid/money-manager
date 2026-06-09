@@ -2,11 +2,16 @@
 
 namespace App\Http\Middleware;
 
+use App\Domain\Workspaces\WorkspaceContext;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
+    public function __construct(
+        private readonly WorkspaceContext $workspaceContext,
+    ) {}
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -41,6 +46,18 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'activeWorkspace' => function (): ?array {
+                if (! $this->workspaceContext->has()) {
+                    return null;
+                }
+
+                $workspace = $this->workspaceContext->get();
+
+                return [
+                    'id' => $workspace->id,
+                    'name' => $workspace->name,
+                ];
+            },
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }
