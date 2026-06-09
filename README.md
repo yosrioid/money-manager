@@ -8,6 +8,7 @@ and source code.
 
 - [Product Scope](docs/PRODUCT_SCOPE.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Strict Project Rules](docs/STRICT_RULES.md)
 - [Coding Standards](docs/CODING_STANDARDS.md)
 - [Git Workflow](docs/GIT_WORKFLOW.md)
 - [Feature Progress](docs/PROGRESS.md)

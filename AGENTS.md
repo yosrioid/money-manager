@@ -5,7 +5,7 @@ These instructions apply to every change in this repository.
 ## Required Workflow
 
 1. Read `docs/PRODUCT_SCOPE.md`, `docs/ARCHITECTURE.md`, and
-   `docs/PROGRESS.md` before implementing a feature.
+   `docs/STRICT_RULES.md` before implementing a feature.
 2. Keep each change focused on one feature or engineering concern.
 3. Follow `docs/CODING_STANDARDS.md`.
 4. Add or update automated tests for every behavioral change.
@@ -14,6 +14,21 @@ These instructions apply to every change in this repository.
    is completed.
 7. Follow `docs/GIT_WORKFLOW.md` for branch names, commits, pushes, and pull
    requests.
+8. Treat `docs/STRICT_RULES.md` as mandatory. When rules conflict, follow the
+   stricter rule.
+
+## Git Safety Rules
+
+- Never create a commit unless the user explicitly requests a commit.
+- Never push unless the user explicitly requests a push.
+- Never commit or push directly to `main`.
+- Before making commits, create or switch to a short-lived non-`main` branch.
+- Changes reach `main` only through a reviewed pull request.
+- Never add Codex, Claude, ChatGPT, an AI assistant, or any other automated tool
+  as an author, co-author, signer, or attribution in commits, tags, pull
+  requests, or generated release notes.
+- Do not add `Co-authored-by`, `Generated-by`, or similar AI attribution
+  trailers or messages.
 
 ## Financial Integrity Rules
 

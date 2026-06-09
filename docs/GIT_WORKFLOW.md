@@ -4,6 +4,13 @@
 
 Use short-lived branches created from an up-to-date `main`.
 
+`main` is protected by workflow policy:
+
+- Never commit directly to `main`.
+- Never push directly to `main`.
+- All changes must be committed on a short-lived non-`main` branch.
+- Changes may reach `main` only through a reviewed pull request.
+
 Branch format:
 
 ```text
@@ -49,11 +56,18 @@ docs(progress): mark account management complete
 
 Rules:
 
+- Create a commit only after the user explicitly requests it.
+- Never create a commit while checked out on `main`.
 - Write summaries in English.
 - Use imperative mood: `add`, `fix`, `prevent`, not `added` or `fixes`.
 - Keep the summary concise, ideally at most 72 characters.
 - Keep one logical concern per commit.
 - Do not commit secrets, `.env`, generated build output, or unrelated changes.
+- Commit authorship must represent the human developer only.
+- Never add Codex, Claude, ChatGPT, an AI assistant, or another automated tool
+  as an author, co-author, signer, or attribution.
+- Never add `Co-authored-by`, `Generated-by`, or similar AI attribution
+  trailers or messages.
 - Explain the reason and important trade-offs in the body when the summary is
   insufficient.
 - Mark breaking changes with `BREAKING CHANGE:` in the footer.
@@ -71,11 +85,13 @@ Refs: #42
 
 ## Before Committing
 
-1. Review `git diff` and remove accidental changes.
-2. Run relevant tests and quality checks.
-3. Update documentation when behavior or architecture changes.
-4. Update `docs/PROGRESS.md` when a feature or milestone is completed.
-5. Stage only files belonging to the commit.
+1. Confirm the user explicitly requested a commit.
+2. Confirm the current branch is not `main`.
+3. Review `git diff` and remove accidental changes.
+4. Run relevant tests and quality checks.
+5. Update documentation when behavior or architecture changes.
+6. Update `docs/PROGRESS.md` when a feature or milestone is completed.
+7. Stage only files belonging to the commit.
 
 Recommended inspection:
 
@@ -87,10 +103,13 @@ git diff --cached
 
 ## Push Workflow
 
-1. Rebase the branch on the latest `main`.
-2. Resolve conflicts and rerun relevant tests.
-3. Push the branch.
-4. Open a pull request immediately after the branch is ready for review.
+Push only after the user explicitly requests it.
+
+1. Confirm the current branch is not `main`.
+2. Rebase the branch on the latest `main`.
+3. Resolve conflicts and rerun relevant tests.
+4. Push the non-`main` branch.
+5. Open a pull request immediately after the branch is ready for review.
 
 ```bash
 git fetch origin
@@ -105,6 +124,7 @@ git push --force-with-lease
 ```
 
 Never use plain `--force` on shared branches.
+Never push directly to `main`, including with `--force-with-lease`.
 
 ## Pull Request Format
 
@@ -156,6 +176,7 @@ Closes #...
 
 ## Pull Request Size And Review
 
+- Never merge a pull request without the user's explicit request.
 - Prefer pull requests below roughly 400 changed lines, excluding generated
   files and migrations.
 - Split large features into independently safe vertical slices.
@@ -170,4 +191,3 @@ Closes #...
 Use `fix/<scope>-<description>` from `main`. Add a regression test, keep the
 change minimal, and update progress or release notes when the fix changes known
 project status.
-
