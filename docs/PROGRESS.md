@@ -46,16 +46,16 @@ pull request that completes a feature or milestone.
 
 ### 2026-06-09 - F-002 CI, Linting, Static Analysis, And Test Baseline
 
-- **Outcome:** Added GitHub Actions, Larastan level 6, Pint, ESLint, Prettier,
-  Vitest, Playwright, and production-build quality gates.
+- **Outcome:** Added a consolidated GitHub Actions workflow, Larastan level 6,
+  Pint, ESLint, Prettier, Vitest, Playwright, and production-build quality
+  gates.
 - **Key decisions:** PHP tooling runs without parallel worker sockets so it
   remains deterministic in restricted and CI environments.
 - **Tests:** `composer test`, `composer analyse`, `npm run lint:check`,
   `npm run format:check`, `npm run types:check`, `npm run test:unit`,
   `npm run test:e2e`, and `npm run build`.
 - **Documentation:** Updated `README.md` and `docs/PROGRESS.md`.
-- **Follow-up:** Add GitHub Actions workflows when the remote repository is
-  created.
+- **Follow-up:** None.
 - **PR:** Not available.
 
 ### 2026-06-09 - F-001 Laravel And Vue Project Scaffolding
@@ -69,6 +69,21 @@ pull request that completes a feature or milestone.
 - **Documentation:** Updated `README.md` and `docs/PROGRESS.md`.
 - **Follow-up:** None.
 - **PR:** Not available.
+
+## Maintenance Log
+
+### 2026-06-09 - Stabilize GitHub Actions CI
+
+- **Outcome:** Consolidated three overlapping workflows into one CI workflow
+  with quality and browser jobs.
+- **Fixes:** Aligned the declared PHP minimum with the Symfony 8 lockfile,
+  classified aliased frontend imports consistently, and isolated browser tests
+  with SQLite and in-memory application services. CI generates ignored
+  Wayfinder TypeScript modules before frontend type-checking and builds the
+  Vite manifest before Laravel feature tests.
+- **Tests:** `composer validate --strict`, `composer ci:check`, `npm run build`,
+  and the Chromium Playwright smoke test passed.
+- **Git:** Changes remain uncommitted on `docs/git-safety-rules`.
 
 ## Required Completion Entry
 

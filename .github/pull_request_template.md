@@ -26,6 +26,12 @@
 - [ ] Relevant documentation is updated
 - [ ] `docs/PROGRESS.md` is updated when a feature or milestone is completed
 
+## Git Safety
+
+- [ ] Changes were committed on a non-`main` branch
+- [ ] No commit or push was performed without explicit user approval
+- [ ] Commits contain no AI author, co-author, or generated-by attribution
+
 ## Screenshots
 
 Include screenshots or recordings for UI changes. Remove this section when it
@@ -34,4 +40,3 @@ does not apply.
 ## Related Issues
 
 Closes #
-

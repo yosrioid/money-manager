@@ -9,22 +9,26 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality:
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2
         with:
           php-version: '8.5'
           coverage: none
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '24'
           cache: npm
@@ -43,24 +47,29 @@ jobs:
       - name: Run quality checks
         run: composer ci:check
 
-      - name: Build production assets
-        run: npm run build
-
   browser:
     runs-on: ubuntu-latest
+    env:
+      APP_ENV: testing
+      APP_URL: http://127.0.0.1:8000
+      CACHE_STORE: array
+      DB_CONNECTION: sqlite
+      DB_DATABASE: database/database.sqlite
+      QUEUE_CONNECTION: sync
+      SESSION_DRIVER: array
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2
         with:
           php-version: '8.5'
           coverage: none
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '24'
           cache: npm
@@ -74,14 +83,26 @@ jobs:
       - name: Prepare application
         run: |
           cp .env.example .env
+          touch database/database.sqlite
           php artisan key:generate
+          php artisan migrate --force
           npm run build
 
       - name: Start application
         run: php artisan serve --host=127.0.0.1 --port=8000 > storage/logs/server.log 2>&1 &
 
-      - name: Run browser smoke tests
-        env:
-          APP_URL: http://127.0.0.1:8000
-        run: npx playwright test --project=chromium
+      - name: Wait for application
+        run: |
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8000 > /dev/null; then
+              exit 0
+            fi
 
+            sleep 1
+          done
+
+          cat storage/logs/server.log
+          exit 1
+
+      - name: Run browser smoke tests
+        run: npx playwright test --project=chromium
