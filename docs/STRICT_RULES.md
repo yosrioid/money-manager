@@ -186,4 +186,3 @@ A change is complete only when:
 - Relevant documentation and `docs/PROGRESS.md` are updated.
 - No secrets, generated artifacts, or unrelated changes are included.
 - The change is ready for review on a non-`main` branch.
-
