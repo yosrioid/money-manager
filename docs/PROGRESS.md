@@ -27,9 +27,8 @@ phase is complete.
 ## Current Milestone
 
 - **Phase:** Phase 1 - Identity, Workspace, And Financial Setup
-- **Milestone:** Identity, personal workspace, and preferences (`P1-01` to
-  `P1-18`)
-- **Status:** Planned
+- **Milestone:** Personal workspace and isolation (`P1-09` to `P1-11`)
+- **Status:** In Progress
 - **Updated:** 2026-06-09
 
 ## Phase Status
@@ -55,7 +54,7 @@ are defined by the mapped IDs in `docs/FEATURE_CATALOG.md`.
 | ----- | ----------------------------------------------- | ------------------ | ------- | ---------- |
 | F-001 | Laravel and Vue project scaffolding             | `P0-01`, `P0-02`   | Done    | 2026-06-09 |
 | F-002 | CI, linting, static analysis, and test baseline | `P0-03` to `P0-06` | Done    | 2026-06-09 |
-| F-003 | Authentication and personal workspace           | `P1-01` to `P1-11` | Planned | -          |
+| F-003 | Authentication and personal workspace           | `P1-01` to `P1-11` | In Progress | -          |
 | F-004 | Currencies and workspace preferences            | `P1-12` to `P1-18` | Planned | -          |
 | F-005 | Account groups and accounts                     | `P1-19` to `P1-25` | Planned | -          |
 | F-006 | Categories and reference data                   | `P1-26` to `P1-33` | Planned | -          |
@@ -93,7 +92,7 @@ Keep the row through completion so partial package progress remains visible.
 
 | Feature ID | Status | Branch Or PR | Notes                            |
 | ---------- | ------ | ------------ | -------------------------------- |
-| -          | -      | -            | No active feature implementation |
+| `P1-09` to `P1-11` | In Progress | `feat/p1-personal-workspace` | Personal workspace, active context, and isolation |
 
 ## Completed Features
 

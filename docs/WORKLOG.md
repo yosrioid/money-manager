@@ -50,6 +50,68 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-09 15:22 WIB - Personal Workspace Slice Ready For Review
+
+- **Branch:** `feat/p1-personal-workspace`.
+- **Feature IDs:** `P1-09`, `P1-10`, `P1-11`.
+- **Status:** Ready for review.
+- **Completed:** Reviewed the complete workspace vertical slice and confirmed
+  registration, membership, active-context, policy, frontend shared-prop, and
+  documentation changes are focused on the approved feature IDs.
+- **Verification:** `composer ci:check` passed with 47 tests and 171 assertions;
+  `npm run test:e2e` passed on Chromium and mobile Safari; Composer and npm
+  security audits reported no vulnerabilities; governance, formatting, route
+  middleware, and diff checks passed.
+- **Decisions:** The dashboard is the first workspace-required route. All future
+  financial routes must use the `workspace` middleware and authorize their
+  workspace-owned resources.
+- **Blockers:** None.
+- **Uncommitted:** The reviewed vertical slice and current checkpoints are ready
+  to commit on the feature branch.
+- **Next:** Commit the focused change, push the feature branch, create a pull
+  request, then record the PR in progress tracking.
+
+### 2026-06-09 15:10 WIB - Personal Workspace Vertical Slice Implemented
+
+- **Branch:** `feat/p1-personal-workspace`.
+- **Feature IDs:** `P1-09`, `P1-10`, `P1-11`.
+- **Status:** In progress.
+- **Completed:** Implemented workspace ownership and membership schema, atomic
+  personal-workspace creation during registration, scoped active-workspace
+  context, dashboard middleware, Inertia workspace summary, authorization
+  policy, factories, enum, and focused isolation tests.
+- **Verification:** Focused workspace, dashboard, and registration tests passed
+  with 12 tests and 42 assertions. Frontend lint, formatting, and type checks,
+  governance checks, route middleware inspection, and PHPStan debug analysis
+  passed.
+- **Decisions:** Active workspace resolution requires a valid membership;
+  ownership alone does not bypass membership. Workspace management remains
+  owner-only while members may view an authorized workspace.
+- **Blockers:** None.
+- **Uncommitted:** Complete vertical-slice implementation and documentation are
+  uncommitted on the feature branch.
+- **Next:** Run the full CI quality gate, review the complete diff, then prepare
+  the branch for review.
+
+### 2026-06-09 14:40 WIB - Personal Workspace Design Ready
+
+- **Branch:** `feat/p1-personal-workspace`.
+- **Feature IDs:** `P1-09`, `P1-10`, `P1-11`.
+- **Status:** In progress.
+- **Completed:** Audited registration, authentication routes, current models,
+  middleware stack, factories, and test conventions. Defined workspace owner,
+  membership, active-workspace reference, domain action, middleware, and policy
+  contracts.
+- **Verification:** Confirmed the branch starts from merged `origin/main`;
+  inspected Fortify registration and current route middleware behavior.
+- **Decisions:** Registration will atomically create a user, personal workspace,
+  owner membership, and current workspace. Active context must verify membership
+  rather than trusting `users.current_workspace_id`.
+- **Blockers:** None.
+- **Uncommitted:** Progress and worklog now mark `P1-09` to `P1-11` in progress.
+- **Next:** Generate and implement workspace migrations, models, domain action,
+  middleware, policy, and focused isolation tests.
+
 ### 2026-06-09 14:31 WIB - Governance Baseline Ready For Review
 
 - **Branch:** `docs/master-delivery-plan`.
