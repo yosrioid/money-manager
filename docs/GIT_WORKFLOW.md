@@ -26,6 +26,10 @@ docs/engineering-standards
 chore/upgrade-vue
 ```
 
+Product implementation branches and pull requests must identify their approved
+feature IDs from `docs/FEATURE_CATALOG.md`. Include the IDs in the PR body and,
+when practical, in the branch scope.
+
 Supported types:
 
 - `feat`: new user-facing behavior
@@ -142,6 +146,10 @@ Pull request body:
 - Explain the user-visible or engineering outcome.
 - Explain important implementation choices.
 
+## Feature IDs
+
+- `Pn-nn`
+
 ## Changes
 
 - List focused changes.
@@ -164,6 +172,8 @@ Pull request body:
 
 - [ ] Documentation updated
 - [ ] `docs/PROGRESS.md` updated when applicable
+- [ ] `docs/WORKLOG.md` contains the latest applicable checkpoint
+- [ ] Scope and phase mapping remain consistent with `docs/MASTER_PLAN.md`
 
 ## Screenshots
 

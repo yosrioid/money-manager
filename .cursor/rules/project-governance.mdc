@@ -1,0 +1,13 @@
+---
+description: Mandatory Money Manager project governance and continuation workflow
+alwaysApply: true
+---
+
+# Money Manager Project Governance
+
+At the start of every new repository chat or session, the first action before
+answering a project task or performing work is to read and follow
+`docs/AI_WORKFLOW.md`.
+
+Do not implement uncataloged scope. Follow the approved feature IDs, phase
+sequence, document precedence, quality gates, and approval rules.

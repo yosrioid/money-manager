@@ -19,6 +19,16 @@ Browser
 Do not introduce microservices, event sourcing, or a separate SPA API unless a
 measured product requirement justifies the additional complexity.
 
+## Delivery Traceability
+
+- Every implemented capability must map to an approved feature ID in
+  `docs/FEATURE_CATALOG.md`.
+- Delivery sequence and release gates are defined in `docs/MASTER_PLAN.md`.
+- Architecture changes discovered during implementation must update this
+  document through the master-plan scope-change process.
+- A later-phase feature must not weaken an earlier-phase financial, workspace,
+  security, or data-integrity invariant.
+
 ## Technology Baseline
 
 | Area | Choice |
@@ -215,4 +225,3 @@ Automated backups
 
 Keep application servers stateless. Store sessions, queues, and cache in Redis;
 store uploaded files in object storage.
-

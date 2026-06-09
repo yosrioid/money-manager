@@ -148,6 +148,7 @@ approval before performing an action that violates or bypasses these rules.
 Run all applicable checks before requesting review:
 
 ```bash
+bash scripts/check-governance.sh
 composer ci:check
 npm run build
 npm run test:e2e
@@ -161,16 +162,44 @@ npm audit --audit-level=high
 
 ## Documentation And Progress Rules
 
-- Read `docs/PRODUCT_SCOPE.md`, `docs/ARCHITECTURE.md`,
-  `docs/CODING_STANDARDS.md`, `docs/GIT_WORKFLOW.md`, and `docs/PROGRESS.md`
-  before implementing a feature.
+- At the start of every new repository chat or session, read and follow
+  `docs/AI_WORKFLOW.md` before answering a project task or performing work.
+- Read `docs/MASTER_PLAN.md`, `docs/FEATURE_CATALOG.md`,
+  `docs/PRODUCT_SCOPE.md`, `docs/ARCHITECTURE.md`,
+  `docs/CODING_STANDARDS.md`, `docs/GIT_WORKFLOW.md`, and
+  `docs/PROGRESS.md` before implementing a feature.
+- Treat `docs/MASTER_PLAN.md` as the authoritative delivery sequence.
+- Treat `docs/FEATURE_CATALOG.md` as the authoritative product inventory.
+- Do not implement a feature without an approved feature ID.
+- Every implementation branch and pull request must identify its feature IDs.
+- Do not add, remove, defer, or move features between phases silently.
+- Resolve documentation conflicts before implementation.
+- Follow the scope-change process in `docs/MASTER_PLAN.md` when product scope,
+  phase sequence, architecture, or release gates change.
 - Update documentation when behavior, architecture, setup, or workflow changes.
 - Update `docs/PROGRESS.md` in the same change when a feature starts or
   completes.
+- Update `docs/WORKLOG.md` with concise daily and session checkpoints for
+  non-trivial repository work.
+- Add worklog checkpoints after meaningful milestones and before pausing,
+  ending a session, or sending a final response.
+- When context, token, time, or execution budget appears low, checkpoint early
+  instead of relying on an end-of-session update.
 - Mark a feature `Done` only after its acceptance criteria, tests, quality
   gates, review requirements, and documentation are complete.
 - Record incomplete follow-up work explicitly.
 - Do not rewrite historical progress entries except to correct factual errors.
+
+## AI Instruction Rules
+
+- Tool-specific AI instruction files must point to `docs/AI_WORKFLOW.md`.
+- Do not maintain competing copies of project governance in tool-specific files.
+- Keep `docs/AI_WORKFLOW.md` compatible with the document precedence and
+  approval rules in this repository.
+- Do not claim automatic compliance for AI tools that do not load repository
+  instructions.
+- Do not claim that a final worklog checkpoint is guaranteed after abrupt
+  process termination or exhausted execution context.
 
 ## Definition Of Done
 

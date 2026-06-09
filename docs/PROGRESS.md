@@ -3,44 +3,97 @@
 This file is the project implementation tracker and must be updated in the same
 pull request that completes a feature or milestone.
 
+Scope and phase definitions live in `docs/FEATURE_CATALOG.md` and
+`docs/MASTER_PLAN.md`. This file records execution status and must not redefine
+or silently change approved scope.
+
+Daily progress, partial work, blockers, and session handoffs are recorded in
+`docs/WORKLOG.md`. Do not use daily worklog entries as proof that a feature or
+phase is complete.
+
 ## Status Values
 
 - `Planned`: scope is known but implementation has not started.
+- `Ready`: dependencies, acceptance criteria, and design decisions are clear.
 - `In Progress`: active implementation exists on a branch.
+- `In Review`: implementation is complete and a pull request is under review.
 - `Blocked`: implementation cannot continue without an external decision or
   dependency.
+- `Deferred`: implementation is intentionally postponed with a documented
+  reason.
 - `Done`: acceptance criteria, tests, review requirements, and documentation are
   complete.
 
 ## Current Milestone
 
-- **Milestone:** Authentication and personal workspace
+- **Phase:** Phase 1 - Identity, Workspace, And Financial Setup
+- **Milestone:** Identity, personal workspace, and preferences (`P1-01` to
+  `P1-18`)
 - **Status:** Planned
 - **Updated:** 2026-06-09
 
-## Roadmap
+## Phase Status
 
-| ID | Feature | Status | Completed | Notes |
-|---|---|---|---|---|
-| F-001 | Laravel and Vue project scaffolding | Done | 2026-06-09 | Laravel 13 Vue starter kit |
-| F-002 | CI, linting, static analysis, and test baseline | Done | 2026-06-09 | Quality gates established |
-| F-003 | Authentication and personal workspace | Planned | - | Include email verification and 2FA |
-| F-004 | Currencies and workspace preferences | Planned | - | IDR default and workspace timezone |
-| F-005 | Account groups and accounts | Planned | - | Cash, bank, e-wallet, asset, liability |
-| F-006 | Categories and subcategories | Planned | - | Income and expense categories |
-| F-007 | Double-entry ledger foundation | Planned | - | Highest-risk core module |
-| F-008 | Income, expense, and transfer flows | Planned | - | Includes authorization and validation |
-| F-009 | Transaction history, search, and filters | Planned | - | Paginated and workspace-scoped |
-| F-010 | Dashboard and account balances | Planned | - | Derived from posted ledger entries |
-| F-011 | Monthly category budgets | Planned | - | Actual versus budget |
-| F-012 | Reports and CSV export | Planned | - | Monthly summary and category breakdown |
-| F-013 | Transaction templates and bookmarks | Planned | - | Fast manual entry |
-| F-014 | Recurring transactions | Planned | - | Idempotent scheduled generation |
-| F-015 | Attachments and receipt storage | Planned | - | Private object storage |
-| F-016 | Credit cards and installment plans | Planned | - | Post-MVP |
-| F-017 | Multi-currency transactions | Planned | - | Post-MVP |
-| F-018 | Shared workspaces | Planned | - | Post-MVP |
-| F-019 | PWA installation and offline drafts | Planned | - | Post-MVP |
+| Phase   | Name                                          | Status  | Exit Gate                             |
+| ------- | --------------------------------------------- | ------- | ------------------------------------- |
+| Phase 0 | Engineering Foundation                        | Done    | Foundation and governance established |
+| Phase 1 | Identity, Workspace, And Financial Setup      | Planned | Secure financial structure ready      |
+| Phase 2 | Ledger And Core Transactions                  | Planned | Balanced transaction engine ready     |
+| Phase 3 | Daily Use And Transaction Productivity        | Planned | Daily tracking experience ready       |
+| Phase 4 | Budgets, Goals, Statistics, And Data Exchange | Planned | MVP feature scope ready               |
+| Phase 5 | Cards, Debt, Assets, And Multi-Currency       | Planned | Advanced finance workflows ready      |
+| Phase 6 | Automation, Attachments, Backup, And Restore  | Planned | Automation and portability ready      |
+| Phase 7 | Collaboration, Sync, PWA, And Customization   | Planned | Extended platform ready               |
+| Phase 8 | Production Hardening And Parity Acceptance    | Planned | Applicable release gates passed       |
+
+## Delivery Package Roadmap
+
+These packages are planning containers. Detailed scope and acceptance summaries
+are defined by the mapped IDs in `docs/FEATURE_CATALOG.md`.
+
+| ID    | Feature                                         | Catalog Mapping    | Status  | Completed  |
+| ----- | ----------------------------------------------- | ------------------ | ------- | ---------- |
+| F-001 | Laravel and Vue project scaffolding             | `P0-01`, `P0-02`   | Done    | 2026-06-09 |
+| F-002 | CI, linting, static analysis, and test baseline | `P0-03` to `P0-06` | Done    | 2026-06-09 |
+| F-003 | Authentication and personal workspace           | `P1-01` to `P1-11` | Planned | -          |
+| F-004 | Currencies and workspace preferences            | `P1-12` to `P1-18` | Planned | -          |
+| F-005 | Account groups and accounts                     | `P1-19` to `P1-25` | Planned | -          |
+| F-006 | Categories and reference data                   | `P1-26` to `P1-33` | Planned | -          |
+| F-007 | Double-entry ledger foundation                  | `P2-01` to `P2-10` | Planned | -          |
+| F-008 | Core transaction flows                          | `P2-11` to `P2-24` | Planned | -          |
+| F-009 | Transaction history and navigation              | `P3-01` to `P3-12` | Planned | -          |
+| F-010 | Dashboard and fast-entry workflows              | `P3-13` to `P3-21` | Planned | -          |
+| F-011 | Budgets and goals                               | `P4-01` to `P4-10` | Planned | -          |
+| F-012 | Statistics, reports, import, and export         | `P4-11` to `P4-25` | Planned | -          |
+| F-013 | Cards, debt, and installments                   | `P5-01` to `P5-09` | Planned | -          |
+| F-014 | Assets and multi-currency                       | `P5-10` to `P5-16` | Planned | -          |
+| F-015 | Recurring and scheduled transactions            | `P6-01` to `P6-06` | Planned | -          |
+| F-016 | Attachments and receipts                        | `P6-07` to `P6-11` | Planned | -          |
+| F-017 | Backup and restore                              | `P6-12` to `P6-16` | Planned | -          |
+| F-018 | Collaboration and synchronization               | `P7-01` to `P7-06` | Planned | -          |
+| F-019 | PWA, desktop experience, and customization      | `P7-07` to `P7-16` | Planned | -          |
+| F-020 | Production hardening and parity acceptance      | `P8-01` to `P8-10` | Planned | -          |
+
+## Catalog Status Summary
+
+Feature-level status is tracked independently from delivery-package status. A
+package marked `In Progress` or `Done` does not automatically change every
+mapped feature ID.
+
+| Catalog Range      | Status   | Notes                                                        |
+| ------------------ | -------- | ------------------------------------------------------------ |
+| `P0-01` to `P0-06` | Done     | Engineering foundation and governance baseline               |
+| `P1-01` to `P8-10` | Planned  | See phase sequence and dependencies in `docs/MASTER_PLAN.md` |
+| `D-01` to `D-06`   | Deferred | Requires explicit scope approval                             |
+
+## Active Feature Overrides
+
+Add a row whenever an individual feature leaves its catalog-range default.
+Keep the row through completion so partial package progress remains visible.
+
+| Feature ID | Status | Branch Or PR | Notes                            |
+| ---------- | ------ | ------------ | -------------------------------- |
+| -          | -      | -            | No active feature implementation |
 
 ## Completed Features
 
@@ -56,7 +109,7 @@ pull request that completes a feature or milestone.
   `npm run test:e2e`, and `npm run build`.
 - **Documentation:** Updated `README.md` and `docs/PROGRESS.md`.
 - **Follow-up:** None.
-- **PR:** Not available.
+- **PR:** [#2](https://github.com/yosrioid/money-manager/pull/2).
 
 ### 2026-06-09 - F-001 Laravel And Vue Project Scaffolding
 
@@ -83,7 +136,22 @@ pull request that completes a feature or milestone.
   Vite manifest before Laravel feature tests.
 - **Tests:** `composer validate --strict`, `composer ci:check`, `npm run build`,
   and the Chromium Playwright smoke test passed.
-- **Git:** Changes remain uncommitted on `docs/git-safety-rules`.
+- **Git:** Merged through [PR #2](https://github.com/yosrioid/money-manager/pull/2).
+
+### 2026-06-09 - Establish Authoritative Delivery Plan
+
+- **Outcome:** Defined the authoritative feature inventory, phase plan, release
+  boundaries, delivery gates, and scope-change process.
+- **Key decisions:** Every implementation must map to an approved feature ID;
+  `docs/MASTER_PLAN.md` controls delivery sequence and
+  `docs/FEATURE_CATALOG.md` controls scope.
+- **Tests:** `bash scripts/check-governance.sh`, documentation consistency, and
+  formatting checks.
+- **Documentation:** Added `docs/MASTER_PLAN.md` and
+  `docs/FEATURE_CATALOG.md`; added universal and tool-specific AI startup
+  instructions; aligned all governing project documents.
+- **Follow-up:** Begin Phase 1 with `P1-01` to `P1-11`.
+- **PR:** Not available.
 
 ## Required Completion Entry
 
@@ -109,6 +177,11 @@ When a feature becomes `Done`, add an entry at the top of this section:
 5. Add newly discovered features to the roadmap with a new stable ID.
 6. Never rewrite historical completion entries except to correct factual
    mistakes.
+7. Never redefine scope in this file; update `docs/FEATURE_CATALOG.md` through
+   the master-plan scope-change process.
+8. Update the phase status only when its master-plan exit gate changes state.
+9. Use `docs/WORKLOG.md`, not this file, for checkpoints that do not change
+   official feature, package, phase, or milestone status.
 
 ## Decision Log
 
@@ -123,3 +196,10 @@ product requirements.
 All financial transactions will use balanced ledger entries. Account balances
 will be derived from posted entries rather than maintained as independent
 mutable values.
+
+### 2026-06-09 - Use Cataloged Scope And Phase Gates
+
+All implementation must map to approved feature IDs in
+`docs/FEATURE_CATALOG.md`. Delivery sequence, scope changes, and release gates
+follow `docs/MASTER_PLAN.md`; deviations must be documented and approved rather
+than implemented silently.

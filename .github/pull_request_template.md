@@ -3,6 +3,10 @@
 - Describe the user-visible or engineering outcome.
 - Explain important implementation choices.
 
+## Feature IDs
+
+- List approved IDs from `docs/FEATURE_CATALOG.md`, or state `Engineering only`.
+
 ## Changes
 
 - List focused changes included in this pull request.
@@ -25,6 +29,9 @@
 
 - [ ] Relevant documentation is updated
 - [ ] `docs/PROGRESS.md` is updated when a feature or milestone is completed
+- [ ] `docs/WORKLOG.md` contains the latest applicable checkpoint
+- [ ] Scope and phase mapping remain consistent with `docs/MASTER_PLAN.md`
+- [ ] Any scope change follows the documented change-control process
 
 ## Git Safety
 

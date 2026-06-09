@@ -7,6 +7,10 @@ and source code.
 ## Documentation
 
 - [Product Scope](docs/PRODUCT_SCOPE.md)
+- [AI Workflow](docs/AI_WORKFLOW.md)
+- [Master Delivery Plan](docs/MASTER_PLAN.md)
+- [Feature Catalog](docs/FEATURE_CATALOG.md)
+- [Daily Worklog And Session Handoff](docs/WORKLOG.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Strict Project Rules](docs/STRICT_RULES.md)
 - [Coding Standards](docs/CODING_STANDARDS.md)
@@ -28,8 +32,9 @@ and source code.
 ## Current Status
 
 The Laravel and Vue foundation is installed. See
-[Feature Progress](docs/PROGRESS.md) for the current implementation status and
-next milestone.
+[Master Delivery Plan](docs/MASTER_PLAN.md) for the delivery sequence,
+[Feature Catalog](docs/FEATURE_CATALOG.md) for the approved product inventory,
+and [Feature Progress](docs/PROGRESS.md) for current implementation status.
 
 ## Local Setup
 

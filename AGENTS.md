@@ -2,20 +2,39 @@
 
 These instructions apply to every change in this repository.
 
+At the start of every new repository chat or session, the first action before
+answering a project task or performing work is to read and follow
+`docs/AI_WORKFLOW.md`, including its mandatory startup protocol.
+
 ## Required Workflow
 
-1. Read `docs/PRODUCT_SCOPE.md`, `docs/ARCHITECTURE.md`, and
-   `docs/STRICT_RULES.md` before implementing a feature.
-2. Keep each change focused on one feature or engineering concern.
-3. Follow `docs/CODING_STANDARDS.md`.
-4. Add or update automated tests for every behavioral change.
-5. Run the relevant quality checks before considering work complete.
-6. Update `docs/PROGRESS.md` in the same change whenever a feature or milestone
+1. Read `docs/STRICT_RULES.md`, `docs/MASTER_PLAN.md`,
+   `docs/FEATURE_CATALOG.md`, `docs/PRODUCT_SCOPE.md`, `docs/ARCHITECTURE.md`,
+   `docs/PROGRESS.md`, and the latest `docs/WORKLOG.md` entries before
+   implementing a feature.
+2. Confirm the requested work has an approved feature ID and follows the phase
+   sequence in `docs/MASTER_PLAN.md`. Do not implement uncataloged scope.
+3. Keep each change focused on one feature or engineering concern.
+4. Follow `docs/CODING_STANDARDS.md`.
+5. Add or update automated tests for every behavioral change.
+6. Run the relevant quality checks before considering work complete.
+7. Update `docs/PROGRESS.md` in the same change whenever a feature or milestone
    is completed.
-7. Follow `docs/GIT_WORKFLOW.md` for branch names, commits, pushes, and pull
+8. Update `docs/WORKLOG.md` with meaningful daily and session checkpoints.
+9. Follow `docs/GIT_WORKFLOW.md` for branch names, commits, pushes, and pull
    requests.
-8. Treat `docs/STRICT_RULES.md` as mandatory. When rules conflict, follow the
+10. Treat `docs/STRICT_RULES.md` as mandatory. When rules conflict, follow the
    stricter rule.
+
+## Scope And Planning Rules
+
+- Treat `docs/MASTER_PLAN.md` as the authoritative delivery sequence.
+- Treat `docs/FEATURE_CATALOG.md` as the authoritative product inventory.
+- Every implementation branch and pull request must identify its feature IDs.
+- Resolve documentation conflicts before implementation.
+- Never add, remove, defer, or move a feature between phases silently.
+- Apply the scope-change process in `docs/MASTER_PLAN.md` when product scope,
+  phase sequencing, architecture, or release gates change.
 
 ## Git Safety Rules
 
