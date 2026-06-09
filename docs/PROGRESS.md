@@ -28,7 +28,7 @@ phase is complete.
 
 - **Phase:** Phase 1 - Identity, Workspace, And Financial Setup
 - **Milestone:** Personal workspace and isolation (`P1-09` to `P1-11`)
-- **Status:** In Progress
+- **Status:** In Review
 - **Updated:** 2026-06-09
 
 ## Phase Status
@@ -92,7 +92,7 @@ Keep the row through completion so partial package progress remains visible.
 
 | Feature ID | Status | Branch Or PR | Notes                            |
 | ---------- | ------ | ------------ | -------------------------------- |
-| `P1-09` to `P1-11` | In Progress | `feat/p1-personal-workspace` | Personal workspace, active context, and isolation |
+| `P1-09` to `P1-11` | In Review | [#4](https://github.com/yosrioid/money-manager/pull/4) | Personal workspace, active context, and isolation |
 
 ## Completed Features
 

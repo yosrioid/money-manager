@@ -50,6 +50,23 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-09 15:30 WIB - Personal Workspace Pull Request Opened
+
+- **Branch:** `feat/p1-personal-workspace`.
+- **Feature IDs:** `P1-09`, `P1-10`, `P1-11`.
+- **Status:** Ready for review.
+- **Completed:** Committed and pushed the reviewed vertical slice, then opened
+  [PR #4](https://github.com/yosrioid/money-manager/pull/4) against `main`.
+- **Verification:** Local quality gates and security audits passed before the
+  PR; commit authorship and message contain no prohibited attribution.
+- **Decisions:** Keep `F-003` in progress because the complete authentication
+  package spans `P1-01` through `P1-11`; only `P1-09` through `P1-11` are in
+  review in PR #4.
+- **Blockers:** None.
+- **Uncommitted:** Progress and worklog need a documentation commit recording
+  PR #4 and the `In Review` milestone status.
+- **Next:** Commit and push this PR-status checkpoint, then verify PR CI.
+
 ### 2026-06-09 15:22 WIB - Personal Workspace Slice Ready For Review
 
 - **Branch:** `feat/p1-personal-workspace`.
