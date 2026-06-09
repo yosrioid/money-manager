@@ -27,8 +27,8 @@ phase is complete.
 ## Current Milestone
 
 - **Phase:** Phase 1 - Identity, Workspace, And Financial Setup
-- **Milestone:** Personal workspace and isolation (`P1-09` to `P1-11`)
-- **Status:** In Review
+- **Milestone:** Currencies and workspace preferences (`P1-12` to `P1-18`)
+- **Status:** In Progress
 - **Updated:** 2026-06-09
 
 ## Phase Status
@@ -55,9 +55,9 @@ are defined by the mapped IDs in `docs/FEATURE_CATALOG.md`.
 | F-001 | Laravel and Vue project scaffolding             | `P0-01`, `P0-02`   | Done    | 2026-06-09 |
 | F-002 | CI, linting, static analysis, and test baseline | `P0-03` to `P0-06` | Done    | 2026-06-09 |
 | F-003 | Authentication and personal workspace           | `P1-01` to `P1-11` | In Progress | -          |
-| F-004 | Currencies and workspace preferences            | `P1-12` to `P1-18` | Planned | -          |
-| F-005 | Account groups and accounts                     | `P1-19` to `P1-25` | Planned | -          |
-| F-006 | Categories and reference data                   | `P1-26` to `P1-33` | Planned | -          |
+| F-004 | Currencies and workspace preferences            | `P1-12` to `P1-18` | In Progress | -          |
+| F-005 | Account groups and accounts                     | `P1-19` to `P1-25` | In Progress | -          |
+| F-006 | Categories and reference data                   | `P1-26` to `P1-33` | In Progress | -          |
 | F-007 | Double-entry ledger foundation                  | `P2-01` to `P2-10` | Planned | -          |
 | F-008 | Core transaction flows                          | `P2-11` to `P2-24` | Planned | -          |
 | F-009 | Transaction history and navigation              | `P3-01` to `P3-12` | Planned | -          |
@@ -93,6 +93,8 @@ Keep the row through completion so partial package progress remains visible.
 | Feature ID | Status | Branch Or PR | Notes                            |
 | ---------- | ------ | ------------ | -------------------------------- |
 | `P1-09` to `P1-11` | In Review | [#4](https://github.com/yosrioid/money-manager/pull/4) | Personal workspace, active context, and isolation |
+| `P1-12` to `P1-18` | In Progress | `feat/p1-financial-setup` | Currencies seeder, workspace preference columns, settings UI, 7 tests |
+| `P1-19` to `P1-33` | In Progress | `feat/p1-financial-setup` | Backend infrastructure (migrations, models, policies, controllers, factories, routes) — Vue pages and tests pending |
 
 ## Completed Features
 

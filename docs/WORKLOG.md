@@ -50,6 +50,42 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-09 22:00 WIB - P1-12 to P1-18 Implemented; P1-19 to P1-33 Backend Ready
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-12` to `P1-33`.
+- **Status:** In Progress.
+- **Completed:**
+  - Added preference columns to workspaces table (`default_currency`, `timezone`, `locale`,
+    `number_format`, `first_day_of_week`, `month_start_day`, `adjust_month_for_weekend`).
+  - Created `currencies` table with 25 major currencies seeded via `CurrencySeeder`.
+  - Updated `Workspace` model with preference fillable fields, casts, and hasMany relationships.
+  - Updated `WorkspaceFactory` to include preference column defaults.
+  - Created `WorkspaceController` (settings) with `edit` and `update` actions.
+  - Created `WorkspacePreferencesRequest` with validation for all preference fields.
+  - Added `settings/workspace` GET/PATCH routes under `auth + verified + workspace` middleware.
+  - Created `settings/Workspace.vue` Inertia page.
+  - Added `AuthorizesRequests` trait to the base `Controller` class.
+  - Created full backend for P1-19 to P1-33 (no Vue pages yet):
+    - Migrations: `account_groups`, `accounts`, `categories`, `merchants`, `tags`.
+    - Enums: `AccountType`, `CategoryType`.
+    - Models + factories: `AccountGroup`, `Account`, `Category`, `Merchant`, `Tag`.
+    - Policies: `AccountGroupPolicy`, `AccountPolicy`, `CategoryPolicy`, `MerchantPolicy`, `TagPolicy`.
+    - Controllers: `AccountGroupController`, `AccountController`, `CategoryController`,
+      `MerchantController`, `TagController`.
+    - Form requests for store/update on all five resource types.
+    - All routes registered under `auth + verified + workspace` middleware.
+    - `StarterPresetsSeeder` for workspace-scoped default accounts and categories.
+  - 7 new workspace preferences tests added (82 total, all passing).
+- **Verification:** `php artisan test --compact` → 82/82 passed; `vendor/bin/pint --dirty` → clean.
+- **Decisions:**
+  - Authorization for workspace update handled in controller via `$this->authorize('update', $workspace)`
+    rather than in form request (route has no `workspace` parameter).
+  - CurrencySeeder must be called in test `beforeEach` when testing routes that validate `currency_code`.
+- **Blockers:** None.
+- **Uncommitted:** All changes on `feat/p1-financial-setup` are uncommitted.
+- **Next:** Commit and push this checkpoint. Vue pages and tests for P1-19 to P1-33 in next session.
+
 ### 2026-06-09 15:35 WIB - Pull Request Quality Gates Passed
 
 - **Branch:** `feat/p1-personal-workspace`.

@@ -1,0 +1,119 @@
+<?php
+
+use App\Domain\Workspaces\CreatePersonalWorkspace;
+use App\Models\User;
+use Database\Seeders\CurrencySeeder;
+
+beforeEach(function () {
+    $this->seed(CurrencySeeder::class);
+});
+
+test('workspace settings page is accessible by workspace owner', function () {
+    $user = User::factory()->create();
+    app(CreatePersonalWorkspace::class)->create($user);
+
+    $this->actingAs($user)
+        ->get(route('workspace.edit'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('settings/Workspace'));
+});
+
+test('workspace settings page is inaccessible without authentication', function () {
+    $this->get(route('workspace.edit'))
+        ->assertRedirect(route('login'));
+});
+
+test('workspace owner can update workspace name and preferences', function () {
+    $user = User::factory()->create();
+    $workspace = app(CreatePersonalWorkspace::class)->create($user);
+
+    $this->actingAs($user)
+        ->patch(route('workspace.update'), [
+            'name' => 'Updated Workspace',
+            'default_currency' => 'USD',
+            'timezone' => 'America/New_York',
+            'locale' => 'en',
+            'number_format' => 'en-US',
+            'first_day_of_week' => 0,
+            'month_start_day' => 1,
+            'adjust_month_for_weekend' => false,
+        ])
+        ->assertRedirect(route('workspace.edit'));
+
+    expect($workspace->fresh())
+        ->name->toBe('Updated Workspace')
+        ->default_currency->toBe('USD')
+        ->timezone->toBe('America/New_York')
+        ->locale->toBe('en')
+        ->number_format->toBe('en-US')
+        ->first_day_of_week->toBe(0);
+});
+
+test('workspace update validates required fields', function () {
+    $user = User::factory()->create();
+    app(CreatePersonalWorkspace::class)->create($user);
+
+    $this->actingAs($user)
+        ->patch(route('workspace.update'), [])
+        ->assertSessionHasErrors(['name', 'default_currency', 'timezone', 'locale', 'number_format']);
+});
+
+test('workspace update rejects invalid currency code', function () {
+    $user = User::factory()->create();
+    app(CreatePersonalWorkspace::class)->create($user);
+
+    $this->actingAs($user)
+        ->patch(route('workspace.update'), [
+            'name' => 'My Workspace',
+            'default_currency' => 'XYZ',
+            'timezone' => 'Asia/Jakarta',
+            'locale' => 'id',
+            'number_format' => 'id-ID',
+            'first_day_of_week' => 1,
+            'month_start_day' => 1,
+            'adjust_month_for_weekend' => false,
+        ])
+        ->assertSessionHasErrors('default_currency');
+});
+
+test('workspace update rejects invalid timezone', function () {
+    $user = User::factory()->create();
+    app(CreatePersonalWorkspace::class)->create($user);
+
+    $this->actingAs($user)
+        ->patch(route('workspace.update'), [
+            'name' => 'My Workspace',
+            'default_currency' => 'IDR',
+            'timezone' => 'Not/ATimezone',
+            'locale' => 'id',
+            'number_format' => 'id-ID',
+            'first_day_of_week' => 1,
+            'month_start_day' => 1,
+            'adjust_month_for_weekend' => false,
+        ])
+        ->assertSessionHasErrors('timezone');
+});
+
+test('workspace preferences are isolated between workspaces', function () {
+    $user = User::factory()->create();
+    $workspace = app(CreatePersonalWorkspace::class)->create($user);
+
+    $otherUser = User::factory()->create();
+    $otherWorkspace = app(CreatePersonalWorkspace::class)->create($otherUser);
+    $otherWorkspace->update(['default_currency' => 'EUR']);
+
+    // User updates their workspace; other workspace must remain unchanged
+    $this->actingAs($user)
+        ->patch(route('workspace.update'), [
+            'name' => 'Updated',
+            'default_currency' => 'USD',
+            'timezone' => 'Asia/Jakarta',
+            'locale' => 'id',
+            'number_format' => 'id-ID',
+            'first_day_of_week' => 1,
+            'month_start_day' => 1,
+            'adjust_month_for_weekend' => false,
+        ]);
+
+    expect($otherWorkspace->fresh()->default_currency)->toBe('EUR');
+});
