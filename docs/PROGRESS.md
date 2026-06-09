@@ -78,7 +78,8 @@ pull request that completes a feature or milestone.
   with quality and browser jobs.
 - **Fixes:** Aligned the declared PHP minimum with the Symfony 8 lockfile,
   classified aliased frontend imports consistently, and isolated browser tests
-  with SQLite and in-memory application services.
+  with SQLite and in-memory application services. CI generates ignored
+  Wayfinder TypeScript modules before frontend type-checking.
 - **Tests:** `composer validate --strict`, `composer ci:check`, `npm run build`,
   and the Chromium Playwright smoke test passed.
 - **Git:** Changes remain uncommitted on `docs/git-safety-rules`.
