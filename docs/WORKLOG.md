@@ -50,6 +50,23 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-10 09:00 WIB - Reference Data Checkpoint Pushed
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-26` to `P1-31`.
+- **Status:** In progress.
+- **Completed:** Committed and pushed the verified category, merchant, and tag
+  management slice in commit `1f9ce85`.
+- **Verification:** Remote branch `origin/feat/p1-financial-setup` advanced from
+  `300d4fd` to `1f9ce85`.
+- **Decisions:** Phase 1 remains in progress. Ordering, application lock,
+  ledger-backed opening balance, review, and browser verification remain.
+- **Blockers:** Browser verification remains blocked in the current sandbox.
+- **Uncommitted:** This push-status checkpoint requires a documentation commit
+  and push.
+- **Next:** Commit and push this checkpoint, then continue the remaining Phase 1
+  work in focused slices.
+
 ### 2026-06-10 08:57 WIB - Category Management Slice Implemented
 
 - **Branch:** `feat/p1-financial-setup`.
