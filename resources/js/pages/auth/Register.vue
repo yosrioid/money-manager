@@ -89,10 +89,30 @@ defineOptions({
                 <InputError :message="errors.password_confirmation" />
             </div>
 
+            <label class="flex items-start gap-3 text-sm">
+                <input type="hidden" name="starter_presets" value="0" />
+                <input
+                    id="starter_presets"
+                    type="checkbox"
+                    name="starter_presets"
+                    value="1"
+                    :tabindex="5"
+                    class="mt-0.5 size-4 rounded border-input"
+                />
+                <span>
+                    <span class="font-medium">Add starter financial setup</span>
+                    <span class="block text-muted-foreground">
+                        Create editable account groups, accounts, and common
+                        income and expense categories.
+                    </span>
+                </span>
+            </label>
+            <InputError :message="errors.starter_presets" />
+
             <Button
                 type="submit"
                 class="mt-2 w-full"
-                tabindex="5"
+                tabindex="6"
                 :disabled="processing"
                 data-test="register-user-button"
             >
@@ -106,7 +126,7 @@ defineOptions({
             <TextLink
                 :href="login()"
                 class="underline underline-offset-4"
-                :tabindex="6"
+                :tabindex="7"
                 >Log in</TextLink
             >
         </div>

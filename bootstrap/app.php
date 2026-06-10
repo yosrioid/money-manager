@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnforceWorkspaceApplicationLock;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\ResolveCurrentWorkspace;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
         $middleware->alias([
             'workspace' => ResolveCurrentWorkspace::class,
+            'workspace.lock' => EnforceWorkspaceApplicationLock::class,
         ]);
 
         $middleware->web(append: [

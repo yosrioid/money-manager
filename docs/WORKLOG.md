@@ -50,6 +50,273 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-10 17:00 WIB - Npm Audit Remediation For Concurrently
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** Engineering only.
+- **Status:** Completed.
+- **Completed:** Bumped the `concurrently` dev dependency from `^9.0.1` to
+  `^10.0.3` (approved by user) to resolve 2 critical `shell-quote` advisories
+  (GHSA-w7jw-789q-3m8p) reported by `npm audit --audit-level=high`. Verified
+  `composer dev` still runs correctly with `concurrently@10` (Node >=22, which
+  this environment satisfies).
+- **Verification:**
+  - `npm install` → 0 vulnerabilities.
+  - `php artisan test --compact` → 116 tests, 467 assertions, passed.
+  - `composer analyse` → 0 errors.
+  - `vendor/bin/pint --test` → passed.
+  - `npm run lint:check`, `npm run format:check`, `npm run types:check`,
+    `npm run build` → all passed.
+  - `npm audit --audit-level=high` → 0 vulnerabilities.
+- **Decisions:** None beyond the approved dependency bump.
+- **Blockers:** None. The previously noted npm audit blocker is resolved.
+- **Uncommitted:** `package.json` and `package-lock.json` (concurrently bump),
+  `docs/PROGRESS.md`, `docs/WORKLOG.md`.
+- **Next:** Commit and push this fix; the branch is then ready for review and
+  merge for `P1-09` to `P1-33`.
+
+### 2026-06-10 16:12 WIB - Phase 1 Implementation Checkpoint Pushed
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-01` to `P1-33`.
+- **Status:** In progress; all features and functional testing complete,
+  security remediation, review, and merge pending.
+- **Completed:** Committed and pushed the complete Phase 1 implementation
+  checkpoint in commit `239b78b`.
+- **Verification:** The pushed checkpoint records 116 passing Pest tests with
+  467 assertions, passing PHPStan debug analysis, frontend checks, production
+  build, governance, Composer audit, and 2/2 Playwright smoke tests.
+- **Decisions:** Phase 1 remains `In Progress`, not `Done`, because the npm
+  security finding requires an approved dependency change and the branch still
+  requires review and merge.
+- **Blockers:** `npm audit --audit-level=high` reports two critical
+  vulnerabilities through `concurrently -> shell-quote`.
+- **Uncommitted:** This push-status checkpoint requires a documentation commit
+  and push.
+- **Next:** Commit and push this checkpoint, then remediate the npm security
+  finding after dependency-change approval.
+
+### 2026-06-10 16:07 WIB - Phase 1 Feature Implementation Complete
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-01` to `P1-33`, including the final `P1-21` ledger
+  integration and final acceptance review of the complete Phase 1 catalog.
+- **Status:** In progress; all Phase 1 features and functional testing are
+  complete, while security remediation, review, and merge remain pending.
+- **Completed:** Implemented balanced immutable ledger-backed opening balances
+  with atomic account creation, account locking, workspace authorization,
+  derived balances, and immutable posted entries. Closed final category
+  appearance and safe one-level parent-change gaps found during the Phase 1
+  acceptance audit.
+- **Verification:** Full Pest suite passed with 116 tests and 467 assertions;
+  focused financial/reference-data suites passed; PHPStan passed in debug mode;
+  Pint, ESLint, Prettier, TypeScript, Vitest, production build, governance, and
+  `git diff --check` passed. Playwright passed 2/2 on Chromium and mobile Safari
+  against an isolated PHP 8.5 and SQLite server. Composer audit reported no
+  vulnerabilities.
+- **Decisions:** `P1-21` uses the minimum approved ledger slice: one posted
+  `opening_balance` transaction with balanced account and opening-balance
+  equity entries. General posting and reversal workflows remain Phase 2.
+- **Blockers:** `npm audit --audit-level=high` reports two critical
+  vulnerabilities through the development dependency chain
+  `concurrently -> shell-quote`; dependency changes require explicit approval.
+  The consolidated `composer ci:check` command cannot complete in this
+  constrained shell because its non-debug PHPStan process exits without
+  diagnostics, although the same PHPStan analysis passes with `--debug` and all
+  remaining CI components pass independently.
+- **Uncommitted:** All final ordering, application-lock, starter-preset,
+  P1-21 ledger, category-safety, tests, architecture, progress, and worklog
+  changes are ready for the explicitly requested commit and push.
+- **Next:** Commit and push this Phase 1 implementation checkpoint, then obtain
+  approval to remediate the npm audit finding before review and merge.
+
+### 2026-06-10 15:44 WIB - Application Lock And Starter Presets Implemented
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-32`, `P1-33`.
+- **Status:** In progress.
+- **Completed:** Added configurable workspace inactivity locking with password
+  confirmation unlock, workspace settings UI and validation, registration-time
+  starter financial preset opt-in, an idempotent transactional preset domain
+  action, and expanded registration, isolation, and preset coverage.
+- **Verification:** `composer ci:check` passed with 110 tests and 425
+  assertions; the focused application-lock, workspace-preference,
+  registration, and preset suite passed with 24 tests and 94 assertions.
+  PHPStan, Pint, governance, frontend lint, Prettier, type-check, unit tests,
+  production build, route middleware inspection, and `git diff --check`
+  passed.
+- **Decisions:** Application lock is disabled by default and supports 5, 15,
+  30, or 60-minute workspace inactivity periods. Starter presets are optional,
+  workspace-scoped, editable reference data and do not create ledger entries.
+- **Blockers:** `P1-21` cannot meet its acceptance criteria until the Phase 2
+  ledger posting foundation exists. Playwright remains blocked by the macOS
+  sandbox, and dependency audits remain blocked by unavailable registry DNS.
+- **Uncommitted:** Ordering, application-lock, starter-preset, tests, progress,
+  and worklog changes are uncommitted and unpushed.
+- **Next:** Review and commit the completed Phase 1 non-ledger slices when
+  requested, then implement the Phase 2 ledger foundation before closing
+  ledger-backed opening balances.
+
+### 2026-06-10 15:34 WIB - Reference Data Ordering Implemented
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-19`, `P1-22`, `P1-26` to `P1-29`.
+- **Status:** In progress.
+- **Completed:** Added transactional move-up/move-down ordering for account
+  groups, accounts within their current group, and categories within matching
+  type/parent siblings. Added authorized PATCH endpoints, accessible Wayfinder
+  controls, sibling-aware initial positions, end-of-scope placement after
+  parent/group changes, and focused ordering/isolation tests.
+- **Verification:** `composer ci:check` passed with 102 tests and 390
+  assertions; focused ordering/account/category tests passed with 15 tests and
+  90 assertions; PHPStan, Pint, governance, frontend lint, Prettier,
+  type-check, unit tests, production build, route inspection, and
+  `git diff --check` passed.
+- **Decisions:** Ordering swaps adjacent persisted positions inside a database
+  transaction with row locks. Accounts only move within their current group;
+  categories only move within the same workspace, type, and parent.
+- **Blockers:** Browser verification remains blocked because the macOS sandbox
+  denies Chromium and WebKit process startup. Composer and npm audits could not
+  reach their registries because DNS/network access is unavailable.
+- **Uncommitted:** Ordering implementation, tests, progress, and this checkpoint
+  are uncommitted and unpushed.
+- **Next:** Review this ordering slice, then continue `P1-32` application lock
+  and the remaining `P1-33` starter-preset UI/test coverage.
+
+### 2026-06-10 09:00 WIB - Reference Data Checkpoint Pushed
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-26` to `P1-31`.
+- **Status:** In progress.
+- **Completed:** Committed and pushed the verified category, merchant, and tag
+  management slice in commit `1f9ce85`.
+- **Verification:** Remote branch `origin/feat/p1-financial-setup` advanced
+  through implementation commit `1f9ce85` and worklog commit `ccbefac`.
+- **Decisions:** Phase 1 remains in progress. Ordering, application lock,
+  ledger-backed opening balance, review, and browser verification remain.
+- **Blockers:** Browser verification remains blocked in the current sandbox.
+- **Uncommitted:** None.
+- **Next:** Continue the remaining Phase 1 work in focused slices.
+
+### 2026-06-10 08:57 WIB - Category Management Slice Implemented
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-26` to `P1-29`.
+- **Status:** In progress.
+- **Completed:** Added category management UI and navigation, income and
+  expense sections, one-level subcategory support, workspace/type/top-level
+  parent validation, active-resource filtering, non-destructive leaf archive,
+  and focused behavior/isolation tests.
+- **Verification:** `composer ci:check` passed with 97 tests and 358 assertions;
+  the focused category/reference/account/preset suite passed with 15 tests and
+  92 assertions; PHPStan, Pint, governance, frontend lint, Prettier,
+  type-check, production build, and `git diff --check` passed.
+- **Decisions:** Keep `P1-26` to `P1-29` in progress because category ordering
+  remains pending. Stop before beginning application-lock or ordering work.
+- **Blockers:** Browser verification remains blocked in the current sandbox.
+- **Uncommitted:** Category, merchant, tag, tests, and documentation changes are
+  uncommitted and unpushed.
+- **Next:** Review and commit the combined reference-data slice when requested,
+  then implement account/category ordering as a focused follow-up.
+
+### 2026-06-10 08:52 WIB - Merchant And Tag Slice Implemented
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-30`, `P1-31`.
+- **Status:** In progress.
+- **Completed:** Added merchant and tag management pages and sidebar
+  navigation, workspace-scoped merchant default-category validation,
+  non-destructive archive behavior, and focused behavior/isolation tests.
+- **Verification:** `composer ci:check` passed with 93 tests and 335 assertions;
+  the focused merchant/tag, account, and preset suite passed with 11 tests and
+  69 assertions; PHPStan, Pint, governance, frontend lint, Prettier,
+  type-check, production build, and `git diff --check` passed.
+- **Decisions:** Keep `P1-30` and `P1-31` in progress until review and browser
+  verification. Stop before beginning the larger category-management slice.
+- **Blockers:** Browser verification remains blocked in the current sandbox.
+- **Uncommitted:** Merchant/tag implementation, tests, and this checkpoint are
+  uncommitted and unpushed.
+- **Next:** Review and commit this focused slice when requested, then implement
+  the `P1-26` to `P1-29` category-management UI and tests.
+
+### 2026-06-10 08:42 WIB - Account Management Checkpoint Pushed
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-19` to `P1-25`, with a focused `P1-33` seeder fix.
+- **Status:** In progress.
+- **Completed:** Committed and pushed the verified account-management slice in
+  commit `9db27cb`.
+- **Verification:** Remote branch `origin/feat/p1-financial-setup` advanced
+  through implementation commit `9db27cb` and worklog commit `df0bf81`.
+- **Decisions:** Phase 1 remains in progress; do not mark it complete until the
+  remaining account ordering, ledger-backed opening balance, and
+  `P1-26` to `P1-33` frontend and test work are complete.
+- **Blockers:** Browser verification remains blocked in the current sandbox.
+- **Uncommitted:** None.
+- **Next:** Continue the remaining Phase 1 work incrementally.
+
+### 2026-06-10 08:38 WIB - Account Management Slice Checkpoint
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-19` to `P1-25`, with a focused `P1-33` seeder fix.
+- **Status:** In progress.
+- **Completed:** Added account-group and account Inertia pages, shared account
+  form, sidebar navigation, workspace-scoped account-group validation,
+  non-destructive archive behavior, explicit personal-workspace financial
+  defaults, and deterministic starter-preset category positions.
+- **Verification:** `composer ci:check` passed with 89 tests and 303 assertions;
+  focused Phase 1 tests passed with 18 tests and 86 assertions; PHPStan, Pint,
+  governance, frontend lint, Prettier, type-check, production build, and
+  `git diff --check` passed.
+- **Decisions:** Keep `P1-19` to `P1-25` in progress. Account ordering and
+  ledger-backed opening-balance posting remain required before completion.
+  Do not begin the `P1-26` to `P1-33` frontend slice until this checkpoint is
+  reviewed.
+- **Blockers:** In-app browser was unavailable. `npm run test:e2e` could not
+  launch Chromium or WebKit because the macOS sandbox denied browser process
+  startup.
+- **Uncommitted:** This account-management slice and checkpoint are uncommitted
+  and unpushed.
+- **Next:** Review the account-management diff, add account/group ordering and
+  resolve the Phase 2 opening-balance integration boundary, then rerun browser
+  verification in an environment that permits browser startup.
+
+### 2026-06-09 22:00 WIB - P1-12 to P1-18 Implemented; P1-19 to P1-33 Backend Ready
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-12` to `P1-33`.
+- **Status:** In Progress.
+- **Completed:**
+  - Added preference columns to workspaces table (`default_currency`, `timezone`, `locale`,
+    `number_format`, `first_day_of_week`, `month_start_day`, `adjust_month_for_weekend`).
+  - Created `currencies` table with 25 major currencies seeded via `CurrencySeeder`.
+  - Updated `Workspace` model with preference fillable fields, casts, and hasMany relationships.
+  - Updated `WorkspaceFactory` to include preference column defaults.
+  - Created `WorkspaceController` (settings) with `edit` and `update` actions.
+  - Created `WorkspacePreferencesRequest` with validation for all preference fields.
+  - Added `settings/workspace` GET/PATCH routes under `auth + verified + workspace` middleware.
+  - Created `settings/Workspace.vue` Inertia page.
+  - Added `AuthorizesRequests` trait to the base `Controller` class.
+  - Created full backend for P1-19 to P1-33 (no Vue pages yet):
+    - Migrations: `account_groups`, `accounts`, `categories`, `merchants`, `tags`.
+    - Enums: `AccountType`, `CategoryType`.
+    - Models + factories: `AccountGroup`, `Account`, `Category`, `Merchant`, `Tag`.
+    - Policies: `AccountGroupPolicy`, `AccountPolicy`, `CategoryPolicy`, `MerchantPolicy`, `TagPolicy`.
+    - Controllers: `AccountGroupController`, `AccountController`, `CategoryController`,
+      `MerchantController`, `TagController`.
+    - Form requests for store/update on all five resource types.
+    - All routes registered under `auth + verified + workspace` middleware.
+    - `StarterPresetsSeeder` for workspace-scoped default accounts and categories.
+  - 7 new workspace preferences tests added (82 total, all passing).
+- **Verification:** `php artisan test --compact` → 82/82 passed; `vendor/bin/pint --dirty` → clean.
+- **Decisions:**
+  - Authorization for workspace update handled in controller via `$this->authorize('update', $workspace)`
+    rather than in form request (route has no `workspace` parameter).
+  - CurrencySeeder must be called in test `beforeEach` when testing routes that validate `currency_code`.
+- **Blockers:** None.
+- **Uncommitted:** All changes on `feat/p1-financial-setup` are uncommitted.
+- **Next:** Commit and push this checkpoint. Vue pages and tests for P1-19 to P1-33 in next session.
+
 ### 2026-06-09 15:35 WIB - Pull Request Quality Gates Passed
 
 - **Branch:** `feat/p1-personal-workspace`.

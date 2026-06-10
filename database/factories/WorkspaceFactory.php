@@ -21,6 +21,14 @@ class WorkspaceFactory extends Factory
         return [
             'owner_id' => User::factory(),
             'name' => fake()->words(2, true),
+            'default_currency' => 'IDR',
+            'timezone' => 'Asia/Jakarta',
+            'locale' => 'id',
+            'number_format' => 'id-ID',
+            'first_day_of_week' => 1,
+            'month_start_day' => 1,
+            'adjust_month_for_weekend' => false,
+            'application_lock_minutes' => 0,
         ];
     }
 }
