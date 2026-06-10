@@ -32,7 +32,7 @@ defineOptions({
 
 <template>
     <Head title="Merchants" />
-    <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-6 p-4">
         <Heading
             title="Merchants and recipients"
             description="Save frequently used payees and their default categories"

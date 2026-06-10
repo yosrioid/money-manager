@@ -210,8 +210,8 @@ reference data required by all later financial activity.
 
 ### Scope
 
-- Feature IDs: `P1-01` through `P1-33`.
-- Existing roadmap mapping: `F-003` through `F-006`.
+- Feature IDs: `P1-01` through `P1-34`.
+- Existing roadmap mapping: `F-003` through `F-006`, and `F-021`.
 
 ### Recommended PR Sequence
 
@@ -223,6 +223,8 @@ reference data required by all later financial activity.
    visibility, ordering, and archive.
 5. `P1-26` to `P1-33`: categories, subcategories, merchants, tags, application
    lock, and starter presets.
+6. `P1-34`: branded public landing page replacing the starter-kit welcome
+   screen.
 
 ### Architecture Work
 

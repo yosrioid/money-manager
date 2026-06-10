@@ -27,7 +27,7 @@ phase is complete.
 ## Current Milestone
 
 - **Phase:** Phase 1 - Identity, Workspace, And Financial Setup
-- **Milestone:** Phase 1 implementation complete (`P1-12` to `P1-33`); review and merge pending
+- **Milestone:** Phase 1 implementation complete (`P1-12` to `P1-34`); review and merge pending
 - **Status:** In Review
 - **Updated:** 2026-06-10
 
@@ -72,6 +72,7 @@ are defined by the mapped IDs in `docs/FEATURE_CATALOG.md`.
 | F-018 | Collaboration and synchronization               | `P7-01` to `P7-06` | Planned     | -          |
 | F-019 | PWA, desktop experience, and customization      | `P7-07` to `P7-16` | Planned     | -          |
 | F-020 | Production hardening and parity acceptance      | `P8-01` to `P8-10` | Planned     | -          |
+| F-021 | Public landing page                             | `P1-34`            | In Review   | -          |
 
 ## Catalog Status Summary
 
@@ -98,6 +99,7 @@ Keep the row through completion so partial package progress remains visible.
 | `P1-26` to `P1-29` | In Review   | `feat/p1-financial-setup`                              | Category management, appearance, one-level parent safety, ordering, and tests complete; review and merge pending          |
 | `P1-30` to `P1-31` | In Review   | `feat/p1-financial-setup`                              | Merchant and tag management implementation and tests complete; review and merge pending                                   |
 | `P1-32` to `P1-33` | In Review   | `feat/p1-financial-setup`                              | Application lock and editable starter preset opt-in implementation and tests complete; review and merge pending           |
+| `P1-34`             | In Review   | `feat/p1-welcome-page`                                 | Branded public landing page replacing the starter-kit welcome screen; review and merge pending                            |
 
 ## Completed Features
 

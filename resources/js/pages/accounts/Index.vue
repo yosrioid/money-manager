@@ -57,7 +57,7 @@ const typeLabel = (value: string): string =>
 <template>
     <Head title="Accounts" />
 
-    <div class="flex flex-col gap-8">
+    <div class="flex flex-col gap-8 p-4">
         <div class="flex flex-wrap items-start justify-between gap-4">
             <Heading
                 title="Accounts"

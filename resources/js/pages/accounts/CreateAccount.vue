@@ -22,7 +22,7 @@ defineOptions({
 <template>
     <Head title="Create account" />
 
-    <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-6 p-4">
         <Heading
             title="Create account"
             description="Add a financial account to your active workspace"

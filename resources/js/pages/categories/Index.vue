@@ -37,7 +37,7 @@ const allParents = (): Category[] => [
 
 <template>
     <Head title="Categories" />
-    <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-6 p-4">
         <Heading
             title="Categories"
             description="Manage income, expense, and one-level subcategories"
