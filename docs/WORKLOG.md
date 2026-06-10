@@ -50,6 +50,24 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-10 08:42 WIB - Account Management Checkpoint Pushed
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-19` to `P1-25`, with a focused `P1-33` seeder fix.
+- **Status:** In progress.
+- **Completed:** Committed and pushed the verified account-management slice in
+  commit `9db27cb`.
+- **Verification:** Remote branch `origin/feat/p1-financial-setup` advanced from
+  `7975b2d` to `9db27cb`.
+- **Decisions:** Phase 1 remains in progress; do not mark it complete until the
+  remaining account ordering, ledger-backed opening balance, and
+  `P1-26` to `P1-33` frontend and test work are complete.
+- **Blockers:** Browser verification remains blocked in the current sandbox.
+- **Uncommitted:** This push-status checkpoint requires a documentation commit
+  and push.
+- **Next:** Commit and push this checkpoint, then continue the remaining Phase 1
+  work incrementally.
+
 ### 2026-06-10 08:38 WIB - Account Management Slice Checkpoint
 
 - **Branch:** `feat/p1-financial-setup`.
