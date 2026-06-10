@@ -27,8 +27,8 @@ phase is complete.
 ## Current Milestone
 
 - **Phase:** Phase 1 - Identity, Workspace, And Financial Setup
-- **Milestone:** Phase 1 implementation complete; review and merge pending
-- **Status:** In Progress
+- **Milestone:** Phase 1 implementation complete (`P1-12` to `P1-33`); review and merge pending
+- **Status:** In Review
 - **Updated:** 2026-06-10
 
 ## Phase Status
@@ -55,9 +55,9 @@ are defined by the mapped IDs in `docs/FEATURE_CATALOG.md`.
 | F-001 | Laravel and Vue project scaffolding             | `P0-01`, `P0-02`   | Done        | 2026-06-09 |
 | F-002 | CI, linting, static analysis, and test baseline | `P0-03` to `P0-06` | Done        | 2026-06-09 |
 | F-003 | Authentication and personal workspace           | `P1-01` to `P1-11` | In Progress | -          |
-| F-004 | Currencies and workspace preferences            | `P1-12` to `P1-18` | In Progress | -          |
-| F-005 | Account groups and accounts                     | `P1-19` to `P1-25` | In Progress | -          |
-| F-006 | Categories and reference data                   | `P1-26` to `P1-33` | In Progress | -          |
+| F-004 | Currencies and workspace preferences            | `P1-12` to `P1-18` | In Review   | -          |
+| F-005 | Account groups and accounts                     | `P1-19` to `P1-25` | In Review   | -          |
+| F-006 | Categories and reference data                   | `P1-26` to `P1-33` | In Review   | -          |
 | F-007 | Double-entry ledger foundation                  | `P2-01` to `P2-10` | Planned     | -          |
 | F-008 | Core transaction flows                          | `P2-11` to `P2-24` | Planned     | -          |
 | F-009 | Transaction history and navigation              | `P3-01` to `P3-12` | Planned     | -          |
@@ -93,11 +93,11 @@ Keep the row through completion so partial package progress remains visible.
 | Feature ID         | Status      | Branch Or PR                                           | Notes                                                                                                                     |
 | ------------------ | ----------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
 | `P1-09` to `P1-11` | In Review   | [#4](https://github.com/yosrioid/money-manager/pull/4) | Personal workspace, active context, and isolation                                                                         |
-| `P1-12` to `P1-18` | In Progress | `feat/p1-financial-setup`                              | Preference implementation and tests complete; review and merge pending                                                    |
-| `P1-19` to `P1-25` | In Progress | `feat/p1-financial-setup`                              | Account management and balanced immutable ledger-backed opening balances implemented and tested; review and merge pending |
-| `P1-26` to `P1-29` | In Progress | `feat/p1-financial-setup`                              | Category management, appearance, one-level parent safety, ordering, and tests complete; review and merge pending          |
-| `P1-30` to `P1-31` | In Progress | `feat/p1-financial-setup`                              | Merchant and tag management implementation and tests complete; review and merge pending                                   |
-| `P1-32` to `P1-33` | In Progress | `feat/p1-financial-setup`                              | Application lock and editable starter preset opt-in implementation and tests complete; review and merge pending           |
+| `P1-12` to `P1-18` | In Review   | `feat/p1-financial-setup`                              | Preference implementation and tests complete; review and merge pending                                                    |
+| `P1-19` to `P1-25` | In Review   | `feat/p1-financial-setup`                              | Account management and balanced immutable ledger-backed opening balances implemented and tested; review and merge pending |
+| `P1-26` to `P1-29` | In Review   | `feat/p1-financial-setup`                              | Category management, appearance, one-level parent safety, ordering, and tests complete; review and merge pending          |
+| `P1-30` to `P1-31` | In Review   | `feat/p1-financial-setup`                              | Merchant and tag management implementation and tests complete; review and merge pending                                   |
+| `P1-32` to `P1-33` | In Review   | `feat/p1-financial-setup`                              | Application lock and editable starter preset opt-in implementation and tests complete; review and merge pending           |
 
 ## Completed Features
 
