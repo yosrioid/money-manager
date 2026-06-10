@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Workspaces\WorkspaceContext;
+use App\Enums\AccountType;
 use App\Http\Requests\StoreAccountRequest;
 use App\Http\Requests\UpdateAccountRequest;
 use App\Models\Account;
 use App\Models\Currency;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,6 +27,7 @@ class AccountController extends Controller
             'accountGroups' => $workspace->accountGroups()->active()->orderBy('position')->get(['id', 'name']),
             'currencies' => Currency::query()->orderBy('code')->get(['code', 'name', 'symbol']),
             'defaultCurrency' => $workspace->default_currency,
+            'accountTypes' => $this->accountTypes(),
         ]);
     }
 
@@ -54,6 +57,7 @@ class AccountController extends Controller
             'account' => $account,
             'accountGroups' => $workspace->accountGroups()->active()->orderBy('position')->get(['id', 'name']),
             'currencies' => Currency::query()->orderBy('code')->get(['code', 'name', 'symbol']),
+            'accountTypes' => $this->accountTypes(),
         ]);
     }
 
@@ -70,16 +74,24 @@ class AccountController extends Controller
     {
         $this->authorize('delete', $account);
 
-        if ($account->archived_at === null) {
-            $account->update(['archived_at' => now()]);
-            $message = __('Account archived.');
-        } else {
-            $account->delete();
-            $message = __('Account deleted.');
-        }
+        $account->update(['archived_at' => now()]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => $message]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Account archived.')]);
 
         return to_route('accounts.index');
+    }
+
+    /**
+     * @return array<int, array{value: string, label: string}>
+     */
+    private function accountTypes(): array
+    {
+        return array_map(
+            fn ($type): array => [
+                'value' => $type->value,
+                'label' => Str::headline($type->value),
+            ],
+            AccountType::cases(),
+        );
     }
 }

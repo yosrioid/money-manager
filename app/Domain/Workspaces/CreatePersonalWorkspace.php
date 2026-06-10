@@ -14,6 +14,13 @@ class CreatePersonalWorkspace
         return DB::transaction(function () use ($user): Workspace {
             $workspace = $user->ownedWorkspaces()->create([
                 'name' => "{$user->name}'s Workspace",
+                'default_currency' => 'IDR',
+                'timezone' => 'Asia/Jakarta',
+                'locale' => 'id',
+                'number_format' => 'id-ID',
+                'first_day_of_week' => 1,
+                'month_start_day' => 1,
+                'adjust_month_for_weekend' => false,
             ]);
 
             $workspace->memberships()->create([

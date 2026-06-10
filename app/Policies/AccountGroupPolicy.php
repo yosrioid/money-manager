@@ -29,8 +29,7 @@ class AccountGroupPolicy
 
     public function delete(User $user, AccountGroup $accountGroup): bool
     {
-        return $this->belongsToUserWorkspace($user, $accountGroup)
-            && $accountGroup->accounts()->count() === 0;
+        return $this->belongsToUserWorkspace($user, $accountGroup);
     }
 
     private function belongsToUserWorkspace(User $user, AccountGroup $accountGroup): bool

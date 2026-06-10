@@ -50,6 +50,32 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-10 08:38 WIB - Account Management Slice Checkpoint
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-19` to `P1-25`, with a focused `P1-33` seeder fix.
+- **Status:** In progress.
+- **Completed:** Added account-group and account Inertia pages, shared account
+  form, sidebar navigation, workspace-scoped account-group validation,
+  non-destructive archive behavior, explicit personal-workspace financial
+  defaults, and deterministic starter-preset category positions.
+- **Verification:** `composer ci:check` passed with 89 tests and 303 assertions;
+  focused Phase 1 tests passed with 18 tests and 86 assertions; PHPStan, Pint,
+  governance, frontend lint, Prettier, type-check, production build, and
+  `git diff --check` passed.
+- **Decisions:** Keep `P1-19` to `P1-25` in progress. Account ordering and
+  ledger-backed opening-balance posting remain required before completion.
+  Do not begin the `P1-26` to `P1-33` frontend slice until this checkpoint is
+  reviewed.
+- **Blockers:** In-app browser was unavailable. `npm run test:e2e` could not
+  launch Chromium or WebKit because the macOS sandbox denied browser process
+  startup.
+- **Uncommitted:** This account-management slice and checkpoint are uncommitted
+  and unpushed.
+- **Next:** Review the account-management diff, add account/group ordering and
+  resolve the Phase 2 opening-balance integration boundary, then rerun browser
+  verification in an environment that permits browser startup.
+
 ### 2026-06-09 22:00 WIB - P1-12 to P1-18 Implemented; P1-19 to P1-33 Backend Ready
 
 - **Branch:** `feat/p1-financial-setup`.

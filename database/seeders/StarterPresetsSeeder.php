@@ -87,14 +87,12 @@ class StarterPresetsSeeder extends Seeder
             );
         }
 
-        foreach ($expenseCategories as $position => $parentNameOrInt) {
-            // When iterating with string keys, $position is the string key (parent name)
-            $parentName = is_string($position) ? $position : $parentNameOrInt;
-            $children = is_string($position) ? $parentNameOrInt : [];
+        foreach (array_keys($expenseCategories) as $position => $parentName) {
+            $children = $expenseCategories[$parentName];
 
             $parent = Category::query()->firstOrCreate(
                 ['workspace_id' => $workspace->id, 'name' => $parentName, 'type' => CategoryType::Expense, 'parent_id' => null],
-                ['position' => array_search($parentName, array_keys($expenseCategories))],
+                ['position' => $position],
             );
 
             foreach ($children as $childPosition => $childName) {

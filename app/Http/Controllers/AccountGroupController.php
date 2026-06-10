@@ -23,6 +23,7 @@ class AccountGroupController extends Controller
         return Inertia::render('accounts/Index', [
             'accountGroups' => $workspace->accountGroups()
                 ->withCount('accounts')
+                ->active()
                 ->orderBy('position')
                 ->get(),
             'accounts' => $workspace->accounts()
@@ -62,9 +63,9 @@ class AccountGroupController extends Controller
     {
         $this->authorize('delete', $accountGroup);
 
-        $accountGroup->delete();
+        $accountGroup->update(['archived_at' => now()]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Account group deleted.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Account group archived.')]);
 
         return to_route('accounts.index');
     }

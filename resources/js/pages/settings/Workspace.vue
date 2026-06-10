@@ -94,7 +94,7 @@ const weekdayOptions = [
                 <select
                     id="default_currency"
                     name="default_currency"
-                    class="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1"
+                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 >
                     <option
                         v-for="currency in currencies"
@@ -102,7 +102,9 @@ const weekdayOptions = [
                         :value="currency.code"
                         :selected="currency.code === workspace.default_currency"
                     >
-                        {{ currency.code }} — {{ currency.name }} ({{ currency.symbol }})
+                        {{ currency.code }} — {{ currency.name }} ({{
+                            currency.symbol
+                        }})
                     </option>
                 </select>
                 <InputError class="mt-2" :message="errors.default_currency" />
@@ -126,7 +128,7 @@ const weekdayOptions = [
                 <select
                     id="locale"
                     name="locale"
-                    class="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1"
+                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 >
                     <option
                         v-for="option in localeOptions"
@@ -145,7 +147,7 @@ const weekdayOptions = [
                 <select
                     id="number_format"
                     name="number_format"
-                    class="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1"
+                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 >
                     <option
                         v-for="option in numberFormatOptions"
@@ -164,7 +166,7 @@ const weekdayOptions = [
                 <select
                     id="first_day_of_week"
                     name="first_day_of_week"
-                    class="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1"
+                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 >
                     <option
                         v-for="option in weekdayOptions"
@@ -202,8 +204,13 @@ const weekdayOptions = [
                     value="1"
                     class="h-4 w-4 rounded border-gray-300"
                 />
-                <Label for="adjust_month_for_weekend">Adjust month start for weekends</Label>
-                <InputError class="mt-2" :message="errors.adjust_month_for_weekend" />
+                <Label for="adjust_month_for_weekend"
+                    >Adjust month start for weekends</Label
+                >
+                <InputError
+                    class="mt-2"
+                    :message="errors.adjust_month_for_weekend"
+                />
             </div>
 
             <div class="flex items-center gap-4">
