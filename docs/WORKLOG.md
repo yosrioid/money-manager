@@ -50,6 +50,31 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-10 17:00 WIB - Npm Audit Remediation For Concurrently
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** Engineering only.
+- **Status:** Completed.
+- **Completed:** Bumped the `concurrently` dev dependency from `^9.0.1` to
+  `^10.0.3` (approved by user) to resolve 2 critical `shell-quote` advisories
+  (GHSA-w7jw-789q-3m8p) reported by `npm audit --audit-level=high`. Verified
+  `composer dev` still runs correctly with `concurrently@10` (Node >=22, which
+  this environment satisfies).
+- **Verification:**
+  - `npm install` → 0 vulnerabilities.
+  - `php artisan test --compact` → 116 tests, 467 assertions, passed.
+  - `composer analyse` → 0 errors.
+  - `vendor/bin/pint --test` → passed.
+  - `npm run lint:check`, `npm run format:check`, `npm run types:check`,
+    `npm run build` → all passed.
+  - `npm audit --audit-level=high` → 0 vulnerabilities.
+- **Decisions:** None beyond the approved dependency bump.
+- **Blockers:** None. The previously noted npm audit blocker is resolved.
+- **Uncommitted:** `package.json` and `package-lock.json` (concurrently bump),
+  `docs/PROGRESS.md`, `docs/WORKLOG.md`.
+- **Next:** Commit and push this fix; the branch is then ready for review and
+  merge for `P1-09` to `P1-33`.
+
 ### 2026-06-10 16:12 WIB - Phase 1 Implementation Checkpoint Pushed
 
 - **Branch:** `feat/p1-financial-setup`.
