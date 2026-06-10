@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Workspace;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -18,9 +19,17 @@ class UpdateMerchantRequest extends FormRequest
      */
     public function rules(): array
     {
+        $workspace = $this->attributes->get('workspace');
+
+        abort_unless($workspace instanceof Workspace, 403);
+
         return [
             'name' => ['required', 'string', 'max:100'],
-            'default_category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')],
+            'default_category_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('categories', 'id')->where('workspace_id', $workspace->id),
+            ],
         ];
     }
 }

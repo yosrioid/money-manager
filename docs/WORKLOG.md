@@ -50,6 +50,47 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-10 08:57 WIB - Category Management Slice Implemented
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-26` to `P1-29`.
+- **Status:** In progress.
+- **Completed:** Added category management UI and navigation, income and
+  expense sections, one-level subcategory support, workspace/type/top-level
+  parent validation, active-resource filtering, non-destructive leaf archive,
+  and focused behavior/isolation tests.
+- **Verification:** `composer ci:check` passed with 97 tests and 358 assertions;
+  the focused category/reference/account/preset suite passed with 15 tests and
+  92 assertions; PHPStan, Pint, governance, frontend lint, Prettier,
+  type-check, production build, and `git diff --check` passed.
+- **Decisions:** Keep `P1-26` to `P1-29` in progress because category ordering
+  remains pending. Stop before beginning application-lock or ordering work.
+- **Blockers:** Browser verification remains blocked in the current sandbox.
+- **Uncommitted:** Category, merchant, tag, tests, and documentation changes are
+  uncommitted and unpushed.
+- **Next:** Review and commit the combined reference-data slice when requested,
+  then implement account/category ordering as a focused follow-up.
+
+### 2026-06-10 08:52 WIB - Merchant And Tag Slice Implemented
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-30`, `P1-31`.
+- **Status:** In progress.
+- **Completed:** Added merchant and tag management pages and sidebar
+  navigation, workspace-scoped merchant default-category validation,
+  non-destructive archive behavior, and focused behavior/isolation tests.
+- **Verification:** `composer ci:check` passed with 93 tests and 335 assertions;
+  the focused merchant/tag, account, and preset suite passed with 11 tests and
+  69 assertions; PHPStan, Pint, governance, frontend lint, Prettier,
+  type-check, production build, and `git diff --check` passed.
+- **Decisions:** Keep `P1-30` and `P1-31` in progress until review and browser
+  verification. Stop before beginning the larger category-management slice.
+- **Blockers:** Browser verification remains blocked in the current sandbox.
+- **Uncommitted:** Merchant/tag implementation, tests, and this checkpoint are
+  uncommitted and unpushed.
+- **Next:** Review and commit this focused slice when requested, then implement
+  the `P1-26` to `P1-29` category-management UI and tests.
+
 ### 2026-06-10 08:42 WIB - Account Management Checkpoint Pushed
 
 - **Branch:** `feat/p1-financial-setup`.

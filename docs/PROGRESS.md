@@ -27,7 +27,7 @@ phase is complete.
 ## Current Milestone
 
 - **Phase:** Phase 1 - Identity, Workspace, And Financial Setup
-- **Milestone:** Account groups and accounts (`P1-19` to `P1-25`)
+- **Milestone:** Categories and reference data (`P1-26` to `P1-33`)
 - **Status:** In Progress
 - **Updated:** 2026-06-10
 
@@ -95,7 +95,9 @@ Keep the row through completion so partial package progress remains visible.
 | `P1-09` to `P1-11` | In Review | [#4](https://github.com/yosrioid/money-manager/pull/4) | Personal workspace, active context, and isolation |
 | `P1-12` to `P1-18` | In Progress | `feat/p1-financial-setup` | Currencies seeder, workspace preference columns, settings UI, 7 tests |
 | `P1-19` to `P1-25` | In Progress | `feat/p1-financial-setup` | Account groups/accounts UI, workspace-scoped validation, archive behavior, and tests implemented; ordering and ledger-backed opening balance pending |
-| `P1-26` to `P1-33` | In Progress | `feat/p1-financial-setup` | Backend infrastructure implemented; Vue pages and focused tests pending |
+| `P1-26` to `P1-29` | In Progress | `feat/p1-financial-setup` | Income/expense category and subcategory UI, parent safety, archive behavior, and focused tests implemented; ordering pending |
+| `P1-30` to `P1-31` | In Progress | `feat/p1-financial-setup` | Merchant and tag UI, workspace-scoped validation, archive behavior, and focused tests implemented |
+| `P1-32` to `P1-33` | In Progress | `feat/p1-financial-setup` | Starter presets backend implemented; application lock and remaining frontend/test coverage pending |
 
 ## Completed Features
 

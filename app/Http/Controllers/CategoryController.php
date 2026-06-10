@@ -24,14 +24,16 @@ class CategoryController extends Controller
         return Inertia::render('categories/Index', [
             'incomeCategories' => $workspace->categories()
                 ->where('type', CategoryType::Income)
+                ->active()
                 ->topLevel()
-                ->with('subcategories')
+                ->with(['subcategories' => fn ($query) => $query->active()->orderBy('position')])
                 ->orderBy('position')
                 ->get(),
             'expenseCategories' => $workspace->categories()
                 ->where('type', CategoryType::Expense)
+                ->active()
                 ->topLevel()
-                ->with('subcategories')
+                ->with(['subcategories' => fn ($query) => $query->active()->orderBy('position')])
                 ->orderBy('position')
                 ->get(),
         ]);
@@ -69,9 +71,9 @@ class CategoryController extends Controller
     {
         $this->authorize('delete', $category);
 
-        $category->delete();
+        $category->update(['archived_at' => now()]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category deleted.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category archived.')]);
 
         return to_route('categories.index');
     }

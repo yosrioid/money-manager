@@ -47,9 +47,9 @@ class TagController extends Controller
     {
         $this->authorize('delete', $tag);
 
-        $tag->delete();
+        $tag->update(['archived_at' => now()]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Tag deleted.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Tag archived.')]);
 
         return to_route('tags.index');
     }

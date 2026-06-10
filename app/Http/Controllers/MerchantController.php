@@ -26,6 +26,11 @@ class MerchantController extends Controller
                 ->with('defaultCategory:id,name,type')
                 ->orderBy('name')
                 ->get(),
+            'categories' => $workspace->categories()
+                ->active()
+                ->orderBy('type')
+                ->orderBy('position')
+                ->get(['id', 'name', 'type']),
         ]);
     }
 
@@ -51,9 +56,9 @@ class MerchantController extends Controller
     {
         $this->authorize('delete', $merchant);
 
-        $merchant->delete();
+        $merchant->update(['archived_at' => now()]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Merchant deleted.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Merchant archived.')]);
 
         return to_route('merchants.index');
     }

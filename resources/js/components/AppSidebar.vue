@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, Landmark, LayoutGrid } from '@lucide/vue';
+import {
+    BookOpen,
+    ChartNoAxesColumnIncreasing,
+    FolderGit2,
+    Landmark,
+    LayoutGrid,
+    Store,
+    Tags,
+} from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -16,6 +24,9 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { index as accountsIndex } from '@/routes/accounts';
+import { index as categoriesIndex } from '@/routes/categories';
+import { index as merchantsIndex } from '@/routes/merchants';
+import { index as tagsIndex } from '@/routes/tags';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -28,6 +39,21 @@ const mainNavItems: NavItem[] = [
         title: 'Accounts',
         href: accountsIndex(),
         icon: Landmark,
+    },
+    {
+        title: 'Categories',
+        href: categoriesIndex(),
+        icon: ChartNoAxesColumnIncreasing,
+    },
+    {
+        title: 'Merchants',
+        href: merchantsIndex(),
+        icon: Store,
+    },
+    {
+        title: 'Tags',
+        href: tagsIndex(),
+        icon: Tags,
     },
 ];
 
