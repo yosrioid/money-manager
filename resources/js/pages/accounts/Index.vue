@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { Archive, EyeOff, Pencil, Plus } from '@lucide/vue';
+import { Archive, ArrowDown, ArrowUp, EyeOff, Pencil, Plus } from '@lucide/vue';
 import AccountController from '@/actions/App/Http/Controllers/AccountController';
 import AccountGroupController from '@/actions/App/Http/Controllers/AccountGroupController';
 import Heading from '@/components/Heading.vue';
@@ -30,7 +30,7 @@ interface Account {
     name: string;
     type: string;
     currency_code: string;
-    opening_balance: number;
+    balance: number;
     is_visible: boolean;
     include_in_total: boolean;
     account_group: { id: number; name: string } | null;
@@ -130,6 +130,42 @@ const typeLabel = (value: string): string =>
                             Visible
                         </label>
                         <div class="flex items-end gap-2">
+                            <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                title="Move group up"
+                                as-child
+                            >
+                                <Link
+                                    :href="
+                                        AccountGroupController.move(group.id, {
+                                            query: { direction: 'up' },
+                                        })
+                                    "
+                                    aria-label="Move group up"
+                                    preserve-scroll
+                                >
+                                    <ArrowUp />
+                                </Link>
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                title="Move group down"
+                                as-child
+                            >
+                                <Link
+                                    :href="
+                                        AccountGroupController.move(group.id, {
+                                            query: { direction: 'down' },
+                                        })
+                                    "
+                                    aria-label="Move group down"
+                                    preserve-scroll
+                                >
+                                    <ArrowDown />
+                                </Link>
+                            </Button>
                             <Button variant="outline" :disabled="processing">
                                 Save
                             </Button>
@@ -203,13 +239,49 @@ const typeLabel = (value: string): string =>
                             </Badge>
                         </div>
                         <p class="text-sm text-muted-foreground">
-                            Opening balance:
+                            Ledger balance:
                             <span class="font-medium text-foreground">
-                                {{ account.opening_balance }}
+                                {{ account.balance }}
                                 {{ account.currency_code }}
                             </span>
                         </p>
                         <div class="flex gap-2">
+                            <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                title="Move account up"
+                                as-child
+                            >
+                                <Link
+                                    :href="
+                                        AccountController.move(account.id, {
+                                            query: { direction: 'up' },
+                                        })
+                                    "
+                                    aria-label="Move account up"
+                                    preserve-scroll
+                                >
+                                    <ArrowUp />
+                                </Link>
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                title="Move account down"
+                                as-child
+                            >
+                                <Link
+                                    :href="
+                                        AccountController.move(account.id, {
+                                            query: { direction: 'down' },
+                                        })
+                                    "
+                                    aria-label="Move account down"
+                                    preserve-scroll
+                                >
+                                    <ArrowDown />
+                                </Link>
+                            </Button>
                             <Button variant="outline" size="sm" as-child>
                                 <Link
                                     :href="AccountController.edit(account.id)"

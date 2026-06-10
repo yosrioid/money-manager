@@ -27,6 +27,7 @@ class WorkspacePreferencesRequest extends FormRequest
             'first_day_of_week' => ['required', 'integer', Rule::in([0, 1])],
             'month_start_day' => ['required', 'integer', 'min:1', 'max:28'],
             'adjust_month_for_weekend' => ['required', 'boolean'],
+            'application_lock_minutes' => ['required', 'integer', Rule::in([0, 5, 15, 30, 60])],
         ];
     }
 }

@@ -21,7 +21,6 @@ class AccountFactory extends Factory
             'name' => fake()->words(2, true),
             'type' => fake()->randomElement(AccountType::cases()),
             'currency_code' => 'IDR',
-            'opening_balance' => 0,
             'description' => null,
             'position' => fake()->numberBetween(0, 100),
             'is_visible' => true,

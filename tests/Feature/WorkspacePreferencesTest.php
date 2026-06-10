@@ -37,6 +37,7 @@ test('workspace owner can update workspace name and preferences', function () {
             'first_day_of_week' => 0,
             'month_start_day' => 1,
             'adjust_month_for_weekend' => false,
+            'application_lock_minutes' => 15,
         ])
         ->assertRedirect(route('workspace.edit'));
 
@@ -46,7 +47,8 @@ test('workspace owner can update workspace name and preferences', function () {
         ->timezone->toBe('America/New_York')
         ->locale->toBe('en')
         ->number_format->toBe('en-US')
-        ->first_day_of_week->toBe(0);
+        ->first_day_of_week->toBe(0)
+        ->application_lock_minutes->toBe(15);
 });
 
 test('workspace update validates required fields', function () {
@@ -72,6 +74,7 @@ test('workspace update rejects invalid currency code', function () {
             'first_day_of_week' => 1,
             'month_start_day' => 1,
             'adjust_month_for_weekend' => false,
+            'application_lock_minutes' => 0,
         ])
         ->assertSessionHasErrors('default_currency');
 });
@@ -90,6 +93,7 @@ test('workspace update rejects invalid timezone', function () {
             'first_day_of_week' => 1,
             'month_start_day' => 1,
             'adjust_month_for_weekend' => false,
+            'application_lock_minutes' => 0,
         ])
         ->assertSessionHasErrors('timezone');
 });
@@ -113,7 +117,27 @@ test('workspace preferences are isolated between workspaces', function () {
             'first_day_of_week' => 1,
             'month_start_day' => 1,
             'adjust_month_for_weekend' => false,
+            'application_lock_minutes' => 0,
         ]);
 
     expect($otherWorkspace->fresh()->default_currency)->toBe('EUR');
+});
+
+test('workspace application lock only accepts supported inactivity periods', function () {
+    $user = User::factory()->create();
+    app(CreatePersonalWorkspace::class)->create($user);
+
+    $this->actingAs($user)
+        ->patch(route('workspace.update'), [
+            'name' => 'My Workspace',
+            'default_currency' => 'IDR',
+            'timezone' => 'Asia/Jakarta',
+            'locale' => 'id',
+            'number_format' => 'id-ID',
+            'first_day_of_week' => 1,
+            'month_start_day' => 1,
+            'adjust_month_for_weekend' => false,
+            'application_lock_minutes' => 7,
+        ])
+        ->assertSessionHasErrors('application_lock_minutes');
 });

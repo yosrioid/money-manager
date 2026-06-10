@@ -24,6 +24,7 @@ interface WorkspaceData {
     first_day_of_week: number;
     month_start_day: number;
     adjust_month_for_weekend: boolean;
+    application_lock_minutes: number;
 }
 
 defineProps<{
@@ -56,6 +57,14 @@ const numberFormatOptions = [
 const weekdayOptions = [
     { value: 0, label: 'Sunday' },
     { value: 1, label: 'Monday' },
+];
+
+const applicationLockOptions = [
+    { value: 0, label: 'Disabled' },
+    { value: 5, label: 'After 5 minutes' },
+    { value: 15, label: 'After 15 minutes' },
+    { value: 30, label: 'After 30 minutes' },
+    { value: 60, label: 'After 1 hour' },
 ];
 </script>
 
@@ -210,6 +219,34 @@ const weekdayOptions = [
                 <InputError
                     class="mt-2"
                     :message="errors.adjust_month_for_weekend"
+                />
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="application_lock_minutes">Application lock</Label>
+                <select
+                    id="application_lock_minutes"
+                    name="application_lock_minutes"
+                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                >
+                    <option
+                        v-for="option in applicationLockOptions"
+                        :key="option.value"
+                        :value="option.value"
+                        :selected="
+                            option.value === workspace.application_lock_minutes
+                        "
+                    >
+                        {{ option.label }}
+                    </option>
+                </select>
+                <p class="text-sm text-muted-foreground">
+                    Require password confirmation after this workspace is
+                    inactive.
+                </p>
+                <InputError
+                    class="mt-2"
+                    :message="errors.application_lock_minutes"
                 />
             </div>
 

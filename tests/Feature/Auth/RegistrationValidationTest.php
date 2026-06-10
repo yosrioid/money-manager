@@ -78,3 +78,15 @@ test('registration fails with a password that is too short', function () {
 
     $this->assertGuest();
 });
+
+test('registration rejects an invalid starter preset option', function () {
+    $this->post(route('register.store'), [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'starter_presets' => 'sometimes',
+    ])->assertSessionHasErrors('starter_presets');
+
+    $this->assertGuest();
+});

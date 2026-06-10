@@ -63,6 +63,49 @@ test('category parent must be a matching top-level category in current workspace
     }
 });
 
+test('user can update category appearance and unsafe parent changes are rejected', function () {
+    [$user, $workspace] = createCategoryWorkspace();
+    $parent = Category::factory()->for($workspace)->expense()->create();
+    $child = Category::factory()->subcategoryOf($parent)->create();
+    $otherParent = Category::factory()->for($workspace)->expense()->create();
+
+    $this->actingAs($user)->patch(route('categories.update', $child), [
+        'name' => $child->name,
+        'type' => $child->type->value,
+        'parent_id' => $parent->id,
+        'color' => '#123456',
+        'icon' => 'wallet',
+        'is_visible' => false,
+    ])->assertRedirect(route('categories.index'));
+
+    expect($child->fresh())
+        ->color->toBe('#123456')
+        ->icon->toBe('wallet')
+        ->is_visible->toBeFalse();
+
+    $this->actingAs($user)->patch(route('categories.update', $parent), [
+        'name' => $parent->name,
+        'type' => $parent->type->value,
+        'parent_id' => $parent->id,
+    ])->assertSessionHasErrors('parent_id');
+
+    $this->actingAs($user)->patch(route('categories.update', $parent), [
+        'name' => $parent->name,
+        'type' => $parent->type->value,
+        'parent_id' => $otherParent->id,
+    ])->assertSessionHasErrors('parent_id');
+
+    $this->actingAs($user)->patch(route('categories.update', $parent), [
+        'name' => $parent->name,
+        'type' => CategoryType::Income->value,
+        'parent_id' => null,
+    ])->assertSessionHasErrors('type');
+
+    expect($parent->fresh())
+        ->parent_id->toBeNull()
+        ->type->toBe(CategoryType::Expense);
+});
+
 test('cross workspace changes are forbidden and leaf categories are archived', function () {
     [$user, $workspace] = createCategoryWorkspace();
     [, $otherWorkspace] = createCategoryWorkspace();

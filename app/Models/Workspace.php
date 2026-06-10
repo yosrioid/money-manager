@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'first_day_of_week',
     'month_start_day',
     'adjust_month_for_weekend',
+    'application_lock_minutes',
 ])]
 class Workspace extends Model
 {
@@ -61,6 +62,7 @@ class Workspace extends Model
             'first_day_of_week' => 'integer',
             'month_start_day' => 'integer',
             'adjust_month_for_weekend' => 'boolean',
+            'application_lock_minutes' => 'integer',
         ];
     }
 
@@ -102,6 +104,22 @@ class Workspace extends Model
     public function tags(): HasMany
     {
         return $this->hasMany(Tag::class);
+    }
+
+    /**
+     * @return HasMany<Transaction, $this>
+     */
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * @return HasMany<TransactionEntry, $this>
+     */
+    public function transactionEntries(): HasMany
+    {
+        return $this->hasMany(TransactionEntry::class);
     }
 
     public function isOwnedBy(User $user): bool

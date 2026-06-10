@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'workspace_id',
@@ -16,7 +17,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'name',
     'type',
     'currency_code',
-    'opening_balance',
     'description',
     'position',
     'is_visible',
@@ -35,7 +35,6 @@ class Account extends Model
     {
         return [
             'type' => AccountType::class,
-            'opening_balance' => 'integer',
             'is_visible' => 'boolean',
             'include_in_total' => 'boolean',
             'archived_at' => 'datetime',
@@ -56,6 +55,14 @@ class Account extends Model
     public function accountGroup(): BelongsTo
     {
         return $this->belongsTo(AccountGroup::class);
+    }
+
+    /**
+     * @return HasMany<TransactionEntry, $this>
+     */
+    public function ledgerEntries(): HasMany
+    {
+        return $this->hasMany(TransactionEntry::class);
     }
 
     /**

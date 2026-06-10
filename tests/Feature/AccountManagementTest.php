@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Ledger\CalculateAccountBalance;
 use App\Domain\Workspaces\CreatePersonalWorkspace;
 use App\Enums\AccountType;
 use App\Models\Account;
@@ -39,6 +40,7 @@ test('accounts page only displays active resources from the current workspace', 
             ->component('accounts/Index')
             ->has('accountGroups', 1)
             ->has('accounts', 1)
+            ->where('accounts.0.balance', 0)
             ->where('accountGroups.0.id', $group->id),
         );
 });
@@ -74,8 +76,10 @@ test('user can create an account in a group from the current workspace', functio
 
     expect($workspace->accounts()->sole())
         ->name->toBe('Main bank')
-        ->account_group_id->toBe($group->id)
-        ->opening_balance->toBe(100000);
+        ->account_group_id->toBe($group->id);
+
+    expect(app(CalculateAccountBalance::class)->calculate($workspace->accounts()->sole()))
+        ->toBe(100000);
 });
 
 test('account cannot reference a group from another workspace', function () {

@@ -10,7 +10,7 @@ interface Account {
     name: string;
     type: string;
     currency_code: string;
-    opening_balance: number;
+    balance: number;
     account_group_id: number | null;
     description: string | null;
     is_visible: boolean;

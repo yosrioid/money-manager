@@ -146,6 +146,11 @@ Required invariants:
 - A correction creates a reversal and a replacement transaction.
 - Account balances are calculated from posted entries.
 
+Phase 1 introduces the minimum ledger slice required by `P1-21`: account
+opening balances post atomically as balanced `opening_balance` transactions
+against an opening-balance equity entry. General transaction posting,
+reversals, and the remaining ledger lifecycle stay in Phase 2.
+
 ## Service Boundaries
 
 Expected core services:

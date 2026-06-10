@@ -3,10 +3,12 @@
 namespace App\Http\Requests;
 
 use App\Enums\AccountType;
+use App\Models\Account;
 use App\Models\Workspace;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class UpdateAccountRequest extends FormRequest
 {
@@ -28,7 +30,6 @@ class UpdateAccountRequest extends FormRequest
             'name' => ['required', 'string', 'max:100'],
             'type' => ['required', Rule::enum(AccountType::class)],
             'currency_code' => ['required', 'string', 'size:3', Rule::exists('currencies', 'code')],
-            'opening_balance' => ['required', 'integer'],
             'account_group_id' => [
                 'nullable',
                 'integer',
@@ -37,6 +38,26 @@ class UpdateAccountRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:500'],
             'is_visible' => ['sometimes', 'boolean'],
             'include_in_total' => ['sometimes', 'boolean'],
+        ];
+    }
+
+    /**
+     * @return array<int, callable(Validator): void>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                $account = $this->route('account');
+
+                if (! $account instanceof Account) {
+                    return;
+                }
+
+                if ($account->currency_code !== $this->input('currency_code') && $account->ledgerEntries()->exists()) {
+                    $validator->errors()->add('currency_code', __('The currency cannot change after ledger entries are posted.'));
+                }
+            },
         ];
     }
 }

@@ -50,6 +50,93 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-10 16:07 WIB - Phase 1 Feature Implementation Complete
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-01` to `P1-33`, including the final `P1-21` ledger
+  integration and final acceptance review of the complete Phase 1 catalog.
+- **Status:** In progress; all Phase 1 features and functional testing are
+  complete, while security remediation, review, and merge remain pending.
+- **Completed:** Implemented balanced immutable ledger-backed opening balances
+  with atomic account creation, account locking, workspace authorization,
+  derived balances, and immutable posted entries. Closed final category
+  appearance and safe one-level parent-change gaps found during the Phase 1
+  acceptance audit.
+- **Verification:** Full Pest suite passed with 116 tests and 467 assertions;
+  focused financial/reference-data suites passed; PHPStan passed in debug mode;
+  Pint, ESLint, Prettier, TypeScript, Vitest, production build, governance, and
+  `git diff --check` passed. Playwright passed 2/2 on Chromium and mobile Safari
+  against an isolated PHP 8.5 and SQLite server. Composer audit reported no
+  vulnerabilities.
+- **Decisions:** `P1-21` uses the minimum approved ledger slice: one posted
+  `opening_balance` transaction with balanced account and opening-balance
+  equity entries. General posting and reversal workflows remain Phase 2.
+- **Blockers:** `npm audit --audit-level=high` reports two critical
+  vulnerabilities through the development dependency chain
+  `concurrently -> shell-quote`; dependency changes require explicit approval.
+  The consolidated `composer ci:check` command cannot complete in this
+  constrained shell because its non-debug PHPStan process exits without
+  diagnostics, although the same PHPStan analysis passes with `--debug` and all
+  remaining CI components pass independently.
+- **Uncommitted:** All final ordering, application-lock, starter-preset,
+  P1-21 ledger, category-safety, tests, architecture, progress, and worklog
+  changes are ready for the explicitly requested commit and push.
+- **Next:** Commit and push this Phase 1 implementation checkpoint, then obtain
+  approval to remediate the npm audit finding before review and merge.
+
+### 2026-06-10 15:44 WIB - Application Lock And Starter Presets Implemented
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-32`, `P1-33`.
+- **Status:** In progress.
+- **Completed:** Added configurable workspace inactivity locking with password
+  confirmation unlock, workspace settings UI and validation, registration-time
+  starter financial preset opt-in, an idempotent transactional preset domain
+  action, and expanded registration, isolation, and preset coverage.
+- **Verification:** `composer ci:check` passed with 110 tests and 425
+  assertions; the focused application-lock, workspace-preference,
+  registration, and preset suite passed with 24 tests and 94 assertions.
+  PHPStan, Pint, governance, frontend lint, Prettier, type-check, unit tests,
+  production build, route middleware inspection, and `git diff --check`
+  passed.
+- **Decisions:** Application lock is disabled by default and supports 5, 15,
+  30, or 60-minute workspace inactivity periods. Starter presets are optional,
+  workspace-scoped, editable reference data and do not create ledger entries.
+- **Blockers:** `P1-21` cannot meet its acceptance criteria until the Phase 2
+  ledger posting foundation exists. Playwright remains blocked by the macOS
+  sandbox, and dependency audits remain blocked by unavailable registry DNS.
+- **Uncommitted:** Ordering, application-lock, starter-preset, tests, progress,
+  and worklog changes are uncommitted and unpushed.
+- **Next:** Review and commit the completed Phase 1 non-ledger slices when
+  requested, then implement the Phase 2 ledger foundation before closing
+  ledger-backed opening balances.
+
+### 2026-06-10 15:34 WIB - Reference Data Ordering Implemented
+
+- **Branch:** `feat/p1-financial-setup`.
+- **Feature IDs:** `P1-19`, `P1-22`, `P1-26` to `P1-29`.
+- **Status:** In progress.
+- **Completed:** Added transactional move-up/move-down ordering for account
+  groups, accounts within their current group, and categories within matching
+  type/parent siblings. Added authorized PATCH endpoints, accessible Wayfinder
+  controls, sibling-aware initial positions, end-of-scope placement after
+  parent/group changes, and focused ordering/isolation tests.
+- **Verification:** `composer ci:check` passed with 102 tests and 390
+  assertions; focused ordering/account/category tests passed with 15 tests and
+  90 assertions; PHPStan, Pint, governance, frontend lint, Prettier,
+  type-check, unit tests, production build, route inspection, and
+  `git diff --check` passed.
+- **Decisions:** Ordering swaps adjacent persisted positions inside a database
+  transaction with row locks. Accounts only move within their current group;
+  categories only move within the same workspace, type, and parent.
+- **Blockers:** Browser verification remains blocked because the macOS sandbox
+  denies Chromium and WebKit process startup. Composer and npm audits could not
+  reach their registries because DNS/network access is unavailable.
+- **Uncommitted:** Ordering implementation, tests, progress, and this checkpoint
+  are uncommitted and unpushed.
+- **Next:** Review this ordering slice, then continue `P1-32` application lock
+  and the remaining `P1-33` starter-preset UI/test coverage.
+
 ### 2026-06-10 09:00 WIB - Reference Data Checkpoint Pushed
 
 - **Branch:** `feat/p1-financial-setup`.

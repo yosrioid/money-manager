@@ -27,3 +27,36 @@ test('registration creates a personal workspace and selects it', function () {
         ->and($membership->role)->toBe(WorkspaceRole::Owner)
         ->and($user->current_workspace_id)->toBe($workspace->id);
 });
+
+test('registration can opt into editable starter financial presets', function () {
+    $this->post(route('register.store'), [
+        'name' => 'Preset User',
+        'email' => 'preset@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'starter_presets' => true,
+    ])->assertRedirect(route('dashboard', absolute: false));
+
+    $workspace = Workspace::query()->sole();
+
+    expect($workspace->accountGroups()->count())->toBe(3)
+        ->and($workspace->accounts()->count())->toBe(4)
+        ->and($workspace->categories()->whereNull('parent_id')->count())->toBe(14)
+        ->and($workspace->categories()->whereNotNull('parent_id')->count())->toBe(24);
+});
+
+test('registration without starter presets creates an empty financial workspace', function () {
+    $this->post(route('register.store'), [
+        'name' => 'Empty User',
+        'email' => 'empty@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'starter_presets' => false,
+    ])->assertRedirect(route('dashboard', absolute: false));
+
+    $workspace = Workspace::query()->sole();
+
+    expect($workspace->accountGroups()->count())->toBe(0)
+        ->and($workspace->accounts()->count())->toBe(0)
+        ->and($workspace->categories()->count())->toBe(0);
+});

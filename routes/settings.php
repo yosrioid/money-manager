@@ -27,7 +27,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('settings/appearance', 'settings/Appearance')->name('appearance.edit');
 });
 
-Route::middleware(['auth', 'verified', 'workspace'])->group(function () {
+Route::middleware(['auth', 'verified', 'workspace', 'workspace.lock'])->group(function () {
     Route::get('settings/workspace', [WorkspaceController::class, 'edit'])->name('workspace.edit');
     Route::patch('settings/workspace', [WorkspaceController::class, 'update'])->name('workspace.update');
 });

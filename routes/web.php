@@ -9,25 +9,28 @@ use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
 
-Route::middleware(['auth', 'verified', 'workspace'])->group(function () {
+Route::middleware(['auth', 'verified', 'workspace', 'workspace.lock'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
 
     // Accounts
     Route::get('accounts', [AccountGroupController::class, 'index'])->name('accounts.index');
     Route::post('account-groups', [AccountGroupController::class, 'store'])->name('account-groups.store');
     Route::patch('account-groups/{account_group}', [AccountGroupController::class, 'update'])->name('account-groups.update');
+    Route::patch('account-groups/{account_group}/move', [AccountGroupController::class, 'move'])->name('account-groups.move');
     Route::delete('account-groups/{account_group}', [AccountGroupController::class, 'destroy'])->name('account-groups.destroy');
 
     Route::get('accounts/create', [AccountController::class, 'create'])->name('accounts.create');
     Route::post('accounts', [AccountController::class, 'store'])->name('accounts.store');
     Route::get('accounts/{account}/edit', [AccountController::class, 'edit'])->name('accounts.edit');
     Route::patch('accounts/{account}', [AccountController::class, 'update'])->name('accounts.update');
+    Route::patch('accounts/{account}/move', [AccountController::class, 'move'])->name('accounts.move');
     Route::delete('accounts/{account}', [AccountController::class, 'destroy'])->name('accounts.destroy');
 
     // Categories
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
     Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
     Route::patch('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::patch('categories/{category}/move', [CategoryController::class, 'move'])->name('categories.move');
     Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
     // Merchants

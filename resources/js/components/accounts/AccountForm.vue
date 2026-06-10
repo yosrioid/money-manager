@@ -11,7 +11,7 @@ interface AccountData {
     name: string;
     type: string;
     currency_code: string;
-    opening_balance: number;
+    balance: number;
     account_group_id: number | null;
     description: string | null;
     is_visible: boolean;
@@ -126,20 +126,29 @@ defineProps<{
             </div>
         </div>
 
-        <div class="grid gap-2">
+        <div v-if="!account" class="grid gap-2">
             <Label for="opening_balance">Opening balance in minor units</Label>
             <Input
                 id="opening_balance"
                 name="opening_balance"
                 type="number"
-                :default-value="account?.opening_balance ?? 0"
+                :default-value="0"
                 required
             />
             <p class="text-sm text-muted-foreground">
-                This value will be posted through the ledger when the ledger
-                foundation is available.
+                This value is posted as an immutable balanced ledger transaction
+                when the account is created.
             </p>
             <InputError :message="errors.opening_balance" />
+        </div>
+        <div v-else class="grid gap-2">
+            <Label>Current ledger balance</Label>
+            <p class="text-sm font-medium">
+                {{ account.balance }} {{ account.currency_code }}
+            </p>
+            <p class="text-sm text-muted-foreground">
+                Opening balances and posted entries cannot be edited directly.
+            </p>
         </div>
 
         <div class="grid gap-2">

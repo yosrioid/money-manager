@@ -31,6 +31,7 @@ class WorkspaceController extends Controller
                 'first_day_of_week',
                 'month_start_day',
                 'adjust_month_for_weekend',
+                'application_lock_minutes',
             ]),
             'currencies' => Currency::query()->orderBy('code')->get(['code', 'name', 'symbol']),
         ]);
