@@ -13,20 +13,20 @@ exist.
 - **Version:** `v0.1.0-alpha.1`
 - **Name:** Phase 1 Internal Alpha
 - **Type:** Milestone prerelease
-- **Status:** Planned
-- **Target:** Latest approved `main` commit after Phase 1 closure documentation
+- **Status:** Preparing
+- **Target:** Release-preparation pull-request merge commit
 - **Scope:** Phase 0 foundation and Phase 1 `P1-01` to `P1-34`
 - **Updated:** 2026-06-11
 
 ## Release Roadmap
 
-| Version          | Boundary                  | Type                 | Status  | Target Or Tag                                | Published |
-| ---------------- | ------------------------- | -------------------- | ------- | -------------------------------------------- | --------- |
-| `v0.1.0-alpha.1` | Phase 1 internal alpha    | Milestone prerelease | Planned | Pending Phase 1 closure documentation        | -         |
-| `v0.2.0-alpha.1` | Phase 2 core ledger alpha | Milestone prerelease | Planned | Pending Phase 2                              | -         |
-| `v0.3.0-beta.1`  | Phase 3 private beta      | Milestone prerelease | Planned | Pending Phase 3                              | -         |
-| `v1.0.0-rc.1`    | Phase 4 MVP candidate     | Milestone prerelease | Planned | Pending Phase 4 and applicable Phase 8 gates | -         |
-| `v1.0.0`         | MVP release               | MVP                  | Planned | Pending MVP release gates                    | -         |
+| Version          | Boundary                  | Type                 | Status    | Target Or Tag                                | Published |
+| ---------------- | ------------------------- | -------------------- | --------- | -------------------------------------------- | --------- |
+| `v0.1.0-alpha.1` | Phase 1 internal alpha    | Milestone prerelease | Preparing | Release-preparation merge commit             | -         |
+| `v0.2.0-alpha.1` | Phase 2 core ledger alpha | Milestone prerelease | Planned   | Pending Phase 2                              | -         |
+| `v0.3.0-beta.1`  | Phase 3 private beta      | Milestone prerelease | Planned   | Pending Phase 3                              | -         |
+| `v1.0.0-rc.1`    | Phase 4 MVP candidate     | Milestone prerelease | Planned   | Pending Phase 4 and applicable Phase 8 gates | -         |
+| `v1.0.0`         | MVP release               | MVP                  | Planned   | Pending MVP release gates                    | -         |
 
 ## Candidate Checklist
 
@@ -35,15 +35,29 @@ exist.
 - [x] Phase 1 implementation merged to `main`.
 - [x] Phase 1 implementation and landing-page pull-request CI passed.
 - [x] Critical npm audit finding remediated before merge.
-- [ ] Phase 1 feature, package, milestone, and exit-gate statuses are marked
+- [x] Phase 1 feature, package, milestone, and exit-gate statuses are marked
       `Done` in `docs/PROGRESS.md`.
 - [ ] Phase 1 completion entry and current worklog checkpoint are merged.
-- [ ] Release notes follow `docs/RELEASE_PROCESS.md`.
-- [ ] Target `main` commit is recorded after release preparation is merged.
+- [x] Release notes follow `docs/RELEASE_PROCESS.md`.
+- [ ] Release-preparation merge commit is confirmed as the latest `main`.
 - [ ] Applicable release checks pass against the target commit.
-- [ ] Explicit user approval to create and push the annotated tag is recorded.
-- [ ] Explicit user approval to publish the GitHub prerelease is recorded.
+- [x] Explicit user approval to create and push the annotated tag is recorded.
+- [x] Explicit user approval to publish the GitHub prerelease is recorded.
 - [ ] Annotated tag and GitHub prerelease are published.
+
+## Current Verification
+
+### `v0.1.0-alpha.1`
+
+- **Passed:** Governance, Bash syntax, documentation formatting,
+  `composer validate --strict`, PHPStan debug analysis, frontend lint,
+  formatting, types, Vitest, production build, 116 Pest tests with 467
+  assertions, fresh migration and seed rehearsal, Composer audit, npm audit,
+  and 2/2 Playwright smoke tests against an isolated PHP 8.5 server.
+- **Environment note:** The consolidated `composer ci:check` reaches PHPStan
+  but its non-debug PHPStan process exits without diagnostics in this shell.
+  The same analysis passes with `--debug`, all remaining components pass
+  independently, and pull-request CI remains the final merged-content gate.
 
 ## Release History
 

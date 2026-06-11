@@ -27,52 +27,52 @@ phase is complete.
 ## Current Milestone
 
 - **Phase:** Phase 1 - Identity, Workspace, And Financial Setup
-- **Milestone:** Phase 1 implementation complete (`P1-12` to `P1-34`); review and merge pending
-- **Status:** In Review
-- **Updated:** 2026-06-10
+- **Milestone:** Phase 1 complete; `v0.1.0-alpha.1` internal alpha preparation
+- **Status:** Done
+- **Updated:** 2026-06-11
 
 ## Phase Status
 
-| Phase   | Name                                          | Status      | Exit Gate                             |
-| ------- | --------------------------------------------- | ----------- | ------------------------------------- |
-| Phase 0 | Engineering Foundation                        | Done        | Foundation and governance established |
-| Phase 1 | Identity, Workspace, And Financial Setup      | In Progress | Secure financial structure ready      |
-| Phase 2 | Ledger And Core Transactions                  | Planned     | Balanced transaction engine ready     |
-| Phase 3 | Daily Use And Transaction Productivity        | Planned     | Daily tracking experience ready       |
-| Phase 4 | Budgets, Goals, Statistics, And Data Exchange | Planned     | MVP feature scope ready               |
-| Phase 5 | Cards, Debt, Assets, And Multi-Currency       | Planned     | Advanced finance workflows ready      |
-| Phase 6 | Automation, Attachments, Backup, And Restore  | Planned     | Automation and portability ready      |
-| Phase 7 | Collaboration, Sync, PWA, And Customization   | Planned     | Extended platform ready               |
-| Phase 8 | Production Hardening And Parity Acceptance    | Planned     | Applicable release gates passed       |
+| Phase   | Name                                          | Status  | Exit Gate                             |
+| ------- | --------------------------------------------- | ------- | ------------------------------------- |
+| Phase 0 | Engineering Foundation                        | Done    | Foundation and governance established |
+| Phase 1 | Identity, Workspace, And Financial Setup      | Done    | Secure financial structure ready      |
+| Phase 2 | Ledger And Core Transactions                  | Planned | Balanced transaction engine ready     |
+| Phase 3 | Daily Use And Transaction Productivity        | Planned | Daily tracking experience ready       |
+| Phase 4 | Budgets, Goals, Statistics, And Data Exchange | Planned | MVP feature scope ready               |
+| Phase 5 | Cards, Debt, Assets, And Multi-Currency       | Planned | Advanced finance workflows ready      |
+| Phase 6 | Automation, Attachments, Backup, And Restore  | Planned | Automation and portability ready      |
+| Phase 7 | Collaboration, Sync, PWA, And Customization   | Planned | Extended platform ready               |
+| Phase 8 | Production Hardening And Parity Acceptance    | Planned | Applicable release gates passed       |
 
 ## Delivery Package Roadmap
 
 These packages are planning containers. Detailed scope and acceptance summaries
 are defined by the mapped IDs in `docs/FEATURE_CATALOG.md`.
 
-| ID    | Feature                                         | Catalog Mapping    | Status      | Completed  |
-| ----- | ----------------------------------------------- | ------------------ | ----------- | ---------- |
-| F-001 | Laravel and Vue project scaffolding             | `P0-01`, `P0-02`   | Done        | 2026-06-09 |
-| F-002 | CI, linting, static analysis, and test baseline | `P0-03` to `P0-06` | Done        | 2026-06-09 |
-| F-003 | Authentication and personal workspace           | `P1-01` to `P1-11` | In Progress | -          |
-| F-004 | Currencies and workspace preferences            | `P1-12` to `P1-18` | In Review   | -          |
-| F-005 | Account groups and accounts                     | `P1-19` to `P1-25` | In Review   | -          |
-| F-006 | Categories and reference data                   | `P1-26` to `P1-33` | In Review   | -          |
-| F-007 | Double-entry ledger foundation                  | `P2-01` to `P2-10` | Planned     | -          |
-| F-008 | Core transaction flows                          | `P2-11` to `P2-24` | Planned     | -          |
-| F-009 | Transaction history and navigation              | `P3-01` to `P3-12` | Planned     | -          |
-| F-010 | Dashboard and fast-entry workflows              | `P3-13` to `P3-21` | Planned     | -          |
-| F-011 | Budgets and goals                               | `P4-01` to `P4-10` | Planned     | -          |
-| F-012 | Statistics, reports, import, and export         | `P4-11` to `P4-25` | Planned     | -          |
-| F-013 | Cards, debt, and installments                   | `P5-01` to `P5-09` | Planned     | -          |
-| F-014 | Assets and multi-currency                       | `P5-10` to `P5-16` | Planned     | -          |
-| F-015 | Recurring and scheduled transactions            | `P6-01` to `P6-06` | Planned     | -          |
-| F-016 | Attachments and receipts                        | `P6-07` to `P6-11` | Planned     | -          |
-| F-017 | Backup and restore                              | `P6-12` to `P6-16` | Planned     | -          |
-| F-018 | Collaboration and synchronization               | `P7-01` to `P7-06` | Planned     | -          |
-| F-019 | PWA, desktop experience, and customization      | `P7-07` to `P7-16` | Planned     | -          |
-| F-020 | Production hardening and parity acceptance      | `P8-01` to `P8-10` | Planned     | -          |
-| F-021 | Public landing page                             | `P1-34`            | In Review   | -          |
+| ID    | Feature                                         | Catalog Mapping    | Status  | Completed  |
+| ----- | ----------------------------------------------- | ------------------ | ------- | ---------- |
+| F-001 | Laravel and Vue project scaffolding             | `P0-01`, `P0-02`   | Done    | 2026-06-09 |
+| F-002 | CI, linting, static analysis, and test baseline | `P0-03` to `P0-06` | Done    | 2026-06-09 |
+| F-003 | Authentication and personal workspace           | `P1-01` to `P1-11` | Done    | 2026-06-11 |
+| F-004 | Currencies and workspace preferences            | `P1-12` to `P1-18` | Done    | 2026-06-11 |
+| F-005 | Account groups and accounts                     | `P1-19` to `P1-25` | Done    | 2026-06-11 |
+| F-006 | Categories and reference data                   | `P1-26` to `P1-33` | Done    | 2026-06-11 |
+| F-007 | Double-entry ledger foundation                  | `P2-01` to `P2-10` | Planned | -          |
+| F-008 | Core transaction flows                          | `P2-11` to `P2-24` | Planned | -          |
+| F-009 | Transaction history and navigation              | `P3-01` to `P3-12` | Planned | -          |
+| F-010 | Dashboard and fast-entry workflows              | `P3-13` to `P3-21` | Planned | -          |
+| F-011 | Budgets and goals                               | `P4-01` to `P4-10` | Planned | -          |
+| F-012 | Statistics, reports, import, and export         | `P4-11` to `P4-25` | Planned | -          |
+| F-013 | Cards, debt, and installments                   | `P5-01` to `P5-09` | Planned | -          |
+| F-014 | Assets and multi-currency                       | `P5-10` to `P5-16` | Planned | -          |
+| F-015 | Recurring and scheduled transactions            | `P6-01` to `P6-06` | Planned | -          |
+| F-016 | Attachments and receipts                        | `P6-07` to `P6-11` | Planned | -          |
+| F-017 | Backup and restore                              | `P6-12` to `P6-16` | Planned | -          |
+| F-018 | Collaboration and synchronization               | `P7-01` to `P7-06` | Planned | -          |
+| F-019 | PWA, desktop experience, and customization      | `P7-07` to `P7-16` | Planned | -          |
+| F-020 | Production hardening and parity acceptance      | `P8-01` to `P8-10` | Planned | -          |
+| F-021 | Public landing page                             | `P1-34`            | Done    | 2026-06-11 |
 
 ## Catalog Status Summary
 
@@ -83,7 +83,8 @@ mapped feature ID.
 | Catalog Range      | Status   | Notes                                                        |
 | ------------------ | -------- | ------------------------------------------------------------ |
 | `P0-01` to `P0-06` | Done     | Engineering foundation and governance baseline               |
-| `P1-01` to `P8-10` | Planned  | See phase sequence and dependencies in `docs/MASTER_PLAN.md` |
+| `P1-01` to `P1-34` | Done     | Phase 1 exit gate passed                                     |
+| `P2-01` to `P8-10` | Planned  | See phase sequence and dependencies in `docs/MASTER_PLAN.md` |
 | `D-01` to `D-06`   | Deferred | Requires explicit scope approval                             |
 
 ## Active Feature Overrides
@@ -91,17 +92,35 @@ mapped feature ID.
 Add a row whenever an individual feature leaves its catalog-range default.
 Keep the row through completion so partial package progress remains visible.
 
-| Feature ID         | Status      | Branch Or PR                                           | Notes                                                                                                                     |
-| ------------------ | ----------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| `P1-09` to `P1-11` | In Review   | [#4](https://github.com/yosrioid/money-manager/pull/4) | Personal workspace, active context, and isolation                                                                         |
-| `P1-12` to `P1-18` | In Review   | `feat/p1-financial-setup`                              | Preference implementation and tests complete; review and merge pending                                                    |
-| `P1-19` to `P1-25` | In Review   | `feat/p1-financial-setup`                              | Account management and balanced immutable ledger-backed opening balances implemented and tested; review and merge pending |
-| `P1-26` to `P1-29` | In Review   | `feat/p1-financial-setup`                              | Category management, appearance, one-level parent safety, ordering, and tests complete; review and merge pending          |
-| `P1-30` to `P1-31` | In Review   | `feat/p1-financial-setup`                              | Merchant and tag management implementation and tests complete; review and merge pending                                   |
-| `P1-32` to `P1-33` | In Review   | `feat/p1-financial-setup`                              | Application lock and editable starter preset opt-in implementation and tests complete; review and merge pending           |
-| `P1-34`             | In Review   | `feat/p1-welcome-page`                                 | Branded public landing page replacing the starter-kit welcome screen; review and merge pending                            |
+| Feature ID         | Status | Branch Or PR                                           | Notes                                                                                 |
+| ------------------ | ------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| `P1-01` to `P1-08` | Done   | `main`                                                 | Authentication and sensitive-action journeys implemented and tested                   |
+| `P1-09` to `P1-11` | Done   | [#4](https://github.com/yosrioid/money-manager/pull/4) | Personal workspace, active context, and isolation merged                              |
+| `P1-12` to `P1-33` | Done   | [#5](https://github.com/yosrioid/money-manager/pull/5) | Financial setup, reference data, opening balances, application lock, and tests merged |
+| `P1-34`            | Done   | [#6](https://github.com/yosrioid/money-manager/pull/6) | Branded public landing page merged                                                    |
 
 ## Completed Features
+
+### 2026-06-11 - Phase 1 Identity, Workspace, And Financial Setup
+
+- **Outcome:** Completed `F-003` through `F-006` and `F-021`, covering secure
+  identity journeys, personal workspace isolation, preferences, account and
+  reference-data management, immutable ledger-backed opening balances,
+  application lock, starter presets, and the branded public landing page.
+- **Key decisions:** Phase 1 includes only the minimum ledger slice required for
+  balanced opening balances. General transaction posting and reversal remain
+  Phase 2.
+- **Tests:** Merged pull requests passed required quality and browser CI.
+  Phase 1 acceptance verification recorded 116 Pest tests with 467 assertions,
+  PHPStan, frontend checks, production build, dependency audits, governance,
+  and Playwright smoke tests.
+- **Documentation:** Updated `docs/PROGRESS.md`, `docs/WORKLOG.md`,
+  `docs/RELEASE_PROGRESS.md`, and the `v0.1.0-alpha.1` release notes.
+- **Follow-up:** Publish the Phase 1 internal alpha, then begin Phase 2 ledger
+  foundation planning.
+- **PR:** [#4](https://github.com/yosrioid/money-manager/pull/4),
+  [#5](https://github.com/yosrioid/money-manager/pull/5), and
+  [#6](https://github.com/yosrioid/money-manager/pull/6).
 
 ### 2026-06-09 - F-002 CI, Linting, Static Analysis, And Test Baseline
 
