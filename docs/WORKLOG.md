@@ -50,6 +50,26 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-11 10:18 WIB - Release Governance Pull Request Opened
+
+- **Branch:** `docs/release-governance`.
+- **Feature IDs:** Engineering only.
+- **Status:** In review.
+- **Completed:** Committed and pushed the release governance and progress
+  tracker, then opened
+  [PR #7](https://github.com/yosrioid/money-manager/pull/7) to `main`.
+- **Verification:** Commit `537fbff` is pushed to
+  `origin/docs/release-governance`; governance, Bash syntax, release/governance
+  Markdown formatting, and diff checks passed before the push.
+- **Decisions:** This PR prepares release governance only. It does not authorize
+  or create a tag or GitHub release.
+- **Blockers:** Phase 1 closure and release-preparation documentation remain
+  required before `v0.1.0-alpha.1` can become ready.
+- **Uncommitted:** This PR-status checkpoint requires a documentation commit and
+  push.
+- **Next:** Review and merge PR #7, then prepare Phase 1 closure and release
+  notes using the new required format.
+
 ### 2026-06-11 10:00 WIB - Release Governance And Tracker Prepared
 
 - **Branch:** `docs/release-governance`.
