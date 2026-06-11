@@ -50,6 +50,36 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-11 17:15 WIB - Phase 2 Ledger Foundation Slice 2 Implemented
+
+- **Branch:** `feat/p2-ledger-foundation`.
+- **Feature IDs:** `P2-08` (part of `F-007`, `P2-01`-`P2-10`).
+- **Status:** In progress.
+- **Completed:** Implemented Slice 2 of 3 for the Phase 2 ledger foundation:
+  added the generic `audit_logs` table migration (`workspace_id`, `actor_id`,
+  `action`, `subject_type`, `subject_id`, `metadata`, `created_at`, no
+  `updated_at`) per `docs/ARCHITECTURE.md`; added the immutable `AuditLog`
+  model (`UPDATED_AT = null`, `metadata` array cast, `action` enum cast,
+  `save()`/`delete()` guards); added `AuditAction` enum (`TransactionPosted`,
+  `TransactionVoided`, `TransactionReversed`, `TransactionReplaced`); added
+  `App\Domain\Audit\RecordAuditLog` service; added
+  `Workspace::auditLogs(): HasMany`.
+- **Verification:** New `tests/Feature/AuditLogTest.php` (4 tests) passes.
+  Full suite: 131 tests, 513 assertions pass. `vendor/bin/pint --dirty
+  --format agent`, `composer analyse` (Larastan level 6), and
+  `bash scripts/check-governance.sh` pass.
+- **Decisions:** Audit log infrastructure is not yet called from any domain
+  action in this slice; `AuditAction` includes all four lifecycle actions
+  upfront so Slice 3's reversal/replacement/posting actions can record entries
+  without further enum changes.
+- **Blockers:** None.
+- **Uncommitted:** All Slice 2 changes are uncommitted on
+  `feat/p2-ledger-foundation`, pending user review and explicit commit
+  approval.
+- **Next:** After commit approval, proceed to Slice 3
+  (`ReverseTransaction`/`ReplaceTransaction` domain actions and account-locking
+  helper, wired to `RecordAuditLog`).
+
 ### 2026-06-11 16:30 WIB - Phase 2 Ledger Foundation Slice 1 Implemented
 
 - **Branch:** `feat/p2-ledger-foundation` (created from up-to-date `main`).
