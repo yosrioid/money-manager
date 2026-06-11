@@ -5,6 +5,7 @@ use App\Http\Controllers\AccountGroupController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MerchantController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
@@ -25,6 +26,10 @@ Route::middleware(['auth', 'verified', 'workspace', 'workspace.lock'])->group(fu
     Route::patch('accounts/{account}', [AccountController::class, 'update'])->name('accounts.update');
     Route::patch('accounts/{account}/move', [AccountController::class, 'move'])->name('accounts.move');
     Route::delete('accounts/{account}', [AccountController::class, 'destroy'])->name('accounts.destroy');
+
+    // Transactions
+    Route::get('transactions/create', [TransactionController::class, 'create'])->name('transactions.create');
+    Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');
 
     // Categories
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');

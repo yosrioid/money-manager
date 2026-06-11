@@ -50,6 +50,61 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-11 19:00 WIB - Phase 2 Core Income/Expense Entry Implemented
+
+- **Branch:** `feat/p2-core-income-expense` (branched from
+  `feat/p2-ledger-foundation`, which is fully implemented but not yet PR'd).
+- **Feature IDs:** `P2-11`, `P2-12` (start of `F-008`, `P2-11`-`P2-24`).
+- **Status:** In progress.
+- **Completed:** Implemented the first slice of `F-008`, balanced income and
+  expense posting: added migration adding nullable `category_id` (FK to
+  `categories`, restrictOnDelete) to `transaction_entries`, placed after
+  `account_id` so a future split transaction can carry multiple category legs
+  on one transaction; added `LedgerEntryType::Category`,
+  `TransactionType::Income`, `TransactionType::Expense`; added
+  `TransactionEntry::category()` relation; added generic
+  `App\Domain\Ledger\PostTransaction` (the canonical posting service named in
+  `docs/ARCHITECTURE.md`'s service boundaries) which validates workspace
+  membership and balance-to-zero, locks affected accounts via
+  `LockAccountsForPosting`, and posts a `Draft -> Posted` transaction with its
+  entries; added thin `App\Domain\Transactions\RecordIncomeExpense` which
+  builds the two balanced entries (Income: account `+amount`/category
+  `-amount`; Expense: account `-amount`/category `+amount`) and calls
+  `PostTransaction::post()`. Added `TransactionPolicy` (mirrors
+  `AccountPolicy`), `StoreTransactionRequest` (validates `type`, workspace
+  scoped `account_id`/`category_id`, `amount >= 1`, `description`,
+  `occurred_at`, plus a `withValidator` check that the category's `type`
+  matches the transaction `type`), `TransactionController` (`create`/`store`),
+  and routes `transactions.create`/`transactions.store`. Added
+  `resources/js/pages/transactions/CreateTransaction.vue` and
+  `resources/js/components/transactions/TransactionForm.vue` (mirroring the
+  `AccountForm.vue` conventions, with a type/account/category select, amount,
+  occurred-at, and description fields). Added an "Add transaction" button to
+  `accounts/Index.vue` so the new page is reachable. Existing actions
+  (`PostOpeningBalance`, `ReverseTransaction`, `ReplaceTransaction`) were not
+  refactored to use `PostTransaction` — out of scope for this slice.
+- **Verification:** New `tests/Feature/TransactionRecordingTest.php` (6 tests)
+  covering income/expense posting and balance updates, category/type
+  mismatch, cross-workspace account/category rejection, amount validation,
+  and the create-page Inertia props. Full suite: 145 tests / 576 assertions
+  passed. `vendor/bin/pint --dirty --format agent` (auto-fixed minor style in
+  the new controller and test). `composer analyse` (Larastan level 6, 0
+  errors — fixed a `notIdentical.alwaysTrue` false positive on
+  `Category::$type` using the established `getRawOriginal()->value` pattern).
+  `npm run lint:check`, `npm run types:check`, and `npm run build` passed.
+  `bash scripts/check-governance.sh` passed.
+- **Decisions:** Currency for posted entries is taken from the account's
+  `currency_code` (not user-supplied), matching `PostOpeningBalance`. A single
+  `transactions/create` page with a type select covers both `P2-11` and
+  `P2-12`. After posting, redirect to `accounts.index` (no transaction list
+  page exists yet — `F-009` is Phase 3 scope).
+- **Blockers:** None.
+- **Uncommitted:** All changes on `feat/p2-core-income-expense` are
+  uncommitted, pending explicit user approval to commit.
+- **Next:** After commit approval, continue `F-008` with `P2-13`-`P2-16`
+  (transfer, fee, withdrawal, settlement). `feat/p2-ledger-foundation`
+  (`F-007`, 3 commits) also still needs a PR.
+
 ### 2026-06-11 18:00 WIB - Phase 2 Ledger Foundation Slice 3 Implemented
 
 - **Branch:** `feat/p2-ledger-foundation`.

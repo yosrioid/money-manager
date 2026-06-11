@@ -13,6 +13,7 @@ use LogicException;
     'transaction_id',
     'workspace_id',
     'account_id',
+    'category_id',
     'type',
     'currency_code',
     'amount',
@@ -52,6 +53,14 @@ class TransactionEntry extends Model
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
+    }
+
+    /**
+     * @return BelongsTo<Category, $this>
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function save(array $options = []): bool

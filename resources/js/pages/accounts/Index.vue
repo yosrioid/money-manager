@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { create, index } from '@/routes/accounts';
+import { create as createTransaction } from '@/routes/transactions';
 
 interface AccountGroup {
     id: number;
@@ -63,9 +64,16 @@ const typeLabel = (value: string): string =>
                 title="Accounts"
                 description="Manage account groups, visibility, and financial accounts"
             />
-            <Button as-child>
-                <Link :href="create()"><Plus /> Create account</Link>
-            </Button>
+            <div class="flex flex-wrap gap-2">
+                <Button variant="outline" as-child>
+                    <Link :href="createTransaction()"
+                        ><Plus /> Add transaction</Link
+                    >
+                </Button>
+                <Button as-child>
+                    <Link :href="create()"><Plus /> Create account</Link>
+                </Button>
+            </div>
         </div>
 
         <Card>

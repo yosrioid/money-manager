@@ -99,6 +99,7 @@ Keep the row through completion so partial package progress remains visible.
 | `P1-12` to `P1-33` | Done   | [#5](https://github.com/yosrioid/money-manager/pull/5) | Financial setup, reference data, opening balances, application lock, and tests merged |
 | `P1-34`            | Done   | [#6](https://github.com/yosrioid/money-manager/pull/6) | Branded public landing page merged                                                    |
 | `P2-01` to `P2-10` | In Progress | `feat/p2-ledger-foundation` | All 3 slices of `F-007` implemented: lifecycle status enum (Voided, Reversed, Replaced) with transition guard; posted-only balance calculation and balance-at-date; immutable generic `audit_logs` table, `AuditLog` model, `AuditAction` enum, and `RecordAuditLog` service; account-locking (`LockAccountsForPosting`), `ReverseTransaction`, and `ReplaceTransaction` domain actions wired to the audit log. Pending PR review. |
+| `P2-11`, `P2-12` | In Progress | `feat/p2-core-income-expense` | Income and expense entry implemented: `category_id` added to `transaction_entries`; new `LedgerEntryType::Category`, `TransactionType::Income`/`Expense`; generic `PostTransaction` posting service and thin `RecordIncomeExpense` action; `TransactionController`, `TransactionPolicy`, `transactions.create`/`transactions.store` routes, and the `transactions/CreateTransaction` page with an "Add transaction" entry point from Accounts. Pending PR review. |
 
 ## Completed Features
 
