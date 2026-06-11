@@ -96,6 +96,12 @@ being implemented silently.
 | P1-32 | Session or application lock | Parity | User can require re-authentication after configured inactivity                          |
 | P1-33 | Starter financial presets   | Parity | New workspace can opt into editable default account and category presets                |
 
+### Public Experience
+
+| ID    | Capability          | Level  | Acceptance Summary                                                                                                                     |
+| ----- | ------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| P1-34 | Public landing page | Parity | Unauthenticated visitors see a branded landing page consistent with the application theme, with entry points to login and registration |
+
 ## Phase 2 - Ledger And Core Transactions
 
 ### Ledger Foundation

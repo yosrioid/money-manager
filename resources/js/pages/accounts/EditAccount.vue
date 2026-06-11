@@ -34,7 +34,7 @@ defineOptions({
 <template>
     <Head :title="`Edit ${account.name}`" />
 
-    <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-6 p-4">
         <Heading
             :title="`Edit ${account.name}`"
             description="Update account details and visibility"

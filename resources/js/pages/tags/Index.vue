@@ -25,7 +25,7 @@ defineOptions({
 
 <template>
     <Head title="Tags" />
-    <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-6 p-4">
         <Heading
             title="Tags"
             description="Create reusable labels for financial transactions"

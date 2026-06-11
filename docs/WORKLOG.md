@@ -50,6 +50,39 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-10 22:00 WIB - Branded Landing Page And Page Padding Fix
+
+- **Branch:** `feat/p1-welcome-page`.
+- **Feature IDs:** `P1-34` (new), plus a styling fix touching `P1-19` to
+  `P1-31` pages.
+- **Status:** Completed.
+- **Completed:**
+  - Cataloged a new feature `P1-34` (Public landing page, Phase 1, Public
+    Experience) in `docs/FEATURE_CATALOG.md`, added it to the Phase 1 scope
+    and PR sequence in `docs/MASTER_PLAN.md`, and added delivery package
+    `F-021` plus an active override row in `docs/PROGRESS.md`.
+  - Replaced the unmodified Laravel/Inertia starter-kit `Welcome.vue` with a
+    branded landing page (Money Manager hero, feature highlights, login and
+    register CTAs) using existing Button/Card UI components and theme tokens
+    so it matches dark/light mode and the rest of the app.
+  - Renamed the leftover "Laravel Starter Kit" sidebar branding in
+    `AppLogo.vue` to "Money Manager".
+  - Fixed a layout bug where Accounts, Categories, Merchants, and Tags pages
+    (index/create/edit) had no padding and content touched the sidebar/edges;
+    added `p-4` to match `Dashboard.vue`.
+- **Verification:**
+  - `npm run format:check`, `npm run lint:check`, `npm run types:check`,
+    `npm run build` → all passed.
+  - `APP_URL=http://localhost:8000 npx playwright test
+    tests/Browser/welcome.spec.ts` (chromium) → passed, title contains "Money
+    Manager".
+  - `bash scripts/check-governance.sh` → passed.
+- **Decisions:** Landing page redesign was previously uncataloged scope; added
+  as `P1-34` per user request before implementation.
+- **Blockers:** None.
+- **Uncommitted:** All listed changes, pending commit/push and PR to `main`.
+- **Next:** Commit, push `feat/p1-welcome-page`, and open a PR to `main`.
+
 ### 2026-06-10 17:00 WIB - Npm Audit Remediation For Concurrently
 
 - **Branch:** `feat/p1-financial-setup`.
