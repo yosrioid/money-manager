@@ -13,20 +13,20 @@ exist.
 - **Version:** `v0.1.0-alpha.1`
 - **Name:** Phase 1 Internal Alpha
 - **Type:** Milestone prerelease
-- **Status:** Preparing
-- **Target:** Release-preparation pull-request merge commit
+- **Status:** Published
+- **Target:** `b304c18c1cb8de3fd261bdb035711ac9bc3c99ba`
 - **Scope:** Phase 0 foundation and Phase 1 `P1-01` to `P1-34`
 - **Updated:** 2026-06-11
 
 ## Release Roadmap
 
-| Version          | Boundary                  | Type                 | Status    | Target Or Tag                                | Published |
-| ---------------- | ------------------------- | -------------------- | --------- | -------------------------------------------- | --------- |
-| `v0.1.0-alpha.1` | Phase 1 internal alpha    | Milestone prerelease | Preparing | Release-preparation merge commit             | -         |
-| `v0.2.0-alpha.1` | Phase 2 core ledger alpha | Milestone prerelease | Planned   | Pending Phase 2                              | -         |
-| `v0.3.0-beta.1`  | Phase 3 private beta      | Milestone prerelease | Planned   | Pending Phase 3                              | -         |
-| `v1.0.0-rc.1`    | Phase 4 MVP candidate     | Milestone prerelease | Planned   | Pending Phase 4 and applicable Phase 8 gates | -         |
-| `v1.0.0`         | MVP release               | MVP                  | Planned   | Pending MVP release gates                    | -         |
+| Version          | Boundary                  | Type                 | Status    | Target Or Tag                                | Published  |
+| ---------------- | ------------------------- | -------------------- | --------- | -------------------------------------------- | ---------- |
+| `v0.1.0-alpha.1` | Phase 1 internal alpha    | Milestone prerelease | Published | `b304c18`                                    | 2026-06-11 |
+| `v0.2.0-alpha.1` | Phase 2 core ledger alpha | Milestone prerelease | Planned   | Pending Phase 2                              | -          |
+| `v0.3.0-beta.1`  | Phase 3 private beta      | Milestone prerelease | Planned   | Pending Phase 3                              | -          |
+| `v1.0.0-rc.1`    | Phase 4 MVP candidate     | Milestone prerelease | Planned   | Pending Phase 4 and applicable Phase 8 gates | -          |
+| `v1.0.0`         | MVP release               | MVP                  | Planned   | Pending MVP release gates                    | -          |
 
 ## Candidate Checklist
 
@@ -37,13 +37,13 @@ exist.
 - [x] Critical npm audit finding remediated before merge.
 - [x] Phase 1 feature, package, milestone, and exit-gate statuses are marked
       `Done` in `docs/PROGRESS.md`.
-- [ ] Phase 1 completion entry and current worklog checkpoint are merged.
+- [x] Phase 1 completion entry and current worklog checkpoint are merged.
 - [x] Release notes follow `docs/RELEASE_PROCESS.md`.
-- [ ] Release-preparation merge commit is confirmed as the latest `main`.
-- [ ] Applicable release checks pass against the target commit.
+- [x] Release-preparation merge commit is confirmed as the latest `main`.
+- [x] Applicable release checks pass against the target commit.
 - [x] Explicit user approval to create and push the annotated tag is recorded.
 - [x] Explicit user approval to publish the GitHub prerelease is recorded.
-- [ ] Annotated tag and GitHub prerelease are published.
+- [x] Annotated tag and GitHub prerelease are published.
 
 ## Current Verification
 
@@ -61,7 +61,15 @@ exist.
 
 ## Release History
 
-No releases have been published.
+### 2026-06-11 - `v0.1.0-alpha.1` Phase 1 Internal Alpha
+
+- **Type:** Milestone prerelease.
+- **Target:** `b304c18c1cb8de3fd261bdb035711ac9bc3c99ba`.
+- **Tag:** `v0.1.0-alpha.1`.
+- **Release:** [GitHub prerelease](https://github.com/yosrioid/money-manager/releases/tag/v0.1.0-alpha.1).
+- **Scope:** Phase 0 foundation and Phase 1 `P1-01` to `P1-34`.
+- **Verification:** Required PR quality and browser CI, local release gates,
+  migration rehearsal, and security audits passed.
 
 ## Update Rules
 
