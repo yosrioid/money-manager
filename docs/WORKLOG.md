@@ -50,6 +50,25 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-11 15:06 WIB - Phase 1 Internal Alpha Published
+
+- **Branch:** `docs/v0.1.0-alpha.1-published`.
+- **Feature IDs:** `P1-01` to `P1-34`.
+- **Status:** Completed.
+- **Completed:** Merged PR #8, created and pushed annotated tag
+  `v0.1.0-alpha.1` at
+  `b304c18c1cb8de3fd261bdb035711ac9bc3c99ba`, and published the
+  [Phase 1 Internal Alpha GitHub prerelease](https://github.com/yosrioid/money-manager/releases/tag/v0.1.0-alpha.1).
+- **Verification:** PR #8 quality and browser CI passed; the published tag
+  resolves to the confirmed release-preparation merge commit.
+- **Decisions:** The published version remains an internal alpha milestone and
+  does not claim MVP or production readiness.
+- **Blockers:** None.
+- **Uncommitted:** Published release tracker, stored release notes, and this
+  checkpoint require a follow-up documentation commit and pull request.
+- **Next:** Merge the published-release tracker follow-up, then begin Phase 2
+  planning from latest `main`.
+
 ### 2026-06-11 15:12 WIB - Phase 1 Internal Alpha Pull Request Opened
 
 - **Branch:** `release/v0.1.0-alpha.1`.
