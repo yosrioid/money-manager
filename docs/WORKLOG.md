@@ -50,6 +50,23 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-11 15:10 WIB - Published Alpha Tracker Pull Request Opened
+
+- **Branch:** `docs/v0.1.0-alpha.1-published`.
+- **Feature IDs:** `P1-01` to `P1-34`.
+- **Status:** In review.
+- **Completed:** Committed and pushed the published release tracker, then opened
+  [PR #9](https://github.com/yosrioid/money-manager/pull/9) to `main`.
+- **Verification:** The remote annotated tag and GitHub prerelease were
+  verified before opening the follow-up PR.
+- **Decisions:** This follow-up records publication only and does not move or
+  alter the published tag.
+- **Blockers:** PR CI is pending.
+- **Uncommitted:** This PR-status checkpoint requires a documentation commit and
+  push.
+- **Next:** Push this checkpoint, verify PR CI, merge PR #9, and synchronize
+  local `main`.
+
 ### 2026-06-11 15:06 WIB - Phase 1 Internal Alpha Published
 
 - **Branch:** `docs/v0.1.0-alpha.1-published`.
