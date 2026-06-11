@@ -50,6 +50,40 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-11 16:30 WIB - Phase 2 Ledger Foundation Slice 1 Implemented
+
+- **Branch:** `feat/p2-ledger-foundation` (created from up-to-date `main`).
+- **Feature IDs:** `P2-03`, `P2-09`, `P2-10` (part of `F-007`, `P2-01`-`P2-10`).
+- **Status:** In progress.
+- **Completed:** Implemented Slice 1 of 3 for the Phase 2 ledger foundation:
+  added `Voided`, `Reversed`, and `Replaced` cases to `TransactionStatus`;
+  refined `Transaction::save()`'s immutability guard into a transition matrix
+  (terminal states are immutable; `Posted -> Reversed`/`Replaced` and
+  `Draft -> Voided` are the only allowed status-only transitions); added
+  `Account::postedLedgerEntries()`; fixed `CalculateAccountBalance` to derive
+  balances from posted entries only and added `calculateAsOf()` for
+  balance-at-date; updated `AccountController` and `AccountGroupController`
+  balance sums to use the posted-only relation.
+- **Verification:** New tests `tests/Feature/TransactionLifecycleGuardTest.php`
+  (8 tests) and `tests/Feature/AccountBalanceCalculationTest.php` (3 tests)
+  pass. Regression: `OpeningBalanceLedgerTest` (5 tests) and all `Account*`
+  feature tests (17 tests) pass. `vendor/bin/pint --dirty --format agent` and
+  `composer analyse` (Larastan level 6) pass.
+- **Decisions:** Confirmed with user — `Voided` applies only to
+  `Draft -> Voided` (discarded drafts, never hard-deleted); audit log will use
+  a generic `audit_logs` table per `docs/ARCHITECTURE.md`; replacement will be
+  a single-step `Posted -> Replaced` transition (no intermediate `Reversed`
+  state for the original); reversal/replacement domain actions and audit log
+  infrastructure are deferred to Slices 2 and 3.
+- **Blockers:** None.
+- **Uncommitted:** All Slice 1 changes are uncommitted on
+  `feat/p2-ledger-foundation`, pending user review and explicit commit
+  approval.
+- **Next:** After commit approval, plan Slice 2 (generic `audit_logs` table,
+  `AuditLog` model, `AuditAction` enum, `RecordAuditLog` service), then Slice 3
+  (`ReverseTransaction`/`ReplaceTransaction` domain actions and account-locking
+  helper, wired to the audit log).
+
 ### 2026-06-11 15:10 WIB - Published Alpha Tracker Pull Request Opened
 
 - **Branch:** `docs/v0.1.0-alpha.1-published`.

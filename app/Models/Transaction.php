@@ -61,8 +61,30 @@ class Transaction extends Model
 
     public function save(array $options = []): bool
     {
-        if ($this->exists && $this->getRawOriginal('status') === TransactionStatus::Posted->value) {
-            throw new LogicException('Posted transactions are immutable.');
+        if ($this->exists) {
+            $originalStatus = $this->getRawOriginal('status');
+            $newStatus = $this->getAttributes()['status'] ?? null;
+            $dirty = array_keys($this->getDirty());
+
+            if (in_array($originalStatus, [
+                TransactionStatus::Voided->value,
+                TransactionStatus::Reversed->value,
+                TransactionStatus::Replaced->value,
+            ], true)) {
+                throw new LogicException('Transactions in a terminal state are immutable.');
+            }
+
+            if ($originalStatus === TransactionStatus::Posted->value) {
+                $allowedStatuses = [TransactionStatus::Reversed->value, TransactionStatus::Replaced->value];
+
+                if ($dirty !== ['status'] || ! in_array($newStatus, $allowedStatuses, true)) {
+                    throw new LogicException('Posted transactions are immutable.');
+                }
+            }
+
+            if ($originalStatus === TransactionStatus::Draft->value && $newStatus === TransactionStatus::Voided->value && $dirty !== ['status']) {
+                throw new LogicException('Voiding a draft transaction cannot include other changes.');
+            }
         }
 
         return parent::save($options);

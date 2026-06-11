@@ -56,7 +56,7 @@ class AccountController extends Controller
         $this->authorize('update', $account);
 
         $workspace = $this->workspaceContext->get();
-        $account->loadSum('ledgerEntries as balance', 'amount');
+        $account->loadSum('postedLedgerEntries as balance', 'amount');
         $account->setAttribute('balance', (int) ($account->getAttribute('balance') ?? 0));
 
         return Inertia::render('accounts/EditAccount', [

@@ -24,7 +24,7 @@ class AccountGroupController extends Controller
         $workspace = $this->workspaceContext->get();
         $accounts = $workspace->accounts()
             ->with('accountGroup:id,name')
-            ->withSum('ledgerEntries as balance', 'amount')
+            ->withSum('postedLedgerEntries as balance', 'amount')
             ->active()
             ->orderBy(
                 AccountGroup::query()
