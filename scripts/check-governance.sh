@@ -12,6 +12,8 @@ required_documents=(
     "docs/CODING_STANDARDS.md"
     "docs/GIT_WORKFLOW.md"
     "docs/PROGRESS.md"
+    "docs/RELEASE_PROCESS.md"
+    "docs/RELEASE_PROGRESS.md"
     "docs/WORKLOG.md"
 )
 
@@ -51,6 +53,12 @@ done
 
 if ! grep -qF "## Entries" docs/WORKLOG.md || ! grep -qF -- "- **Next:**" docs/WORKLOG.md; then
     echo "docs/WORKLOG.md must contain at least one valid handoff checkpoint." >&2
+    exit 1
+fi
+
+if ! grep -qF "## Mandatory Release Note Format" docs/RELEASE_PROCESS.md \
+    || ! grep -qF "## Release Roadmap" docs/RELEASE_PROGRESS.md; then
+    echo "Release governance documents must contain the required format and tracker." >&2
     exit 1
 fi
 

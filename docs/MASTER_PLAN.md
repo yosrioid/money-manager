@@ -22,7 +22,10 @@ Use the following documents in this precedence order:
 6. `docs/ARCHITECTURE.md`: technical design and domain invariants.
 7. `docs/CODING_STANDARDS.md`: implementation quality standards.
 8. `docs/PROGRESS.md`: current execution status and completed work.
-9. `docs/WORKLOG.md`: latest daily checkpoints and session handoff state.
+9. `docs/RELEASE_PROCESS.md`: release format, versioning, and publication
+   protocol.
+10. `docs/RELEASE_PROGRESS.md`: release candidate and publication status.
+11. `docs/WORKLOG.md`: latest daily checkpoints and session handoff state.
 
 When two documents conflict, stop implementation and resolve the documentation
 conflict first. Never choose whichever rule is easier.
@@ -589,6 +592,13 @@ Before implementation starts, add or confirm:
 - Large features must be split by stable contracts, not arbitrary file groups.
 
 ## Release Rules
+
+All release preparation, versioning, tags, release notes, and publication must
+follow `docs/RELEASE_PROCESS.md`. Release candidate and publication status is
+tracked in `docs/RELEASE_PROGRESS.md`.
+
+Completed phases may receive optional milestone prereleases. These prereleases
+do not replace the MVP, parity, extended, or Phase 8 release gates below.
 
 ### MVP Release
 

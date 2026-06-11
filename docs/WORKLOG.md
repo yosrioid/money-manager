@@ -50,6 +50,49 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-11 10:18 WIB - Release Governance Pull Request Opened
+
+- **Branch:** `docs/release-governance`.
+- **Feature IDs:** Engineering only.
+- **Status:** In review.
+- **Completed:** Committed and pushed the release governance and progress
+  tracker, then opened
+  [PR #7](https://github.com/yosrioid/money-manager/pull/7) to `main`.
+- **Verification:** Commit `537fbff` is pushed to
+  `origin/docs/release-governance`; governance, Bash syntax, release/governance
+  Markdown formatting, and diff checks passed before the push.
+- **Decisions:** This PR prepares release governance only. It does not authorize
+  or create a tag or GitHub release.
+- **Blockers:** Phase 1 closure and release-preparation documentation remain
+  required before `v0.1.0-alpha.1` can become ready.
+- **Uncommitted:** This PR-status checkpoint requires a documentation commit and
+  push.
+- **Next:** Review and merge PR #7, then prepare Phase 1 closure and release
+  notes using the new required format.
+
+### 2026-06-11 10:00 WIB - Release Governance And Tracker Prepared
+
+- **Branch:** `docs/release-governance`.
+- **Feature IDs:** Engineering only.
+- **Status:** Ready for review.
+- **Completed:** Defined the mandatory release process, Semantic Versioning and
+  annotated-tag rules, release-note format, readiness checklist, and release
+  progress tracker. Recorded `v0.1.0-alpha.1` as the planned Phase 1 internal
+  alpha candidate and integrated release handling into the AI workflow, master
+  plan, Git workflow, strict rules, and governance checks.
+- **Verification:** `bash scripts/check-governance.sh`, Bash syntax validation,
+  Prettier checks for release and governance Markdown, and `git diff --check`
+  passed.
+- **Decisions:** Phase milestone prereleases are optional and do not replace
+  formal MVP, parity, extended, or Phase 8 release gates. Tag creation and
+  GitHub release publication require separate explicit approvals.
+- **Blockers:** Phase 1 closure documentation and release preparation remain
+  required before `v0.1.0-alpha.1` can become ready.
+- **Uncommitted:** Release governance, tracker, integration, and this checkpoint
+  are ready to commit and push.
+- **Next:** Commit and push the focused branch, then open a pull request to
+  `main`.
+
 ### 2026-06-10 22:00 WIB - Branded Landing Page And Page Padding Fix
 
 - **Branch:** `feat/p1-welcome-page`.

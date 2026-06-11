@@ -28,10 +28,12 @@ continuing prior work:
 6. Read `docs/CODING_STANDARDS.md`.
 7. Read `docs/GIT_WORKFLOW.md`.
 8. Read `docs/PROGRESS.md`.
-9. Read the latest entries in `docs/WORKLOG.md`.
-10. Inspect the current Git branch, working tree, recent commits, and open
+9. Read `docs/RELEASE_PROCESS.md` and `docs/RELEASE_PROGRESS.md` when the task
+   involves a release, tag, version, prerelease, or release preparation.
+10. Read the latest entries in `docs/WORKLOG.md`.
+11. Inspect the current Git branch, working tree, recent commits, and open
     changes before deciding what work is active.
-11. Confirm the requested implementation maps to approved feature IDs.
+12. Confirm the requested implementation maps to approved feature IDs.
 
 Do not rely only on the user's first prompt, chat history, a previous session
 summary, branch name, or assumptions about the next task.
@@ -93,6 +95,21 @@ Before considering work complete:
 - Review the final diff for unrelated changes and prohibited attribution.
 - Do not commit, push, create or modify a PR, or merge without explicit user
   approval.
+
+## Release Protocol
+
+When the user requests a release, tag, version, prerelease, or release
+preparation:
+
+1. Follow `docs/RELEASE_PROCESS.md`.
+2. Update `docs/RELEASE_PROGRESS.md` as the authoritative release tracker.
+3. Confirm included phase and feature statuses are accurate in
+   `docs/PROGRESS.md`.
+4. Use the mandatory release-note format.
+5. Treat tag creation and GitHub release publication as separate actions that
+   each require explicit user approval.
+6. Never publish from an unmerged branch, dirty worktree, or failing target
+   commit.
 
 ## Conflict And Safety Protocol
 
