@@ -23,7 +23,8 @@ class CalculateAccountBalance
     public function calculateAsOf(Account $account, CarbonInterface $date): int
     {
         return (int) $account->ledgerEntries()
-            ->whereHas('transaction', fn (Builder $query) => $query->where('status', TransactionStatus::Posted)
+            ->whereHas('transaction', fn (Builder $query) => $query->whereNotNull('posted_at')
+                ->where('status', '!=', TransactionStatus::Replaced)
                 ->where('posted_at', '<=', $date))
             ->sum('amount');
     }

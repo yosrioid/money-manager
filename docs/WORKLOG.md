@@ -50,6 +50,49 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-11 18:00 WIB - Phase 2 Ledger Foundation Slice 3 Implemented
+
+- **Branch:** `feat/p2-ledger-foundation`.
+- **Feature IDs:** `P2-05`, `P2-07` (part of `F-007`, `P2-01`-`P2-10`).
+- **Status:** In progress.
+- **Completed:** Implemented Slice 3 of 3 for the Phase 2 ledger foundation:
+  added a migration adding nullable self-referencing
+  `reverses_transaction_id`/`replaces_transaction_id` columns to
+  `transactions`; added matching `Transaction` relations (`reverses`,
+  `reversal`, `replaces`, `replacement`); added
+  `App\Domain\Ledger\LockAccountsForPosting` (sorted `lockForUpdate` over
+  affected accounts); added `App\Domain\Ledger\ReverseTransaction` (creates a
+  posted reversal transaction with negated entries, marks the original
+  `Reversed`, records a `TransactionReversed` audit log) and
+  `App\Domain\Ledger\ReplaceTransaction` (creates a posted replacement
+  transaction with caller-supplied balanced entries, marks the original
+  `Replaced`, records a `TransactionReplaced` audit log). Both run inside
+  `DB::transaction()` with workspace-membership authorization.
+- **Fixes:** Discovered and fixed a balance-calculation bug introduced by
+  Slice 1: filtering ledger entries by `transaction.status === Posted`
+  excluded a reversed transaction's original entries (which must remain
+  counted, offset by the reversal's negated entries) and double-counted a
+  replaced transaction's original entries alongside its replacement.
+  `Account::postedLedgerEntries()` and
+  `CalculateAccountBalance::calculateAsOf()` now filter by
+  `posted_at IS NOT NULL AND status != Replaced`.
+- **Verification:** New `tests/Feature/ReverseTransactionTest.php` (4 tests)
+  and `tests/Feature/ReplaceTransactionTest.php` (4 tests) pass. Full suite:
+  139 tests, 541 assertions pass. `vendor/bin/pint --dirty --format agent`,
+  `composer analyse` (Larastan level 6), and `bash scripts/check-governance.sh`
+  pass.
+- **Decisions:** The reversal/replacement link is stored only on the new
+  transaction, not the original, to keep the original's status transition
+  status-only per the Slice 1 guard. The new transaction reuses the
+  original's `type` and `currency_code`; `TransactionType` is not extended
+  (new types are F-008 scope).
+- **Blockers:** None.
+- **Uncommitted:** All Slice 3 changes are uncommitted on
+  `feat/p2-ledger-foundation`, pending user review and explicit commit
+  approval.
+- **Next:** All 3 slices of `F-007` are implemented. After commit approval,
+  open a pull request to `main` for review.
+
 ### 2026-06-11 17:15 WIB - Phase 2 Ledger Foundation Slice 2 Implemented
 
 - **Branch:** `feat/p2-ledger-foundation`.

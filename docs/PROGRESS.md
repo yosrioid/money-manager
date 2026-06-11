@@ -98,8 +98,7 @@ Keep the row through completion so partial package progress remains visible.
 | `P1-09` to `P1-11` | Done   | [#4](https://github.com/yosrioid/money-manager/pull/4) | Personal workspace, active context, and isolation merged                              |
 | `P1-12` to `P1-33` | Done   | [#5](https://github.com/yosrioid/money-manager/pull/5) | Financial setup, reference data, opening balances, application lock, and tests merged |
 | `P1-34`            | Done   | [#6](https://github.com/yosrioid/money-manager/pull/6) | Branded public landing page merged                                                    |
-| `P2-03`, `P2-09`, `P2-10` | In Progress | `feat/p2-ledger-foundation` | Slice 1 of 3 for `F-007`: lifecycle status enum (Voided, Reversed, Replaced) with transition guard, posted-only balance calculation, and balance-at-date. Reversal/replacement (`P2-07`) and audit log (`P2-08`) follow in later slices. |
-| `P2-08`            | In Progress | `feat/p2-ledger-foundation` | Slice 2 of 3 for `F-007`: generic immutable `audit_logs` table, `AuditLog` model, `AuditAction` enum, and `RecordAuditLog` service. Not yet wired into transaction operations; reversal/replacement actions in Slice 3 will record entries. |
+| `P2-01` to `P2-10` | In Progress | `feat/p2-ledger-foundation` | All 3 slices of `F-007` implemented: lifecycle status enum (Voided, Reversed, Replaced) with transition guard; posted-only balance calculation and balance-at-date; immutable generic `audit_logs` table, `AuditLog` model, `AuditAction` enum, and `RecordAuditLog` service; account-locking (`LockAccountsForPosting`), `ReverseTransaction`, and `ReplaceTransaction` domain actions wired to the audit log. Pending PR review. |
 
 ## Completed Features
 

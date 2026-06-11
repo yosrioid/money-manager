@@ -72,7 +72,8 @@ class Account extends Model
     public function postedLedgerEntries(): HasMany
     {
         return $this->ledgerEntries()
-            ->whereHas('transaction', fn (Builder $query) => $query->where('status', TransactionStatus::Posted));
+            ->whereHas('transaction', fn (Builder $query) => $query->whereNotNull('posted_at')
+                ->where('status', '!=', TransactionStatus::Replaced));
     }
 
     /**

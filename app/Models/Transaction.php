@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use LogicException;
 
 #[Fillable([
@@ -19,6 +20,8 @@ use LogicException;
     'description',
     'occurred_at',
     'posted_at',
+    'reverses_transaction_id',
+    'replaces_transaction_id',
 ])]
 class Transaction extends Model
 {
@@ -57,6 +60,38 @@ class Transaction extends Model
     public function entries(): HasMany
     {
         return $this->hasMany(TransactionEntry::class);
+    }
+
+    /**
+     * @return BelongsTo<Transaction, $this>
+     */
+    public function reverses(): BelongsTo
+    {
+        return $this->belongsTo(Transaction::class, 'reverses_transaction_id');
+    }
+
+    /**
+     * @return HasOne<Transaction, $this>
+     */
+    public function reversal(): HasOne
+    {
+        return $this->hasOne(Transaction::class, 'reverses_transaction_id');
+    }
+
+    /**
+     * @return BelongsTo<Transaction, $this>
+     */
+    public function replaces(): BelongsTo
+    {
+        return $this->belongsTo(Transaction::class, 'replaces_transaction_id');
+    }
+
+    /**
+     * @return HasOne<Transaction, $this>
+     */
+    public function replacement(): HasOne
+    {
+        return $this->hasOne(Transaction::class, 'replaces_transaction_id');
     }
 
     public function save(array $options = []): bool
