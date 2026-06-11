@@ -50,6 +50,24 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-11 15:12 WIB - Phase 1 Internal Alpha Pull Request Opened
+
+- **Branch:** `release/v0.1.0-alpha.1`.
+- **Feature IDs:** `P1-01` to `P1-34`.
+- **Status:** In review.
+- **Completed:** Committed and pushed Phase 1 closure and release preparation,
+  then opened
+  [PR #8](https://github.com/yosrioid/money-manager/pull/8) to `main`.
+- **Verification:** Local release gates passed. GitHub did not create a check
+  run for the initial PR-open event; this checkpoint push will trigger a new
+  pull-request synchronization event.
+- **Decisions:** Do not merge or tag until required PR CI passes.
+- **Blockers:** PR CI is pending.
+- **Uncommitted:** This PR-status checkpoint requires a documentation commit and
+  push.
+- **Next:** Push this checkpoint, verify PR CI, merge PR #8, tag the merge
+  commit, and publish the prerelease.
+
 ### 2026-06-11 15:00 WIB - Phase 1 Internal Alpha Gates Passed
 
 - **Branch:** `release/v0.1.0-alpha.1`.
