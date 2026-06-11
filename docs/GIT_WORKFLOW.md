@@ -196,6 +196,18 @@ Closes #...
 - Use squash merge unless preserving separate commits adds clear value.
 - Delete merged branches.
 
+## Release Tags And Publication
+
+- Follow `docs/RELEASE_PROCESS.md` for every release, tag, version, or
+  prerelease request.
+- Record release state in `docs/RELEASE_PROGRESS.md`.
+- Create annotated tags only from the confirmed up-to-date `main` commit.
+- Never create, push, move, or delete a tag without explicit user approval.
+- Never publish, modify, or remove a GitHub release without explicit user
+  approval.
+- A release-preparation commit or pull request does not authorize tag creation
+  or release publication.
+
 ## Hotfixes
 
 Use `fix/<scope>-<description>` from `main`. Add a regression test, keep the

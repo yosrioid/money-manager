@@ -14,6 +14,8 @@ approval before performing an action that violates or bypasses these rules.
   explicitly requests it.
 - Never create or push a Git tag unless the user explicitly requests it.
 - Never publish a release unless the user explicitly requests it.
+- Follow `docs/RELEASE_PROCESS.md` and update `docs/RELEASE_PROGRESS.md` for
+  every release, tag, version, prerelease, or release-preparation request.
 - Never change dependencies, application services, or deployment configuration
   without explicit user approval.
 - Never delete, revert, overwrite, or discard user changes without explicit
