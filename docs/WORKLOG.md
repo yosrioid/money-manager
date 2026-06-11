@@ -50,6 +50,67 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-11 15:12 WIB - Phase 1 Internal Alpha Pull Request Opened
+
+- **Branch:** `release/v0.1.0-alpha.1`.
+- **Feature IDs:** `P1-01` to `P1-34`.
+- **Status:** In review.
+- **Completed:** Committed and pushed Phase 1 closure and release preparation,
+  then opened
+  [PR #8](https://github.com/yosrioid/money-manager/pull/8) to `main`.
+- **Verification:** Local release gates passed. GitHub did not create a check
+  run for the initial PR-open event; this checkpoint push will trigger a new
+  pull-request synchronization event.
+- **Decisions:** Do not merge or tag until required PR CI passes.
+- **Blockers:** PR CI is pending.
+- **Uncommitted:** This PR-status checkpoint requires a documentation commit and
+  push.
+- **Next:** Push this checkpoint, verify PR CI, merge PR #8, tag the merge
+  commit, and publish the prerelease.
+
+### 2026-06-11 15:00 WIB - Phase 1 Internal Alpha Gates Passed
+
+- **Branch:** `release/v0.1.0-alpha.1`.
+- **Feature IDs:** `P1-01` to `P1-34`.
+- **Status:** Ready for review.
+- **Completed:** Completed Phase 1 closure documentation, mandatory-format
+  release notes, release tracker preparation, and final release-process target
+  clarification.
+- **Verification:** Governance, Bash syntax, release/governance Markdown
+  formatting, `composer validate --strict`, PHPStan debug analysis, frontend
+  lint, formatting, types, Vitest, production build, 116 Pest tests with 467
+  assertions, fresh migration and seed rehearsal, Composer audit, npm audit,
+  and 2/2 Playwright smoke tests against an isolated PHP 8.5 server passed.
+- **Decisions:** The consolidated `composer ci:check` remains unreliable at its
+  non-debug PHPStan step in this shell, while PHPStan debug and all remaining
+  components pass independently. Pull-request CI is the final merged-content
+  gate.
+- **Blockers:** None.
+- **Uncommitted:** Release preparation is ready to commit, push, and submit for
+  review.
+- **Next:** Open and merge the release-preparation pull request after CI, then
+  tag the merge commit and publish the GitHub prerelease.
+
+### 2026-06-11 14:15 WIB - Phase 1 Internal Alpha Preparation Started
+
+- **Branch:** `release/v0.1.0-alpha.1`.
+- **Feature IDs:** `P1-01` to `P1-34`.
+- **Status:** In progress.
+- **Completed:** Confirmed Phase 1 implementation PRs #4, #5, and #6 are merged
+  with successful quality and browser CI. Closed Phase 1 progress status,
+  prepared mandatory-format release notes, moved `v0.1.0-alpha.1` to
+  `Preparing`, and clarified final target-SHA handling for release drafts.
+- **Verification:** Release quality, browser, migration, security, and
+  governance gates pending.
+- **Decisions:** `v0.1.0-alpha.1` is an internal alpha milestone, not an MVP or
+  production-readiness release. It includes the minimum ledger slice for
+  opening balances; general ledger workflows remain Phase 2.
+- **Blockers:** None.
+- **Uncommitted:** Phase closure, release notes, release tracker, process
+  clarification, and this checkpoint are uncommitted.
+- **Next:** Run applicable release gates, then prepare the release branch for
+  review and merge.
+
 ### 2026-06-11 10:18 WIB - Release Governance Pull Request Opened
 
 - **Branch:** `docs/release-governance`.

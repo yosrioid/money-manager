@@ -33,6 +33,8 @@ Milestone prereleases are optional and do not replace the release gates in
 - Never tag a dirty worktree, unmerged branch, or commit with failing required
   checks.
 - A version is not published until its tag and GitHub release both exist.
+- A draft may identify its target as the release-preparation merge commit. The
+  published release and follow-up tracker must record the resulting full SHA.
 
 Recommended milestone mapping:
 
@@ -66,14 +68,17 @@ Use these statuses in `docs/RELEASE_PROGRESS.md`:
 5. Run all applicable quality, security, migration, browser, and governance
    checks.
 6. Prepare release notes using the mandatory format below.
-7. Record the target commit, verification evidence, known limitations, and
+7. Record the intended target, verification evidence, known limitations, and
    approval state in `docs/RELEASE_PROGRESS.md`.
 8. Merge the release-preparation documentation through a reviewed pull request.
-9. Obtain explicit user approval before creating or pushing the tag.
-10. Obtain explicit user approval before publishing the GitHub release.
-11. Create and push the annotated tag from the confirmed `main` commit.
-12. Publish the GitHub release using the approved release notes.
-13. Update `docs/RELEASE_PROGRESS.md` to `Published` through a follow-up pull
+9. Confirm the release-preparation merge commit is the latest `main` commit and
+   record its full SHA for publication.
+10. Obtain explicit user approval before creating or pushing the tag.
+11. Obtain explicit user approval before publishing the GitHub release.
+12. Create and push the annotated tag from the confirmed `main` commit.
+13. Publish the GitHub release using the approved release notes.
+14. Update `docs/RELEASE_PROGRESS.md` to `Published` with the full target SHA
+    through a follow-up pull
     request.
 
 Tag creation and GitHub release publication are separate approval-controlled
@@ -84,6 +89,10 @@ action.
 
 Use this exact section order. Remove a section only when it is explicitly
 marked optional.
+
+Draft release notes may use `Pending publication` for the date and
+`Release-preparation merge commit` for the target. Replace both with exact
+values in the published GitHub release.
 
 ```markdown
 # <version> - <release name>
@@ -145,7 +154,7 @@ marked optional.
 
 ## Release Readiness Checklist
 
-- [ ] Version, type, target commit, and scope are recorded.
+- [ ] Version, type, intended target, and scope are recorded.
 - [ ] Included feature and phase statuses are accurate in `docs/PROGRESS.md`.
 - [ ] Required CI and local gates pass.
 - [ ] Security and dependency audits pass or blockers are documented.
@@ -154,6 +163,7 @@ marked optional.
 - [ ] Known limitations are explicit.
 - [ ] Release notes follow the mandatory format.
 - [ ] Release preparation is merged to `main`.
+- [ ] The release-preparation merge commit is confirmed as the latest `main`.
 - [ ] Explicit tag approval is recorded.
 - [ ] Explicit GitHub release approval is recorded.
 - [ ] Tag and GitHub release point to the confirmed `main` commit.
