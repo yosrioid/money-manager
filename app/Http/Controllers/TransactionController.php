@@ -7,6 +7,7 @@ use App\Domain\Transactions\EvaluateAmountExpression;
 use App\Domain\Transactions\RecordIncomeExpense;
 use App\Domain\Transactions\RecordTransfer;
 use App\Domain\Transactions\SaveTransactionDraft;
+use App\Domain\Transactions\SummarizeTransactionCalendar;
 use App\Domain\Workspaces\WorkspaceContext;
 use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
@@ -17,6 +18,7 @@ use App\Models\TransactionEntry;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -66,6 +68,29 @@ class TransactionController extends Controller
 
         return Inertia::render('transactions/Index', [
             'transactions' => $transactions,
+        ]);
+    }
+
+    public function calendar(Request $request, SummarizeTransactionCalendar $summarizeTransactionCalendar): Response
+    {
+        $this->authorize('viewAny', Transaction::class);
+
+        $workspace = $this->workspaceContext->get();
+
+        $month = $request->query('month');
+        $month = is_string($month) && preg_match('/^\d{4}-\d{2}$/', $month)
+            ? Carbon::parse($month.'-01', $workspace->timezone)
+            : Carbon::now($workspace->timezone);
+
+        $month = $month->startOfMonth();
+
+        $days = $summarizeTransactionCalendar->summarize($workspace, $month);
+
+        return Inertia::render('transactions/Calendar', [
+            'month' => $month->toDateString(),
+            'days' => $days,
+            'previousMonth' => $month->copy()->subMonth()->format('Y-m'),
+            'nextMonth' => $month->copy()->addMonth()->format('Y-m'),
         ]);
     }
 

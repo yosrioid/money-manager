@@ -29,6 +29,7 @@ Route::middleware(['auth', 'verified', 'workspace', 'workspace.lock'])->group(fu
 
     // Transactions
     Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('transactions/calendar', [TransactionController::class, 'calendar'])->name('transactions.calendar');
     Route::get('transactions/create', [TransactionController::class, 'create'])->name('transactions.create');
     Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');
     Route::post('transaction-drafts', [TransactionController::class, 'storeDraft'])->name('transactions.drafts.store');

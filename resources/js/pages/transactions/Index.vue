@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import { Plus } from '@lucide/vue';
 import { computed } from 'vue';
 import Heading from '@/components/Heading.vue';
+import TransactionViewNav from '@/components/TransactionViewNav.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -97,6 +98,8 @@ const formatDate = (date: string): string =>
                 >
             </Button>
         </div>
+
+        <TransactionViewNav current="daily" />
 
         <div v-if="groupedTransactions.length" class="space-y-8">
             <section

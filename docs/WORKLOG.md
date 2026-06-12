@@ -50,6 +50,33 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 20:30 WIB - `P3-02` Calendar View
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-02`.
+- **Status:** In progress.
+- **Completed:** Added `transactions.calendar` (`TransactionController::calendar()`)
+  rendering `transactions/Calendar`, backed by a new
+  `App\Domain\Transactions\SummarizeTransactionCalendar` domain action that
+  aggregates posted income, expense, net, and transaction counts per
+  workspace-local date for a given month (`?month=YYYY-MM`, defaults to the
+  current workspace-local month). Added `resources/js/pages/transactions/Calendar.vue`
+  (month grid with previous/next navigation) and a shared
+  `TransactionViewNav` component used by both `transactions/Index` and
+  `transactions/Calendar` to switch between the daily and calendar views.
+- **Verification:** Added `tests/Feature/TransactionCalendarTest.php` (3
+  tests, 42 assertions). `composer ci:check` equivalent passed: 187 Pest
+  tests / 865 assertions, PHPStan/Larastan (0 errors), Pint, ESLint,
+  Prettier, TypeScript checks, and a production build.
+- **Decisions:** Aggregates are grouped by currency code (no cross-currency
+  summation). Only `income`/`expense` transaction types contribute to
+  income/expense/net; the `count` includes all posted transaction types
+  (including transfers) for the day.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-02` changes ready to commit on `feat/phase-3`.
+- **Next:** Commit this checkpoint, then continue Phase 3 with `P3-03`
+  (weekly view).
+
 ### 2026-06-12 19:50 WIB - Phase 3 Branch Consolidation
 
 - **Branch:** `feat/phase-3`.
