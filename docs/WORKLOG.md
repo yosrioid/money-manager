@@ -50,6 +50,23 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 13:35 WIB - Phase 2 Pull Request Opened
+
+- **Branch:** `feat/p2-core-income-expense`.
+- **Feature IDs:** `P2-01` to `P2-24`.
+- **Status:** In review.
+- **Completed:** Opened draft
+  [PR #10](https://github.com/yosrioid/money-manager/pull/10) against `main`
+  containing the complete Phase 2 ledger and core transaction implementation.
+- **Verification:** Local final quality, security, governance, and browser gates
+  passed before PR creation.
+- **Decisions:** Keep the PR as draft until GitHub Actions passes and reviewer
+  feedback is resolved.
+- **Blockers:** None.
+- **Uncommitted:** PR-status tracker updates need a documentation commit and
+  push.
+- **Next:** Commit and push this PR-status checkpoint, then verify PR CI.
+
 ### 2026-06-12 13:28 WIB - Phase 2 Branch Ready For Pull Request
 
 - **Branch:** `feat/p2-core-income-expense`.
