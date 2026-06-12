@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AccountGroupController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DayNoteController;
 use App\Http\Controllers\MerchantController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TransactionController;
@@ -34,6 +35,12 @@ Route::middleware(['auth', 'verified', 'workspace', 'workspace.lock'])->group(fu
     Route::get('transactions/monthly', [TransactionController::class, 'monthly'])->name('transactions.monthly');
     Route::get('transactions/summary', [TransactionController::class, 'summary'])->name('transactions.summary');
     Route::get('transactions/day', [TransactionController::class, 'day'])->name('transactions.day');
+    Route::put('transactions/day-notes/{date}', [DayNoteController::class, 'update'])
+        ->where('date', '\d{4}-\d{2}-\d{2}')
+        ->name('transactions.day-notes.update');
+    Route::delete('transactions/day-notes/{date}', [DayNoteController::class, 'destroy'])
+        ->where('date', '\d{4}-\d{2}-\d{2}')
+        ->name('transactions.day-notes.destroy');
     Route::get('transactions/create', [TransactionController::class, 'create'])->name('transactions.create');
     Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');
     Route::post('transaction-drafts', [TransactionController::class, 'storeDraft'])->name('transactions.drafts.store');

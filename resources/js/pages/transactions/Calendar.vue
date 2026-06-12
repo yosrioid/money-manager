@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { ChevronLeft, ChevronRight } from '@lucide/vue';
+import { ChevronLeft, ChevronRight, StickyNote } from '@lucide/vue';
 import { computed } from 'vue';
 import Heading from '@/components/Heading.vue';
 import TransactionViewNav from '@/components/TransactionViewNav.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { calendar, index } from '@/routes/transactions';
+import { calendar, day, index } from '@/routes/transactions';
 
 interface DaySummary {
     income: Record<string, number>;
@@ -19,6 +19,7 @@ interface DaySummary {
 const props = defineProps<{
     month: string;
     days: Record<string, DaySummary>;
+    notes: Record<string, string>;
     previousMonth: string;
     nextMonth: string;
 }>();
@@ -56,6 +57,7 @@ interface CalendarCell {
     date: string | null;
     day: number | null;
     summary: DaySummary | null;
+    note: string | null;
 }
 
 const weeks = computed<CalendarCell[][]>(() => {
@@ -67,16 +69,21 @@ const weeks = computed<CalendarCell[][]>(() => {
     const cells: CalendarCell[] = [];
 
     for (let i = 0; i < startOffset; i++) {
-        cells.push({ date: null, day: null, summary: null });
+        cells.push({ date: null, day: null, summary: null, note: null });
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
         const date = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        cells.push({ date, day, summary: props.days[date] ?? null });
+        cells.push({
+            date,
+            day,
+            summary: props.days[date] ?? null,
+            note: props.notes[date] ?? null,
+        });
     }
 
     while (cells.length % 7 !== 0) {
-        cells.push({ date: null, day: null, summary: null });
+        cells.push({ date: null, day: null, summary: null, note: null });
     }
 
     const result: CalendarCell[][] = [];
@@ -132,46 +139,62 @@ const currencies = (record: Record<string, number>): string[] =>
                     :key="cellIndex"
                     :class="['min-h-28', !cell.date && 'opacity-40']"
                 >
-                    <CardContent class="space-y-1 p-2 text-xs">
-                        <div
-                            v-if="cell.day"
-                            class="flex items-center justify-between"
-                        >
-                            <span class="font-medium">{{ cell.day }}</span>
-                            <Badge v-if="cell.summary" variant="outline">
-                                {{ cell.summary.count }}
-                            </Badge>
-                        </div>
-                        <template v-if="cell.summary">
-                            <div
-                                v-for="currency in currencies(
-                                    cell.summary.income,
-                                )"
-                                :key="`income-${currency}`"
-                                class="text-emerald-600 dark:text-emerald-400"
-                            >
-                                +{{ cell.summary.income[currency] }}
-                                {{ currency }}
+                    <Link
+                        v-if="cell.date"
+                        :href="day({ query: { date: cell.date } })"
+                        class="block"
+                    >
+                        <CardContent class="space-y-1 p-2 text-xs">
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium">{{ cell.day }}</span>
+                                <div class="flex items-center gap-1">
+                                    <StickyNote
+                                        v-if="cell.note"
+                                        class="size-3.5 text-muted-foreground"
+                                        :title="cell.note"
+                                    />
+                                    <Badge
+                                        v-if="cell.summary"
+                                        variant="outline"
+                                    >
+                                        {{ cell.summary.count }}
+                                    </Badge>
+                                </div>
                             </div>
-                            <div
-                                v-for="currency in currencies(
-                                    cell.summary.expense,
-                                )"
-                                :key="`expense-${currency}`"
-                                class="text-red-600 dark:text-red-400"
-                            >
-                                -{{ cell.summary.expense[currency] }}
-                                {{ currency }}
-                            </div>
-                            <div
-                                v-for="currency in currencies(cell.summary.net)"
-                                :key="`net-${currency}`"
-                                class="font-medium text-foreground"
-                            >
-                                {{ cell.summary.net[currency] }} {{ currency }}
-                            </div>
-                        </template>
-                    </CardContent>
+                            <template v-if="cell.summary">
+                                <div
+                                    v-for="currency in currencies(
+                                        cell.summary.income,
+                                    )"
+                                    :key="`income-${currency}`"
+                                    class="text-emerald-600 dark:text-emerald-400"
+                                >
+                                    +{{ cell.summary.income[currency] }}
+                                    {{ currency }}
+                                </div>
+                                <div
+                                    v-for="currency in currencies(
+                                        cell.summary.expense,
+                                    )"
+                                    :key="`expense-${currency}`"
+                                    class="text-red-600 dark:text-red-400"
+                                >
+                                    -{{ cell.summary.expense[currency] }}
+                                    {{ currency }}
+                                </div>
+                                <div
+                                    v-for="currency in currencies(
+                                        cell.summary.net,
+                                    )"
+                                    :key="`net-${currency}`"
+                                    class="font-medium text-foreground"
+                                >
+                                    {{ cell.summary.net[currency] }}
+                                    {{ currency }}
+                                </div>
+                            </template>
+                        </CardContent>
+                    </Link>
                 </Card>
             </template>
         </div>

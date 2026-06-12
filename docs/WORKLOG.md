@@ -50,6 +50,43 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 23:40 WIB - `P3-06` Daily Memo
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-06`.
+- **Status:** Completed.
+- **Completed:** Added a workspace-scoped `day_notes` table (unique on
+  `workspace_id` + `date`, plain `note` text), `DayNote` model with
+  `Workspace::dayNotes(): HasMany`, `DayNoteFactory`, `DayNotePolicy`
+  (mirrors `TagPolicy`/`MerchantPolicy`), `SaveDayNoteRequest`, and
+  `DayNoteController::update`/`destroy` exposed as
+  `transactions.day-notes.update` (PUT) and `transactions.day-notes.destroy`
+  (DELETE), both keyed by a regex-constrained `{date}` route parameter
+  (`\d{4}-\d{2}-\d{2}`) to avoid Eloquent route-model-binding on a
+  composite-keyed model. `TransactionController::day()` now passes a
+  `note: string | null` prop and `calendar()` passes a `notes: Record<string,
+  string>` map for the month. Added a new shadcn-vue `Textarea` component
+  (`resources/js/components/ui/textarea`). `transactions/Day.vue` now has a
+  "Daily memo" card with a save form (`DayNoteController.update.form()`) and a
+  "Remove" action (`DayNoteController.destroy()` via `Link
+  method="delete"`). `transactions/Calendar.vue` cells are now links to
+  `transactions.day` for that date and show a `StickyNote` icon (with the
+  note text as a title/tooltip) when a note exists.
+- **Verification:** Added `tests/Feature/TransactionDayNoteTest.php` (5
+  tests, 61 assertions) covering create, update (upsert, no duplicate row),
+  delete, validation, and workspace isolation. Full suite: 202 Pest tests /
+  1094 assertions, PHPStan/Larastan (0 errors), Pint, ESLint, Prettier,
+  TypeScript checks (`vue-tsc`), and a production build all passed.
+- **Decisions:** Removed the `'date' => 'date'` Eloquent cast from `DayNote`
+  — Laravel's `date` cast serializes using the connection's full datetime
+  format on write (not `Y-m-d`), which broke `where('date', $dateString)`
+  lookups against the plain `date` column. The model now treats `date` as a
+  plain `Y-m-d` string throughout, matching how the controller and routes
+  already handle it.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-06` changes are ready to commit on `feat/phase-3`.
+- **Next:** Commit `P3-06`, then continue Phase 3 with `P3-07` (search).
+
 ### 2026-06-12 22:10 WIB - `P3-05` Summary View
 
 - **Branch:** `feat/phase-3`.

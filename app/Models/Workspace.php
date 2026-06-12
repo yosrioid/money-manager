@@ -130,6 +130,14 @@ class Workspace extends Model
         return $this->hasMany(AuditLog::class);
     }
 
+    /**
+     * @return HasMany<DayNote, $this>
+     */
+    public function dayNotes(): HasMany
+    {
+        return $this->hasMany(DayNote::class);
+    }
+
     public function isOwnedBy(User $user): bool
     {
         return $this->owner_id === $user->id;

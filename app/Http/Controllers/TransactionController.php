@@ -70,9 +70,15 @@ class TransactionController extends Controller
 
         $days = $summarizeTransactionPeriod->forMonth($workspace, $month);
 
+        $notes = $workspace->dayNotes()
+            ->whereBetween('date', [$month->toDateString(), $month->copy()->endOfMonth()->toDateString()])
+            ->pluck('note', 'date')
+            ->all();
+
         return Inertia::render('transactions/Calendar', [
             'month' => $month->toDateString(),
             'days' => $days,
+            'notes' => $notes,
             'previousMonth' => $month->copy()->subMonth()->format('Y-m'),
             'nextMonth' => $month->copy()->addMonth()->format('Y-m'),
         ]);
@@ -209,9 +215,12 @@ class TransactionController extends Controller
             ->map(fn (Transaction $transaction): array => $this->transformTransaction($transaction, $workspace))
             ->all();
 
+        $note = $workspace->dayNotes()->where('date', $date->toDateString())->first();
+
         return Inertia::render('transactions/Day', [
             'date' => $date->toDateString(),
             'transactions' => $transactions,
+            'note' => $note?->note,
             'previousDate' => $date->copy()->subDay()->toDateString(),
             'nextDate' => $date->copy()->addDay()->toDateString(),
         ]);

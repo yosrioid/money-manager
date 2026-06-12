@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 import { ChevronLeft, ChevronRight } from '@lucide/vue';
 import { computed } from 'vue';
+import DayNoteController from '@/actions/App/Http/Controllers/DayNoteController';
 import Heading from '@/components/Heading.vue';
 import TransactionViewNav from '@/components/TransactionViewNav.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import { day, index } from '@/routes/transactions';
 
 interface Tag {
@@ -39,6 +41,7 @@ interface TransactionRow {
 const props = defineProps<{
     date: string;
     transactions: TransactionRow[];
+    note: string | null;
     previousDate: string;
     nextDate: string;
 }>();
@@ -88,6 +91,46 @@ const typeLabel = (value: string): string =>
                 /></Link>
             </Button>
         </div>
+
+        <Card>
+            <CardHeader>
+                <CardTitle>Daily memo</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Form
+                    v-bind="DayNoteController.update.form({ date })"
+                    class="grid gap-3"
+                    v-slot="{ errors, processing }"
+                >
+                    <Textarea
+                        name="note"
+                        :default-value="note ?? ''"
+                        rows="3"
+                        placeholder="Add a note for this day..."
+                    />
+                    <p v-if="errors.note" class="text-sm text-destructive">
+                        {{ errors.note }}
+                    </p>
+                    <div class="flex gap-2">
+                        <Button :disabled="processing" size="sm">Save</Button>
+                        <Button
+                            v-if="note"
+                            variant="outline"
+                            size="sm"
+                            as-child
+                        >
+                            <Link
+                                :href="DayNoteController.destroy({ date })"
+                                method="delete"
+                                as="button"
+                            >
+                                Remove
+                            </Link>
+                        </Button>
+                    </div>
+                </Form>
+            </CardContent>
+        </Card>
 
         <div v-if="transactions.length" class="grid gap-4">
             <Card v-for="transaction in transactions" :key="transaction.id">
