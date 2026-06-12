@@ -50,6 +50,38 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 10:29 WIB - Phase 2 Transaction Metadata Implemented
+
+- **Branch:** `feat/p2-core-income-expense`.
+- **Feature IDs:** `P2-17` to `P2-20`.
+- **Status:** In progress.
+- **Completed:** Added optional merchant/recipient and memo fields to
+  transactions, a workspace-scoped `transaction_tags` pivot, model
+  relationships, active-resource validation, and metadata propagation through
+  the canonical posting service. Updated the transaction form with
+  merchant/recipient, memo, tag selection, and the active workspace timezone.
+  Transaction input time is interpreted in the workspace timezone and stored
+  in UTC. Committed and pushed the preceding `P2-13` to `P2-16` slice in
+  `49ad0c7`.
+- **Verification:** `composer ci:check` passed with 163 Pest tests and 673
+  assertions plus PHPStan, Pint, frontend lint, Prettier, type checks, Vitest,
+  and production build. Focused metadata, transaction, and transfer tests pass
+  with 24 tests and 132 assertions. Governance, `git diff --check`, Composer
+  audit, npm high-severity audit, and 2/2 Playwright smoke tests passed.
+  `migrate:fresh --seed` did not run because the sandbox blocked the PostgreSQL
+  connection before any database operation.
+- **Decisions:** Merchant/recipient is available only for income and expense.
+  Memo and tags are available for all current posted entry flows. Tags and
+  merchants must be active and belong to the transaction workspace.
+  Draft-effective-time editing remains coupled to `P2-23`; this slice covers
+  correct workspace-local entry and UTC persistence.
+- **Blockers:** None. The in-app browser was unavailable, but Playwright
+  acceptance tests passed outside the restricted sandbox.
+- **Uncommitted:** Transaction metadata implementation, migrations, tests,
+  progress updates, and this checkpoint are uncommitted and unpushed.
+- **Next:** Review and commit the focused `P2-17` to `P2-20` slice when
+  requested, then continue `F-008` with `P2-21` to `P2-24`.
+
 ### 2026-06-12 10:16 WIB - Phase 2 Transfer Workflows Implemented
 
 - **Branch:** `feat/p2-core-income-expense`.

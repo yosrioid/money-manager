@@ -27,7 +27,7 @@ phase is complete.
 ## Current Milestone
 
 - **Phase:** Phase 2 - Ledger And Core Transactions
-- **Milestone:** Core transaction flows through `P2-16`
+- **Milestone:** Core transaction flows through `P2-20`
 - **Status:** In Progress
 - **Updated:** 2026-06-12
 
@@ -99,7 +99,7 @@ Keep the row through completion so partial package progress remains visible.
 | `P1-12` to `P1-33` | Done   | [#5](https://github.com/yosrioid/money-manager/pull/5) | Financial setup, reference data, opening balances, application lock, and tests merged |
 | `P1-34`            | Done   | [#6](https://github.com/yosrioid/money-manager/pull/6) | Branded public landing page merged                                                    |
 | `P2-01` to `P2-10` | In Progress | `feat/p2-ledger-foundation` | All 3 slices of `F-007` implemented: lifecycle status enum (Voided, Reversed, Replaced) with transition guard; posted-only balance calculation and balance-at-date; immutable generic `audit_logs` table, `AuditLog` model, `AuditAction` enum, and `RecordAuditLog` service; account-locking (`LockAccountsForPosting`), `ReverseTransaction`, and `ReplaceTransaction` domain actions wired to the audit log. Pending PR review. |
-| `P2-11` to `P2-16` | In Progress | `feat/p2-core-income-expense` | Income, expense, and same-currency transfer entry implemented. Transfers support an optional linked expense-category fee; bank-to-cash withdrawal and bank-to-credit-card settlement use the same balanced transfer workflow. Posting records an audit log, and request plus domain validation protect account/category workspace, type, amount, and currency invariants. Pending full review and PR. |
+| `P2-11` to `P2-20` | In Progress | `feat/p2-core-income-expense` | Income, expense, and same-currency transfer entry implemented through transaction metadata. Transfers support an optional linked expense-category fee; withdrawal and card settlement use the balanced transfer workflow. Transaction time is interpreted in the workspace timezone and stored UTC; income/expense support merchant or recipient; all entry flows support memo and authorized tags. Posting records an audit log, and request plus domain validation protect workspace, type, amount, currency, and metadata invariants. Draft-time editing remains coupled to `P2-23`. Pending full review and PR. |
 
 ## Completed Features
 

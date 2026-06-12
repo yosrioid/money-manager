@@ -20,10 +20,24 @@ interface Category {
     type: string;
 }
 
+interface Merchant {
+    id: number;
+    name: string;
+}
+
+interface Tag {
+    id: number;
+    name: string;
+    color: string | null;
+}
+
 const props = defineProps<{
     form: RouteFormDefinition<'post'>;
     accounts: Account[];
     categories: Category[];
+    merchants: Merchant[];
+    tags: Tag[];
+    timezone: string;
 }>();
 
 const type = ref('expense');
@@ -178,8 +192,29 @@ watch(sourceAccountId, (accountId) => {
                 <InputError :message="errors.fee_category_id" />
             </div>
 
+            <div v-if="type !== 'transfer'" class="grid gap-2">
+                <Label for="merchant_id">Merchant or recipient</Label>
+                <select
+                    id="merchant_id"
+                    name="merchant_id"
+                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                >
+                    <option value="">None</option>
+                    <option
+                        v-for="merchant in merchants"
+                        :key="merchant.id"
+                        :value="merchant.id"
+                    >
+                        {{ merchant.name }}
+                    </option>
+                </select>
+                <InputError :message="errors.merchant_id" />
+            </div>
+
             <div class="grid gap-2">
-                <Label for="occurred_at">Date and time</Label>
+                <Label for="occurred_at">
+                    Date and time ({{ timezone }})
+                </Label>
                 <Input
                     id="occurred_at"
                     name="occurred_at"
@@ -202,6 +237,44 @@ watch(sourceAccountId, (accountId) => {
             />
             <InputError :message="errors.description" />
         </div>
+
+        <div class="grid gap-2">
+            <Label for="memo">Memo and notes</Label>
+            <textarea
+                id="memo"
+                name="memo"
+                rows="4"
+                maxlength="2000"
+                class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                placeholder="Optional details about this transaction"
+            />
+            <InputError :message="errors.memo" />
+        </div>
+
+        <fieldset v-if="tags.length" class="grid gap-3">
+            <legend class="text-sm font-medium">Tags</legend>
+            <div class="flex flex-wrap gap-3">
+                <label
+                    v-for="tag in tags"
+                    :key="tag.id"
+                    class="flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
+                >
+                    <input
+                        type="checkbox"
+                        name="tag_ids[]"
+                        :value="tag.id"
+                        class="size-4 rounded border-input"
+                    />
+                    <span
+                        v-if="tag.color"
+                        class="size-2.5 rounded-full"
+                        :style="{ backgroundColor: tag.color }"
+                    />
+                    {{ tag.name }}
+                </label>
+            </div>
+            <InputError :message="errors.tag_ids" />
+        </fieldset>
 
         <div class="flex items-center gap-3">
             <Button :disabled="processing">Save transaction</Button>

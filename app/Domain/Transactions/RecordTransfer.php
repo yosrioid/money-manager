@@ -8,6 +8,7 @@ use App\Enums\LedgerEntryType;
 use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Category;
+use App\Models\Tag;
 use App\Models\Transaction;
 use App\Models\User;
 use Carbon\CarbonInterface;
@@ -19,7 +20,10 @@ class RecordTransfer
         private readonly PostTransaction $postTransaction,
     ) {}
 
-    public function record(Account $sourceAccount, Account $destinationAccount, int $amount, int $feeAmount, ?Category $feeCategory, string $description, CarbonInterface $occurredAt, User $actor): Transaction
+    /**
+     * @param  array<int, Tag>  $tags
+     */
+    public function record(Account $sourceAccount, Account $destinationAccount, int $amount, int $feeAmount, ?Category $feeCategory, string $description, CarbonInterface $occurredAt, User $actor, ?string $memo = null, array $tags = []): Transaction
     {
         if ($amount < 1 || $feeAmount < 0) {
             throw new LogicException('Transfer amounts must be valid positive minor-unit values.');
@@ -58,6 +62,9 @@ class RecordTransfer
             $occurredAt,
             $entries,
             $actor,
+            null,
+            $memo,
+            $tags,
         );
     }
 }

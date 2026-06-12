@@ -9,6 +9,8 @@ use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Category;
+use App\Models\Merchant;
+use App\Models\Tag;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Workspace;
@@ -26,8 +28,9 @@ class PostTransaction
 
     /**
      * @param  array<int, array{account_id: ?int, category_id: ?int, type: LedgerEntryType, amount: int}>  $entries
+     * @param  array<int, Tag>  $tags
      */
-    public function post(Workspace $workspace, TransactionType $type, string $currencyCode, string $description, CarbonInterface $occurredAt, array $entries, User $actor): Transaction
+    public function post(Workspace $workspace, TransactionType $type, string $currencyCode, string $description, CarbonInterface $occurredAt, array $entries, User $actor, ?Merchant $merchant = null, ?string $memo = null, array $tags = []): Transaction
     {
         if (! $workspace->memberships()->where('user_id', $actor->id)->exists()) {
             throw new AuthorizationException;
@@ -53,7 +56,19 @@ class PostTransaction
             throw new LogicException('Posted transactions must balance to zero.');
         }
 
-        return DB::transaction(function () use ($workspace, $type, $currencyCode, $description, $occurredAt, $entries, $actor): Transaction {
+        if ($merchant instanceof Merchant && ($merchant->workspace_id !== $workspace->id || $merchant->archived_at !== null)) {
+            throw new LogicException('The merchant must be active and belong to the transaction workspace.');
+        }
+
+        if ($merchant instanceof Merchant && ! in_array($type, [TransactionType::Income, TransactionType::Expense], true)) {
+            throw new LogicException('Only income and expense transactions can reference a merchant or recipient.');
+        }
+
+        if (collect($tags)->contains(fn (Tag $tag): bool => $tag->workspace_id !== $workspace->id || $tag->archived_at !== null)) {
+            throw new LogicException('Transaction tags must be active and belong to the transaction workspace.');
+        }
+
+        return DB::transaction(function () use ($workspace, $type, $currencyCode, $description, $occurredAt, $entries, $actor, $merchant, $memo, $tags): Transaction {
             $accountIds = array_values(array_unique(array_filter(array_column($entries, 'account_id'))));
             $lockedAccounts = $this->lockAccounts->lock($accountIds);
             $categoryIds = array_values(array_unique(array_filter(array_column($entries, 'category_id'))));
@@ -71,10 +86,12 @@ class PostTransaction
             $transaction = Transaction::query()->create([
                 'workspace_id' => $workspace->id,
                 'created_by' => $actor->id,
+                'merchant_id' => $merchant?->id,
                 'type' => $type,
                 'status' => TransactionStatus::Draft,
                 'currency_code' => $currencyCode,
                 'description' => $description,
+                'memo' => $memo,
                 'occurred_at' => $occurredAt,
                 'posted_at' => null,
             ]);
@@ -87,6 +104,10 @@ class PostTransaction
                 'currency_code' => $currencyCode,
                 'amount' => $entry['amount'],
             ], $entries));
+
+            $transaction->tags()->attach(collect($tags)->mapWithKeys(fn (Tag $tag): array => [
+                $tag->id => ['workspace_id' => $workspace->id],
+            ]));
 
             $transaction->update(['status' => TransactionStatus::Posted, 'posted_at' => $postedAt]);
             $this->recordAuditLog->record($workspace, AuditAction::TransactionPosted, $transaction, $actor);

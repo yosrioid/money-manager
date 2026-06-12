@@ -38,6 +38,10 @@ class StoreTransactionRequest extends FormRequest
             'fee_category_id' => ['nullable', 'prohibited_unless:type,transfer', 'integer', Rule::exists('categories', 'id')->where('workspace_id', $workspace->id)],
             'amount' => ['required', 'integer', 'min:1'],
             'description' => ['required', 'string', 'max:255'],
+            'merchant_id' => ['nullable', 'prohibited_if:type,transfer', 'integer', Rule::exists('merchants', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
+            'memo' => ['nullable', 'string', 'max:2000'],
+            'tag_ids' => ['nullable', 'array', 'max:20'],
+            'tag_ids.*' => ['integer', 'distinct', Rule::exists('tags', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
             'occurred_at' => ['required', 'date'],
         ];
     }

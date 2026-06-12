@@ -8,6 +8,9 @@ import { create } from '@/routes/transactions';
 defineProps<{
     accounts: { id: number; name: string; currency_code: string }[];
     categories: { id: number; name: string; type: string }[];
+    merchants: { id: number; name: string }[];
+    tags: { id: number; name: string; color: string | null }[];
+    timezone: string;
 }>();
 
 defineOptions({
@@ -29,6 +32,9 @@ defineOptions({
             :form="TransactionController.store.form()"
             :accounts="accounts"
             :categories="categories"
+            :merchants="merchants"
+            :tags="tags"
+            :timezone="timezone"
         />
     </div>
 </template>

@@ -8,6 +8,8 @@ use App\Enums\LedgerEntryType;
 use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Category;
+use App\Models\Merchant;
+use App\Models\Tag;
 use App\Models\Transaction;
 use App\Models\User;
 use Carbon\CarbonInterface;
@@ -19,7 +21,10 @@ class RecordIncomeExpense
         private readonly PostTransaction $postTransaction,
     ) {}
 
-    public function record(Account $account, Category $category, TransactionType $type, int $amount, string $description, CarbonInterface $occurredAt, User $actor): Transaction
+    /**
+     * @param  array<int, Tag>  $tags
+     */
+    public function record(Account $account, Category $category, TransactionType $type, int $amount, string $description, CarbonInterface $occurredAt, User $actor, ?Merchant $merchant = null, ?string $memo = null, array $tags = []): Transaction
     {
         if ($account->workspace_id !== $category->workspace_id) {
             throw new LogicException('The account and category must belong to the same workspace.');
@@ -48,6 +53,9 @@ class RecordIncomeExpense
                 ['account_id' => null, 'category_id' => $category->id, 'type' => LedgerEntryType::Category, 'amount' => -$sign * $amount],
             ],
             $actor,
+            $merchant,
+            $memo,
+            $tags,
         );
     }
 }

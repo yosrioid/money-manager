@@ -26,6 +26,9 @@ class TransactionController extends Controller
         return Inertia::render('transactions/CreateTransaction', [
             'accounts' => $workspace->accounts()->active()->orderBy('name')->get(['id', 'name', 'currency_code']),
             'categories' => $workspace->categories()->active()->orderBy('name')->get(['id', 'name', 'type']),
+            'merchants' => $workspace->merchants()->active()->orderBy('name')->get(['id', 'name']),
+            'tags' => $workspace->tags()->active()->orderBy('name')->get(['id', 'name', 'color']),
+            'timezone' => $workspace->timezone,
         ]);
     }
 
@@ -40,6 +43,11 @@ class TransactionController extends Controller
 
         $account = $workspace->accounts()->whereKey($validated['account_id'])->firstOrFail();
         $type = TransactionType::from($validated['type']);
+        $merchant = isset($validated['merchant_id'])
+            ? $workspace->merchants()->whereKey($validated['merchant_id'])->firstOrFail()
+            : null;
+        $tags = $workspace->tags()->whereKey($validated['tag_ids'] ?? [])->get()->all();
+        $occurredAt = Carbon::parse($validated['occurred_at'], $workspace->timezone)->utc();
 
         if ($type === TransactionType::Transfer) {
             $destinationAccount = $workspace->accounts()->whereKey($validated['destination_account_id'])->firstOrFail();
@@ -54,8 +62,10 @@ class TransactionController extends Controller
                 (int) ($validated['fee_amount'] ?? 0),
                 $feeCategory,
                 $validated['description'],
-                Carbon::parse($validated['occurred_at']),
+                $occurredAt,
                 $user,
+                $validated['memo'] ?? null,
+                $tags,
             );
         } else {
             $category = $workspace->categories()->whereKey($validated['category_id'])->firstOrFail();
@@ -66,8 +76,11 @@ class TransactionController extends Controller
                 $type,
                 (int) $validated['amount'],
                 $validated['description'],
-                Carbon::parse($validated['occurred_at']),
+                $occurredAt,
                 $user,
+                $merchant,
+                $validated['memo'] ?? null,
+                $tags,
             );
         }
 

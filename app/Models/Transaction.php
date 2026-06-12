@@ -7,6 +7,7 @@ use App\Enums\TransactionType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use LogicException;
@@ -14,10 +15,12 @@ use LogicException;
 #[Fillable([
     'workspace_id',
     'created_by',
+    'merchant_id',
     'type',
     'status',
     'currency_code',
     'description',
+    'memo',
     'occurred_at',
     'posted_at',
     'reverses_transaction_id',
@@ -52,6 +55,25 @@ class Transaction extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * @return BelongsTo<Merchant, $this>
+     */
+    public function merchant(): BelongsTo
+    {
+        return $this->belongsTo(Merchant::class);
+    }
+
+    /**
+     * @return BelongsToMany<Tag, $this, TransactionTag, 'pivot'>
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'transaction_tags')
+            ->using(TransactionTag::class)
+            ->withPivot('workspace_id')
+            ->withTimestamps();
     }
 
     /**
