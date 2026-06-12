@@ -125,6 +125,18 @@ test('replacement entries that do not balance to zero throw and create nothing',
         ->and($this->workspace->transactions()->count())->toBe(1);
 });
 
+test('replacement requires at least two entries and preserves the original balance', function () {
+    expect(fn () => app(ReplaceTransaction::class)->replace(
+        $this->transaction,
+        [],
+        $this->user,
+    ))->toThrow(LogicException::class, 'Replacement transactions require at least two entries.');
+
+    expect($this->transaction->fresh()->status)->toBe(TransactionStatus::Posted)
+        ->and($this->workspace->transactions()->count())->toBe(1)
+        ->and(app(CalculateAccountBalance::class)->calculate($this->account->fresh()))->toBe(5000);
+});
+
 test('replacing a non posted transaction throws', function () {
     app(ReplaceTransaction::class)->replace($this->transaction, [
         [

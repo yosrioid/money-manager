@@ -8,6 +8,7 @@ use App\Domain\Transactions\RecordIncomeExpense;
 use App\Domain\Transactions\RecordTransfer;
 use App\Domain\Transactions\SaveTransactionDraft;
 use App\Domain\Workspaces\WorkspaceContext;
+use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
 use App\Http\Requests\StoreTransactionDraftRequest;
 use App\Http\Requests\StoreTransactionRequest;
@@ -27,16 +28,15 @@ class TransactionController extends Controller
 
     public function create(): Response
     {
-        $workspace = $this->workspaceContext->get();
+        return Inertia::render('transactions/CreateTransaction', $this->formProps());
+    }
 
-        return Inertia::render('transactions/CreateTransaction', [
-            'accounts' => $workspace->accounts()->active()->orderBy('name')->get(['id', 'name', 'currency_code']),
-            'categories' => $workspace->categories()->active()->orderBy('name')->get(['id', 'name', 'type']),
-            'merchants' => $workspace->merchants()->active()->orderBy('name')->get(['id', 'name']),
-            'tags' => $workspace->tags()->active()->orderBy('name')->get(['id', 'name', 'color']),
-            'timezone' => $workspace->timezone,
-            'idempotencyKey' => (string) Str::uuid(),
-        ]);
+    public function editDraft(Transaction $transaction): Response
+    {
+        $this->assertDraftBelongsToCurrentWorkspace($transaction);
+        $this->authorize('view', $transaction);
+
+        return Inertia::render('transactions/CreateTransaction', $this->formProps($transaction));
     }
 
     public function store(StoreTransactionRequest $request, RecordIncomeExpense $recordIncomeExpense, RecordTransfer $recordTransfer, EvaluateAmountExpression $evaluator): RedirectResponse
@@ -107,6 +107,15 @@ class TransactionController extends Controller
             );
         }
 
+        if (isset($validated['draft_id'])) {
+            $draft = $workspace->transactions()
+                ->whereKey($validated['draft_id'])
+                ->where('status', TransactionStatus::Draft)
+                ->firstOrFail();
+            $this->authorize('update', $draft);
+            $draft->update(['status' => TransactionStatus::Voided]);
+        }
+
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Transaction recorded.')]);
 
         return to_route('accounts.index');
@@ -118,10 +127,24 @@ class TransactionController extends Controller
 
         abort_unless($user instanceof User, 401);
 
-        $saveTransactionDraft->save($this->workspaceContext->get(), $user, $request->validated());
+        $draft = $saveTransactionDraft->save($this->workspaceContext->get(), $user, $request->validated());
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Transaction draft saved.')]);
 
-        return to_route('accounts.index');
+        return to_route('transactions.drafts.edit', $draft);
+    }
+
+    public function updateDraft(StoreTransactionDraftRequest $request, Transaction $transaction, SaveTransactionDraft $saveTransactionDraft): RedirectResponse
+    {
+        $this->assertDraftBelongsToCurrentWorkspace($transaction);
+        $this->authorize('update', $transaction);
+        $user = $request->user();
+
+        abort_unless($user instanceof User, 401);
+
+        $saveTransactionDraft->save($this->workspaceContext->get(), $user, $request->validated(), $transaction);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Transaction draft updated.')]);
+
+        return to_route('transactions.drafts.edit', $transaction);
     }
 
     public function duplicate(Transaction $transaction, DuplicateTransaction $duplicateTransaction): RedirectResponse
@@ -132,9 +155,37 @@ class TransactionController extends Controller
 
         abort_unless($user instanceof User, 401);
 
-        $duplicateTransaction->duplicate($transaction, $user);
+        $draft = $duplicateTransaction->duplicate($transaction, $user);
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Transaction duplicated as a draft.')]);
 
-        return to_route('accounts.index');
+        return to_route('transactions.drafts.edit', $draft);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function formProps(?Transaction $draft = null): array
+    {
+        $workspace = $this->workspaceContext->get();
+
+        return [
+            'accounts' => $workspace->accounts()->active()->orderBy('name')->get(['id', 'name', 'currency_code']),
+            'categories' => $workspace->categories()->active()->orderBy('name')->get(['id', 'name', 'type']),
+            'merchants' => $workspace->merchants()->active()->orderBy('name')->get(['id', 'name']),
+            'tags' => $workspace->tags()->active()->orderBy('name')->get(['id', 'name', 'color']),
+            'timezone' => $workspace->timezone,
+            'idempotencyKey' => (string) Str::uuid(),
+            'draftId' => $draft?->id,
+            'initialData' => $draft?->draft_data,
+        ];
+    }
+
+    private function assertDraftBelongsToCurrentWorkspace(Transaction $transaction): void
+    {
+        abort_unless(
+            $transaction->workspace_id === $this->workspaceContext->get()->id
+            && $transaction->getRawOriginal('status') === TransactionStatus::Draft->value,
+            404,
+        );
     }
 }

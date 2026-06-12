@@ -31,21 +31,21 @@ class StoreTransactionDraftRequest extends FormRequest
 
         return [
             'type' => ['nullable', 'string', 'max:30'],
-            'account_id' => ['nullable', 'integer', Rule::exists('accounts', 'id')->where('workspace_id', $workspace->id)],
-            'category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->where('workspace_id', $workspace->id)],
-            'destination_account_id' => ['nullable', 'integer', Rule::exists('accounts', 'id')->where('workspace_id', $workspace->id)],
+            'account_id' => ['nullable', 'integer', Rule::exists('accounts', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
+            'category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
+            'destination_account_id' => ['nullable', 'integer', Rule::exists('accounts', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
             'fee_amount' => ['nullable', 'string', 'max:100'],
-            'fee_category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->where('workspace_id', $workspace->id)],
+            'fee_category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
             'amount' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:255'],
-            'merchant_id' => ['nullable', 'integer', Rule::exists('merchants', 'id')->where('workspace_id', $workspace->id)],
+            'merchant_id' => ['nullable', 'integer', Rule::exists('merchants', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
             'memo' => ['nullable', 'string', 'max:2000'],
             'tag_ids' => ['nullable', 'array', 'max:20'],
-            'tag_ids.*' => ['integer', Rule::exists('tags', 'id')->where('workspace_id', $workspace->id)],
+            'tag_ids.*' => ['integer', Rule::exists('tags', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
             'occurred_at' => ['nullable', 'date'],
             'splits' => ['nullable', 'array', 'max:50'],
             'splits.*' => ['array:category_id,amount'],
-            'splits.*.category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->where('workspace_id', $workspace->id)],
+            'splits.*.category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
             'splits.*.amount' => ['nullable', 'string', 'max:100'],
         ];
     }

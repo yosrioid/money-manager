@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { index } from '@/routes/accounts';
-import { store as storeDraft } from '@/routes/transactions/drafts';
 import type { RouteFormDefinition } from '@/wayfinder';
 
 interface Account {
@@ -32,21 +31,55 @@ interface Tag {
     color: string | null;
 }
 
+interface TransactionDraftData {
+    type?: string;
+    account_id?: number;
+    category_id?: number;
+    destination_account_id?: number;
+    fee_amount?: string;
+    fee_category_id?: number;
+    amount?: string;
+    description?: string;
+    merchant_id?: number;
+    memo?: string;
+    tag_ids?: number[];
+    occurred_at?: string;
+    splits?: { category_id?: number; amount?: string }[];
+}
+
+interface SplitRow {
+    id: number;
+    category_id?: number;
+    amount?: string;
+}
+
 const props = defineProps<{
     form: RouteFormDefinition<'post'>;
+    draftForm: RouteFormDefinition<'post' | 'patch'>;
     accounts: Account[];
     categories: Category[];
     merchants: Merchant[];
     tags: Tag[];
     timezone: string;
     idempotencyKey: string;
+    draftId: number | null;
+    initialData: TransactionDraftData | null;
 }>();
 
-const type = ref('expense');
-const sourceAccountId = ref('');
-const destinationAccountId = ref('');
-const splitEnabled = ref(false);
-const splitRows = ref([{ id: 1 }, { id: 2 }]);
+const type = ref(props.initialData?.type ?? 'expense');
+const sourceAccountId = ref(props.initialData?.account_id?.toString() ?? '');
+const destinationAccountId = ref(
+    props.initialData?.destination_account_id?.toString() ?? '',
+);
+const splitEnabled = ref(Boolean(props.initialData?.splits?.length));
+const splitRows = ref<SplitRow[]>(
+    props.initialData?.splits?.length
+        ? props.initialData.splits.map((split, index) => ({
+              id: index + 1,
+              ...split,
+          }))
+        : [{ id: 1 }, { id: 2 }],
+);
 
 const filteredCategories = computed(() =>
     props.categories.filter((category) => category.type === type.value),
@@ -82,7 +115,15 @@ const saveDraft = (event: MouseEvent) => {
     const form = (event.currentTarget as HTMLButtonElement).form;
 
     if (form) {
-        router.post(storeDraft.url(), new FormData(form));
+        const data = new FormData(form);
+
+        if (props.draftForm.method === 'patch') {
+            data.set('_method', 'patch');
+        }
+
+        router.post(props.draftForm.action, data, {
+            forceFormData: true,
+        });
     }
 };
 </script>
@@ -90,6 +131,7 @@ const saveDraft = (event: MouseEvent) => {
 <template>
     <Form v-bind="form" class="space-y-6" v-slot="{ errors, processing }">
         <input type="hidden" name="idempotency_key" :value="idempotencyKey" />
+        <input v-if="draftId" type="hidden" name="draft_id" :value="draftId" />
         <div class="grid gap-6 md:grid-cols-2">
             <div class="grid gap-2">
                 <Label for="type">Type</Label>
@@ -137,6 +179,7 @@ const saveDraft = (event: MouseEvent) => {
                     name="category_id"
                     class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                     :required="!splitEnabled"
+                    :value="initialData?.category_id ?? ''"
                 >
                     <option
                         v-for="category in filteredCategories"
@@ -181,6 +224,7 @@ const saveDraft = (event: MouseEvent) => {
                     inputmode="numeric"
                     placeholder="10000 + 5000"
                     required
+                    :value="initialData?.amount ?? ''"
                 />
                 <InputError :message="errors.amount" />
             </div>
@@ -193,6 +237,7 @@ const saveDraft = (event: MouseEvent) => {
                     type="number"
                     min="0"
                     placeholder="0"
+                    :value="initialData?.fee_amount ?? ''"
                 />
                 <InputError :message="errors.fee_amount" />
             </div>
@@ -203,6 +248,7 @@ const saveDraft = (event: MouseEvent) => {
                     id="fee_category_id"
                     name="fee_category_id"
                     class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                    :value="initialData?.fee_category_id ?? ''"
                 >
                     <option value="">No fee</option>
                     <option
@@ -222,6 +268,7 @@ const saveDraft = (event: MouseEvent) => {
                     id="merchant_id"
                     name="merchant_id"
                     class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                    :value="initialData?.merchant_id ?? ''"
                 >
                     <option value="">None</option>
                     <option
@@ -244,6 +291,7 @@ const saveDraft = (event: MouseEvent) => {
                     name="occurred_at"
                     type="datetime-local"
                     required
+                    :value="initialData?.occurred_at ?? ''"
                 />
                 <InputError :message="errors.occurred_at" />
             </div>
@@ -269,10 +317,9 @@ const saveDraft = (event: MouseEvent) => {
                         :name="`splits[${index}][category_id]`"
                         class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
                         required
+                        :value="split.category_id ?? ''"
                     >
-                        <option value="" disabled selected>
-                            Select category
-                        </option>
+                        <option value="" disabled>Select category</option>
                         <option
                             v-for="category in filteredCategories"
                             :key="category.id"
@@ -287,6 +334,7 @@ const saveDraft = (event: MouseEvent) => {
                         inputmode="numeric"
                         placeholder="5000 * 2"
                         required
+                        :value="split.amount ?? ''"
                     />
                     <Button
                         type="button"
@@ -313,6 +361,7 @@ const saveDraft = (event: MouseEvent) => {
                 class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 placeholder="What was this transaction for?"
                 required
+                :value="initialData?.description ?? ''"
             />
             <InputError :message="errors.description" />
         </div>
@@ -326,6 +375,7 @@ const saveDraft = (event: MouseEvent) => {
                 maxlength="2000"
                 class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 placeholder="Optional details about this transaction"
+                :value="initialData?.memo ?? ''"
             />
             <InputError :message="errors.memo" />
         </div>
@@ -342,6 +392,7 @@ const saveDraft = (event: MouseEvent) => {
                         type="checkbox"
                         name="tag_ids[]"
                         :value="tag.id"
+                        :checked="initialData?.tag_ids?.includes(tag.id)"
                         class="size-4 rounded border-input"
                     />
                     <span
@@ -363,7 +414,7 @@ const saveDraft = (event: MouseEvent) => {
                 :disabled="processing"
                 @click="saveDraft"
             >
-                Save draft
+                {{ draftId ? 'Update draft' : 'Save draft' }}
             </Button>
             <Button variant="outline" as-child>
                 <Link :href="index()">Cancel</Link>

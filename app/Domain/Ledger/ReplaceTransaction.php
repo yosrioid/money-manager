@@ -39,6 +39,10 @@ class ReplaceTransaction
                 throw new LogicException('Only posted transactions can be replaced.');
             }
 
+            if (count($entries) < 2) {
+                throw new LogicException('Replacement transactions require at least two entries.');
+            }
+
             if (array_sum(array_column($entries, 'amount')) !== 0) {
                 throw new LogicException('Replacement transactions must balance to zero.');
             }

@@ -50,6 +50,30 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 13:50 WIB - Phase 2 Review Findings Addressed
+
+- **Branch:** `feat/p2-core-income-expense`.
+- **Feature IDs:** `P2-01` to `P2-10`, `P2-23`, `P2-24`.
+- **Status:** In review.
+- **Completed:** Prevented empty replacement transactions from removing posted
+  balances; rejected archived account and category references at request and
+  domain boundaries; rejected idempotency-key reuse with conflicting payloads;
+  and added authorized draft resume, update, duplicate-to-draft, and
+  post-from-draft flows.
+- **Verification:** Focused regression suite passed with 29 tests and 146
+  assertions. `composer ci:check` passed with 180 tests and 763 assertions;
+  `npm run build`, `npm run test:e2e`, `bash scripts/check-governance.sh`,
+  `composer audit`, `npm audit --audit-level=high`, and `git diff --check`
+  passed.
+- **Decisions:** Successful posting from a resumed draft marks the original
+  balance-neutral draft as voided. Exact idempotent retries return the original
+  transaction, while a changed payload using the same key fails explicitly.
+- **Blockers:** None.
+- **Uncommitted:** Review-fix implementation, regression tests, and this
+  checkpoint remain uncommitted.
+- **Next:** Review the final diff, commit and push the review fixes when
+  requested, then verify PR #10 CI.
+
 ### 2026-06-12 13:35 WIB - Phase 2 Pull Request Opened
 
 - **Branch:** `feat/p2-core-income-expense`.

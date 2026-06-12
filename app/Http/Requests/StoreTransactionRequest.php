@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Domain\Transactions\EvaluateAmountExpression;
 use App\Enums\CategoryType;
+use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Category;
@@ -34,11 +35,12 @@ class StoreTransactionRequest extends FormRequest
         return [
             'type' => ['required', Rule::in([TransactionType::Income->value, TransactionType::Expense->value, TransactionType::Transfer->value])],
             'idempotency_key' => ['required', 'uuid'],
-            'account_id' => ['required', 'integer', Rule::exists('accounts', 'id')->where('workspace_id', $workspace->id)],
-            'category_id' => ['nullable', 'prohibited_if:type,transfer', 'integer', Rule::exists('categories', 'id')->where('workspace_id', $workspace->id)],
-            'destination_account_id' => ['required_if:type,transfer', 'prohibited_unless:type,transfer', 'integer', Rule::exists('accounts', 'id')->where('workspace_id', $workspace->id)],
+            'draft_id' => ['nullable', 'integer', Rule::exists('transactions', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->where('status', TransactionStatus::Draft->value))],
+            'account_id' => ['required', 'integer', Rule::exists('accounts', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
+            'category_id' => ['nullable', 'prohibited_if:type,transfer', 'integer', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
+            'destination_account_id' => ['required_if:type,transfer', 'prohibited_unless:type,transfer', 'integer', Rule::exists('accounts', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
             'fee_amount' => ['nullable', 'prohibited_unless:type,transfer'],
-            'fee_category_id' => ['nullable', 'prohibited_unless:type,transfer', 'integer', Rule::exists('categories', 'id')->where('workspace_id', $workspace->id)],
+            'fee_category_id' => ['nullable', 'prohibited_unless:type,transfer', 'integer', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
             'amount' => ['required'],
             'description' => ['required', 'string', 'max:255'],
             'merchant_id' => ['nullable', 'prohibited_if:type,transfer', 'integer', Rule::exists('merchants', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
@@ -48,7 +50,7 @@ class StoreTransactionRequest extends FormRequest
             'occurred_at' => ['required', 'date'],
             'splits' => ['nullable', 'prohibited_if:type,transfer', 'array', 'min:2', 'max:50'],
             'splits.*' => ['array:category_id,amount'],
-            'splits.*.category_id' => ['required', 'integer', 'distinct', Rule::exists('categories', 'id')->where('workspace_id', $workspace->id)],
+            'splits.*.category_id' => ['required', 'integer', 'distinct', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
             'splits.*.amount' => ['required'],
         ];
     }
