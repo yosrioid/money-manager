@@ -20,15 +20,19 @@ Branch format:
 Examples:
 
 ```text
-feat/ledger-post-transactions
+feat/phase-3
 fix/budget-month-boundary
 docs/engineering-standards
 chore/upgrade-vue
 ```
 
-Product implementation branches and pull requests must identify their approved
-feature IDs from `docs/FEATURE_CATALOG.md`. Include the IDs in the PR body and,
-when practical, in the branch scope.
+Product implementation work uses one branch per phase (e.g. `feat/phase-3`).
+Each feature ID in the phase is implemented as its own commit on that branch.
+Engineering-only, bug-fix, docs, and chore work may still use a short-lived
+scope-specific branch as before.
+
+Pull requests must identify all approved feature IDs from
+`docs/FEATURE_CATALOG.md` that the PR covers. Include the IDs in the PR body.
 
 Supported types:
 
@@ -113,7 +117,9 @@ Push only after the user explicitly requests it.
 2. Rebase the branch on the latest `main`.
 3. Resolve conflicts and rerun relevant tests.
 4. Push the non-`main` branch.
-5. Open a pull request immediately after the branch is ready for review.
+5. Open a pull request once the branch's phase (or scope, for non-phase
+   branches) is ready for review. Pushing a phase branch mid-phase does not by
+   itself open or update a pull request.
 
 ```bash
 git fetch origin
@@ -148,7 +154,8 @@ Pull request body:
 
 ## Feature IDs
 
-- `Pn-nn`
+- `Pn-nn`, `Pn-nn`, ... (all feature IDs delivered as commits on this phase
+  branch)
 
 ## Changes
 
@@ -187,9 +194,9 @@ Closes #...
 ## Pull Request Size And Review
 
 - Never merge a pull request without the user's explicit request.
-- Prefer pull requests below roughly 400 changed lines, excluding generated
-  files and migrations.
-- Split large features into independently safe vertical slices.
+- One pull request per phase, opened once the phase's exit gate is met; review
+  it commit by commit, since each feature ID is its own commit (vertical
+  slice) on the phase branch.
 - Require at least one review before merging.
 - Resolve all review threads before merging.
 - CI must pass before merging.
