@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
-import { calendar, index, monthly, weekly } from '@/routes/transactions';
+import {
+    calendar,
+    index,
+    monthly,
+    summary,
+    weekly,
+} from '@/routes/transactions';
 
 defineProps<{
-    current: 'daily' | 'calendar' | 'weekly' | 'monthly';
+    current: 'daily' | 'calendar' | 'weekly' | 'monthly' | 'summary';
 }>();
 </script>
 
@@ -37,6 +43,13 @@ defineProps<{
             as-child
         >
             <Link :href="calendar()">Calendar</Link>
+        </Button>
+        <Button
+            :variant="current === 'summary' ? 'default' : 'outline'"
+            size="sm"
+            as-child
+        >
+            <Link :href="summary()">Summary</Link>
         </Button>
     </nav>
 </template>

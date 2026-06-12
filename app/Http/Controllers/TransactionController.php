@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Ledger\CalculateAccountBalance;
 use App\Domain\Transactions\DuplicateTransaction;
 use App\Domain\Transactions\EvaluateAmountExpression;
 use App\Domain\Transactions\RecordIncomeExpense;
@@ -13,6 +14,7 @@ use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
 use App\Http\Requests\StoreTransactionDraftRequest;
 use App\Http\Requests\StoreTransactionRequest;
+use App\Models\Account;
 use App\Models\Transaction;
 use App\Models\TransactionEntry;
 use App\Models\User;
@@ -126,6 +128,62 @@ class TransactionController extends Controller
             'months' => $months,
             'previousYear' => $year->copy()->subYear()->format('Y'),
             'nextYear' => $year->copy()->addYear()->format('Y'),
+        ]);
+    }
+
+    public function summary(Request $request, SummarizeTransactionPeriod $summarizeTransactionPeriod, CalculateAccountBalance $calculateAccountBalance): Response
+    {
+        $this->authorize('viewAny', Transaction::class);
+
+        $workspace = $this->workspaceContext->get();
+
+        $month = $request->query('month');
+        $month = is_string($month) && preg_match('/^\d{4}-\d{2}$/', $month)
+            ? Carbon::parse($month.'-01', $workspace->timezone)
+            : Carbon::now($workspace->timezone);
+
+        $month = $month->startOfMonth();
+
+        $start = $month->copy()->startOfDay();
+        $end = $start->copy()->addMonth();
+
+        $days = $summarizeTransactionPeriod->forMonth($workspace, $month);
+
+        $totals = ['income' => [], 'expense' => [], 'net' => []];
+        $count = 0;
+
+        foreach ($days as $day) {
+            $count += $day['count'];
+
+            foreach (['income', 'expense', 'net'] as $key) {
+                foreach ($day[$key] as $currency => $amount) {
+                    $totals[$key][$currency] = ($totals[$key][$currency] ?? 0) + $amount;
+                }
+            }
+        }
+
+        $accountMovements = $workspace->accounts()->active()->orderBy('name')->get()
+            ->map(function (Account $account) use ($calculateAccountBalance, $start, $end): array {
+                $opening = $calculateAccountBalance->calculateAsOf($account, $start->copy()->utc()->subSecond());
+                $closing = $calculateAccountBalance->calculateAsOf($account, $end->copy()->utc()->subSecond());
+
+                return [
+                    'id' => $account->id,
+                    'name' => $account->name,
+                    'currency_code' => $account->currency_code,
+                    'opening_balance' => $opening,
+                    'closing_balance' => $closing,
+                    'change' => $closing - $opening,
+                ];
+            })->all();
+
+        return Inertia::render('transactions/Summary', [
+            'month' => $month->toDateString(),
+            'count' => $count,
+            'totals' => $totals,
+            'accountMovements' => $accountMovements,
+            'previousMonth' => $month->copy()->subMonth()->format('Y-m'),
+            'nextMonth' => $month->copy()->addMonth()->format('Y-m'),
         ]);
     }
 

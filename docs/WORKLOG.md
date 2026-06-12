@@ -50,6 +50,36 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 22:10 WIB - `P3-05` Summary View
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-05`.
+- **Status:** In progress.
+- **Completed:** Added `transactions.summary`
+  (`TransactionController::summary()`) rendering `transactions/Summary` for a
+  workspace-local month (`?month=YYYY-MM`, defaults to the current
+  workspace-local month, with previous/next month navigation). Shows period
+  income/expense/net totals (per currency) and a record count derived from
+  `SummarizeTransactionPeriod::forMonth()`, plus an "account movement" section
+  listing each active account's opening balance, closing balance, and net
+  change for the period, computed with the existing
+  `CalculateAccountBalance::calculateAsOf()`. Added "Summary" to
+  `TransactionViewNav`.
+- **Verification:** Added `tests/Feature/TransactionSummaryTest.php` (2
+  tests, 38 assertions). Full suite: 197 Pest tests / 1033 assertions,
+  PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript checks
+  (`vue-tsc`), and a production build all passed.
+- **Decisions:** The catalog acceptance summary for `P3-05` says the period
+  summary "combines budget and account movement," but budgets (`P4-01` to
+  `P4-10`) are Phase 4 scope and do not exist yet. This slice implements the
+  account-movement half now; budget comparison is recorded as explicit
+  follow-up work for when Phase 4 budgets land, per
+  `docs/PROGRESS.md`'s "record follow-up work explicitly" rule. Opening
+  balance is the posted ledger balance as of the instant before the period
+  starts; closing balance is as of the last instant of the period.
+- **Blockers:** None.
+- **Next:** Continue Phase 3 with `P3-06` (daily memo).
+
 ### 2026-06-12 21:45 WIB - `P3-04` Monthly View
 
 - **Branch:** `feat/phase-3`.
