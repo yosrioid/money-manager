@@ -50,6 +50,33 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 16:00 WIB - `P3-01` Daily Transaction History
+
+- **Branch:** `feat/p3-daily-transaction-history`.
+- **Feature IDs:** `P3-01`.
+- **Status:** Ready for review.
+- **Completed:** Started Phase 3 with `P3-01` ("Transactions are grouped by
+  workspace-local date"), per the recommended PR sequence in
+  `docs/MASTER_PLAN.md`. Added `TransactionController::index()` and a
+  `transactions.index` route returning posted transactions (eager-loaded
+  merchant/tags/entries.account/entries.category), paginated at 30 and
+  transformed with a `local_date` computed from `occurred_at` in the
+  workspace timezone. Added `resources/js/pages/transactions/Index.vue`
+  grouping the paginated rows by `local_date` with pagination controls, and
+  added a "Transactions" sidebar nav item.
+- **Verification:** Added `tests/Feature/TransactionHistoryTest.php` (4 tests,
+  60 assertions). `composer ci:check` passed (184 Pest tests, 823 assertions,
+  PHPStan/Larastan, Pint, ESLint, Prettier, TypeScript checks, production
+  build).
+- **Decisions:** Grouping uses `occurred_at` (the user-entered transaction
+  date), not `posted_at`. Transactions with any `posted_at` are shown
+  (`Posted`, `Reversed`, `Replaced`); drafts are excluded.
+- **Blockers:** None.
+- **Uncommitted:** All changes ready to commit on
+  `feat/p3-daily-transaction-history`.
+- **Next:** Commit, push, open a pull request to `main` for `P3-01`, verify
+  CI, then continue Phase 3 with `P3-02` to `P3-06`.
+
 ### 2026-06-12 15:10 WIB - `v0.2.0-alpha.1` Phase 2 Core Ledger Alpha Published
 
 - **Branch:** `main`.
