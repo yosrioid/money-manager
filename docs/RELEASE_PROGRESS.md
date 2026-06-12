@@ -13,10 +13,8 @@ exist.
 - **Version:** `v0.2.0-alpha.1`
 - **Name:** Phase 2 Core Ledger Alpha
 - **Type:** Milestone prerelease
-- **Status:** Preparing
-- **Target:** `6c2ee242598b96d8a597f2234ed50ca9d5a2003a` (this
-  release-preparation pull request's merge commit becomes the confirmed
-  target before tagging)
+- **Status:** Published
+- **Target:** `fd75b78c8d0c366a32bff69ea5fe229b6b8eb662`
 - **Scope:** Phase 2 `P2-01` to `P2-24`
 - **Updated:** 2026-06-12
 
@@ -25,7 +23,7 @@ exist.
 | Version          | Boundary                  | Type                 | Status    | Target Or Tag                                | Published  |
 | ---------------- | ------------------------- | -------------------- | --------- | -------------------------------------------- | ---------- |
 | `v0.1.0-alpha.1` | Phase 1 internal alpha    | Milestone prerelease | Published | `b304c18`                                    | 2026-06-11 |
-| `v0.2.0-alpha.1` | Phase 2 core ledger alpha | Milestone prerelease | Preparing | `6c2ee24` (pending release-prep merge)       | -          |
+| `v0.2.0-alpha.1` | Phase 2 core ledger alpha | Milestone prerelease | Published | `fd75b78`                                     | 2026-06-12 |
 | `v0.3.0-beta.1`  | Phase 3 private beta      | Milestone prerelease | Planned   | Pending Phase 3                              | -          |
 | `v1.0.0-rc.1`    | Phase 4 MVP candidate     | Milestone prerelease | Planned   | Pending Phase 4 and applicable Phase 8 gates | -          |
 | `v1.0.0`         | MVP release               | MVP                  | Planned   | Pending MVP release gates                    | -          |
@@ -42,12 +40,16 @@ exist.
 - [x] Phase 2 completion entry and current worklog checkpoint are included in
       this release-preparation change.
 - [x] Release notes follow `docs/RELEASE_PROCESS.md`.
-- [ ] Release-preparation merge commit is confirmed as the latest `main`.
+- [x] Release-preparation merge commit is confirmed as the latest `main`
+      ([#11](https://github.com/yosrioid/money-manager/pull/11),
+      `fd75b78c8d0c366a32bff69ea5fe229b6b8eb662`).
 - [x] Applicable release checks pass against the target commit (see Current
       Verification below).
-- [ ] Explicit user approval to create and push the annotated tag is recorded.
-- [ ] Explicit user approval to publish the GitHub prerelease is recorded.
-- [ ] Annotated tag and GitHub prerelease are published.
+- [x] Explicit user approval to create and push the annotated tag is recorded
+      (user request: "merge dan release").
+- [x] Explicit user approval to publish the GitHub prerelease is recorded
+      (user request: "merge dan release").
+- [x] Annotated tag and GitHub prerelease are published.
 
 ### `v0.1.0-alpha.1` - Phase 1 Internal Alpha
 
@@ -72,7 +74,8 @@ exist.
   Pest with 180 tests and 763 assertions, ESLint, Prettier, TypeScript checks,
   Vitest, production build), Composer audit, `npm audit --audit-level=high`,
   and fresh `php artisan migrate:fresh --seed` rehearsal against the merged
-  `main` commit `6c2ee24`.
+  `main` commit `6c2ee24` (Phase 2 implementation, before release
+  preparation).
 - **Browser:** `npx playwright test` passed 2/2 (Chromium and mobile Safari)
   against an isolated PHP 8.5 server with a temporary SQLite database. The
   WebKit browser binary was missing locally and was installed via
@@ -95,6 +98,17 @@ exist.
   independently, and pull-request CI remains the final merged-content gate.
 
 ## Release History
+
+### 2026-06-12 - `v0.2.0-alpha.1` Phase 2 Core Ledger Alpha
+
+- **Type:** Milestone prerelease.
+- **Target:** `fd75b78c8d0c366a32bff69ea5fe229b6b8eb662`.
+- **Tag:** `v0.2.0-alpha.1`.
+- **Release:** [GitHub prerelease](https://github.com/yosrioid/money-manager/releases/tag/v0.2.0-alpha.1).
+- **Scope:** Phase 2 `P2-01` to `P2-24`.
+- **Verification:** Required PR quality and browser CI for [#10](https://github.com/yosrioid/money-manager/pull/10)
+  and [#11](https://github.com/yosrioid/money-manager/pull/11), local release
+  gates, migration rehearsal, and security audits passed.
 
 ### 2026-06-11 - `v0.1.0-alpha.1` Phase 1 Internal Alpha
 

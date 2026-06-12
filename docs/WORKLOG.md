@@ -50,6 +50,34 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 15:10 WIB - `v0.2.0-alpha.1` Phase 2 Core Ledger Alpha Published
+
+- **Branch:** `main`.
+- **Feature IDs:** `P2-01` to `P2-24`.
+- **Status:** Completed.
+- **Completed:** Merged release-preparation pull request
+  [#11](https://github.com/yosrioid/money-manager/pull/11) into `main` as
+  `fd75b78c8d0c366a32bff69ea5fe229b6b8eb662` (confirmed as the latest `main`
+  commit). Created and pushed the annotated tag `v0.2.0-alpha.1` from that
+  commit and published the
+  [GitHub prerelease](https://github.com/yosrioid/money-manager/releases/tag/v0.2.0-alpha.1).
+  Updated `docs/RELEASE_PROGRESS.md` to `Published` with the confirmed target
+  SHA and checklist, added a release history entry, and updated
+  `docs/releases/v0.2.0-alpha.1.md` with the published date and target commit.
+- **Verification:** Tag created from an up-to-date, clean `main` after
+  fast-forward merge; GitHub release created successfully against
+  `fd75b78c8d0c366a32bff69ea5fe229b6b8eb662`.
+- **Decisions:** User explicitly approved both tag creation and GitHub
+  prerelease publication ("merge dan release"), satisfying the separate
+  approval requirements in `docs/RELEASE_PROCESS.md`.
+- **Blockers:** None.
+- **Uncommitted:** Documentation updates to `docs/RELEASE_PROGRESS.md`,
+  `docs/releases/v0.2.0-alpha.1.md`, and this entry are pending commit on a new
+  branch per `docs/GIT_WORKFLOW.md` (no direct commits to `main`).
+- **Next:** Commit and push a `docs/release-v0.2.0-alpha.1-published` branch,
+  open a pull request to `main` recording the published tag and release, and
+  begin Phase 3 planning.
+
 ### 2026-06-12 14:45 WIB - `v0.2.0-alpha.1` Phase 2 Release Preparation
 
 - **Branch:** `docs/release-v0.2.0-alpha.1`.
