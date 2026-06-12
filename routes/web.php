@@ -30,6 +30,8 @@ Route::middleware(['auth', 'verified', 'workspace', 'workspace.lock'])->group(fu
     // Transactions
     Route::get('transactions/create', [TransactionController::class, 'create'])->name('transactions.create');
     Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');
+    Route::post('transaction-drafts', [TransactionController::class, 'storeDraft'])->name('transactions.drafts.store');
+    Route::post('transactions/{transaction}/duplicate', [TransactionController::class, 'duplicate'])->name('transactions.duplicate');
 
     // Categories
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');

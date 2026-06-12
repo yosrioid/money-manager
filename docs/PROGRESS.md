@@ -27,52 +27,52 @@ phase is complete.
 ## Current Milestone
 
 - **Phase:** Phase 2 - Ledger And Core Transactions
-- **Milestone:** Core transaction flows through `P2-20`
+- **Milestone:** Core transaction flows through `P2-24`
 - **Status:** In Progress
 - **Updated:** 2026-06-12
 
 ## Phase Status
 
-| Phase   | Name                                          | Status  | Exit Gate                             |
-| ------- | --------------------------------------------- | ------- | ------------------------------------- |
-| Phase 0 | Engineering Foundation                        | Done    | Foundation and governance established |
-| Phase 1 | Identity, Workspace, And Financial Setup      | Done    | Secure financial structure ready      |
+| Phase   | Name                                          | Status      | Exit Gate                             |
+| ------- | --------------------------------------------- | ----------- | ------------------------------------- |
+| Phase 0 | Engineering Foundation                        | Done        | Foundation and governance established |
+| Phase 1 | Identity, Workspace, And Financial Setup      | Done        | Secure financial structure ready      |
 | Phase 2 | Ledger And Core Transactions                  | In Progress | Balanced transaction engine ready     |
-| Phase 3 | Daily Use And Transaction Productivity        | Planned | Daily tracking experience ready       |
-| Phase 4 | Budgets, Goals, Statistics, And Data Exchange | Planned | MVP feature scope ready               |
-| Phase 5 | Cards, Debt, Assets, And Multi-Currency       | Planned | Advanced finance workflows ready      |
-| Phase 6 | Automation, Attachments, Backup, And Restore  | Planned | Automation and portability ready      |
-| Phase 7 | Collaboration, Sync, PWA, And Customization   | Planned | Extended platform ready               |
-| Phase 8 | Production Hardening And Parity Acceptance    | Planned | Applicable release gates passed       |
+| Phase 3 | Daily Use And Transaction Productivity        | Planned     | Daily tracking experience ready       |
+| Phase 4 | Budgets, Goals, Statistics, And Data Exchange | Planned     | MVP feature scope ready               |
+| Phase 5 | Cards, Debt, Assets, And Multi-Currency       | Planned     | Advanced finance workflows ready      |
+| Phase 6 | Automation, Attachments, Backup, And Restore  | Planned     | Automation and portability ready      |
+| Phase 7 | Collaboration, Sync, PWA, And Customization   | Planned     | Extended platform ready               |
+| Phase 8 | Production Hardening And Parity Acceptance    | Planned     | Applicable release gates passed       |
 
 ## Delivery Package Roadmap
 
 These packages are planning containers. Detailed scope and acceptance summaries
 are defined by the mapped IDs in `docs/FEATURE_CATALOG.md`.
 
-| ID    | Feature                                         | Catalog Mapping    | Status  | Completed  |
-| ----- | ----------------------------------------------- | ------------------ | ------- | ---------- |
-| F-001 | Laravel and Vue project scaffolding             | `P0-01`, `P0-02`   | Done    | 2026-06-09 |
-| F-002 | CI, linting, static analysis, and test baseline | `P0-03` to `P0-06` | Done    | 2026-06-09 |
-| F-003 | Authentication and personal workspace           | `P1-01` to `P1-11` | Done    | 2026-06-11 |
-| F-004 | Currencies and workspace preferences            | `P1-12` to `P1-18` | Done    | 2026-06-11 |
-| F-005 | Account groups and accounts                     | `P1-19` to `P1-25` | Done    | 2026-06-11 |
-| F-006 | Categories and reference data                   | `P1-26` to `P1-33` | Done    | 2026-06-11 |
+| ID    | Feature                                         | Catalog Mapping    | Status      | Completed  |
+| ----- | ----------------------------------------------- | ------------------ | ----------- | ---------- |
+| F-001 | Laravel and Vue project scaffolding             | `P0-01`, `P0-02`   | Done        | 2026-06-09 |
+| F-002 | CI, linting, static analysis, and test baseline | `P0-03` to `P0-06` | Done        | 2026-06-09 |
+| F-003 | Authentication and personal workspace           | `P1-01` to `P1-11` | Done        | 2026-06-11 |
+| F-004 | Currencies and workspace preferences            | `P1-12` to `P1-18` | Done        | 2026-06-11 |
+| F-005 | Account groups and accounts                     | `P1-19` to `P1-25` | Done        | 2026-06-11 |
+| F-006 | Categories and reference data                   | `P1-26` to `P1-33` | Done        | 2026-06-11 |
 | F-007 | Double-entry ledger foundation                  | `P2-01` to `P2-10` | In Progress | -          |
 | F-008 | Core transaction flows                          | `P2-11` to `P2-24` | In Progress | -          |
-| F-009 | Transaction history and navigation              | `P3-01` to `P3-12` | Planned | -          |
-| F-010 | Dashboard and fast-entry workflows              | `P3-13` to `P3-21` | Planned | -          |
-| F-011 | Budgets and goals                               | `P4-01` to `P4-10` | Planned | -          |
-| F-012 | Statistics, reports, import, and export         | `P4-11` to `P4-25` | Planned | -          |
-| F-013 | Cards, debt, and installments                   | `P5-01` to `P5-09` | Planned | -          |
-| F-014 | Assets and multi-currency                       | `P5-10` to `P5-16` | Planned | -          |
-| F-015 | Recurring and scheduled transactions            | `P6-01` to `P6-06` | Planned | -          |
-| F-016 | Attachments and receipts                        | `P6-07` to `P6-11` | Planned | -          |
-| F-017 | Backup and restore                              | `P6-12` to `P6-16` | Planned | -          |
-| F-018 | Collaboration and synchronization               | `P7-01` to `P7-06` | Planned | -          |
-| F-019 | PWA, desktop experience, and customization      | `P7-07` to `P7-16` | Planned | -          |
-| F-020 | Production hardening and parity acceptance      | `P8-01` to `P8-10` | Planned | -          |
-| F-021 | Public landing page                             | `P1-34`            | Done    | 2026-06-11 |
+| F-009 | Transaction history and navigation              | `P3-01` to `P3-12` | Planned     | -          |
+| F-010 | Dashboard and fast-entry workflows              | `P3-13` to `P3-21` | Planned     | -          |
+| F-011 | Budgets and goals                               | `P4-01` to `P4-10` | Planned     | -          |
+| F-012 | Statistics, reports, import, and export         | `P4-11` to `P4-25` | Planned     | -          |
+| F-013 | Cards, debt, and installments                   | `P5-01` to `P5-09` | Planned     | -          |
+| F-014 | Assets and multi-currency                       | `P5-10` to `P5-16` | Planned     | -          |
+| F-015 | Recurring and scheduled transactions            | `P6-01` to `P6-06` | Planned     | -          |
+| F-016 | Attachments and receipts                        | `P6-07` to `P6-11` | Planned     | -          |
+| F-017 | Backup and restore                              | `P6-12` to `P6-16` | Planned     | -          |
+| F-018 | Collaboration and synchronization               | `P7-01` to `P7-06` | Planned     | -          |
+| F-019 | PWA, desktop experience, and customization      | `P7-07` to `P7-16` | Planned     | -          |
+| F-020 | Production hardening and parity acceptance      | `P8-01` to `P8-10` | Planned     | -          |
+| F-021 | Public landing page                             | `P1-34`            | Done        | 2026-06-11 |
 
 ## Catalog Status Summary
 
@@ -92,14 +92,14 @@ mapped feature ID.
 Add a row whenever an individual feature leaves its catalog-range default.
 Keep the row through completion so partial package progress remains visible.
 
-| Feature ID         | Status | Branch Or PR                                           | Notes                                                                                 |
-| ------------------ | ------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------- |
-| `P1-01` to `P1-08` | Done   | `main`                                                 | Authentication and sensitive-action journeys implemented and tested                   |
-| `P1-09` to `P1-11` | Done   | [#4](https://github.com/yosrioid/money-manager/pull/4) | Personal workspace, active context, and isolation merged                              |
-| `P1-12` to `P1-33` | Done   | [#5](https://github.com/yosrioid/money-manager/pull/5) | Financial setup, reference data, opening balances, application lock, and tests merged |
-| `P1-34`            | Done   | [#6](https://github.com/yosrioid/money-manager/pull/6) | Branded public landing page merged                                                    |
-| `P2-01` to `P2-10` | In Progress | `feat/p2-ledger-foundation` | All 3 slices of `F-007` implemented: lifecycle status enum (Voided, Reversed, Replaced) with transition guard; posted-only balance calculation and balance-at-date; immutable generic `audit_logs` table, `AuditLog` model, `AuditAction` enum, and `RecordAuditLog` service; account-locking (`LockAccountsForPosting`), `ReverseTransaction`, and `ReplaceTransaction` domain actions wired to the audit log. Pending PR review. |
-| `P2-11` to `P2-20` | In Progress | `feat/p2-core-income-expense` | Income, expense, and same-currency transfer entry implemented through transaction metadata. Transfers support an optional linked expense-category fee; withdrawal and card settlement use the balanced transfer workflow. Transaction time is interpreted in the workspace timezone and stored UTC; income/expense support merchant or recipient; all entry flows support memo and authorized tags. Posting records an audit log, and request plus domain validation protect workspace, type, amount, currency, and metadata invariants. Draft-time editing remains coupled to `P2-23`. Pending full review and PR. |
+| Feature ID         | Status      | Branch Or PR                                           | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------ | ----------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `P1-01` to `P1-08` | Done        | `main`                                                 | Authentication and sensitive-action journeys implemented and tested                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `P1-09` to `P1-11` | Done        | [#4](https://github.com/yosrioid/money-manager/pull/4) | Personal workspace, active context, and isolation merged                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `P1-12` to `P1-33` | Done        | [#5](https://github.com/yosrioid/money-manager/pull/5) | Financial setup, reference data, opening balances, application lock, and tests merged                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `P1-34`            | Done        | [#6](https://github.com/yosrioid/money-manager/pull/6) | Branded public landing page merged                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `P2-01` to `P2-10` | In Progress | `feat/p2-ledger-foundation`                            | All 3 slices of `F-007` implemented: lifecycle status enum (Voided, Reversed, Replaced) with transition guard; posted-only balance calculation and balance-at-date; immutable generic `audit_logs` table, `AuditLog` model, `AuditAction` enum, and `RecordAuditLog` service; account-locking (`LockAccountsForPosting`), `ReverseTransaction`, and `ReplaceTransaction` domain actions wired to the audit log. Pending PR review.                                                                                                                                         |
+| `P2-11` to `P2-24` | In Progress | `feat/p2-core-income-expense`                          | Core income, expense, transfer, metadata, split, calculator, draft, and duplication flows are implemented. Split entries remain balanced across one account leg and multiple category legs. Safe integer arithmetic expressions are supported without float or evaluation. Incomplete drafts and duplicated transactions persist structured input without ledger entries, so they do not affect balances. Posting records an audit log, and request plus domain validation protect workspace, type, amount, currency, and metadata invariants. Pending full review and PR. |
 
 ## Completed Features
 

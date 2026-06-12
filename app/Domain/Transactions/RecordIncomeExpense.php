@@ -26,21 +26,38 @@ class RecordIncomeExpense
      */
     public function record(Account $account, Category $category, TransactionType $type, int $amount, string $description, CarbonInterface $occurredAt, User $actor, ?Merchant $merchant = null, ?string $memo = null, array $tags = []): Transaction
     {
-        if ($account->workspace_id !== $category->workspace_id) {
-            throw new LogicException('The account and category must belong to the same workspace.');
-        }
+        return $this->recordSplit($account, [['category' => $category, 'amount' => $amount]], $type, $description, $occurredAt, $actor, $merchant, $memo, $tags);
+    }
 
-        if ($amount < 1) {
-            throw new LogicException('The transaction amount must be positive.');
-        }
-
+    /**
+     * @param  array<int, array{category: Category, amount: int}>  $splits
+     * @param  array<int, Tag>  $tags
+     */
+    public function recordSplit(Account $account, array $splits, TransactionType $type, string $description, CarbonInterface $occurredAt, User $actor, ?Merchant $merchant = null, ?string $memo = null, array $tags = []): Transaction
+    {
         $expectedCategoryType = $type === TransactionType::Income ? CategoryType::Income : CategoryType::Expense;
 
-        if (! in_array($type, [TransactionType::Income, TransactionType::Expense], true) || $category->getRawOriginal('type') !== $expectedCategoryType->value) {
+        if ($splits === [] || ! in_array($type, [TransactionType::Income, TransactionType::Expense], true)) {
             throw new LogicException('The category type must match the transaction type.');
         }
 
+        foreach ($splits as $split) {
+            if ($split['amount'] < 1 || $account->workspace_id !== $split['category']->workspace_id || $split['category']->getRawOriginal('type') !== $expectedCategoryType->value) {
+                throw new LogicException('Every split category and amount must match the transaction.');
+            }
+        }
+
+        $amount = array_sum(array_column($splits, 'amount'));
         $sign = $type === TransactionType::Income ? 1 : -1;
+        $entries = [
+            ['account_id' => $account->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => $sign * $amount],
+            ...array_map(fn (array $split): array => [
+                'account_id' => null,
+                'category_id' => $split['category']->id,
+                'type' => LedgerEntryType::Category,
+                'amount' => -$sign * $split['amount'],
+            ], $splits),
+        ];
 
         return $this->postTransaction->post(
             $account->workspace,
@@ -48,10 +65,7 @@ class RecordIncomeExpense
             $account->currency_code,
             $description,
             $occurredAt,
-            [
-                ['account_id' => $account->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => $sign * $amount],
-                ['account_id' => null, 'category_id' => $category->id, 'type' => LedgerEntryType::Category, 'amount' => -$sign * $amount],
-            ],
+            $entries,
             $actor,
             $merchant,
             $memo,

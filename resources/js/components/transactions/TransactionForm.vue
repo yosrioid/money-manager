@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { Form, Link } from '@inertiajs/vue3';
+import { Form, Link, router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { index } from '@/routes/accounts';
+import { store as storeDraft } from '@/routes/transactions/drafts';
 import type { RouteFormDefinition } from '@/wayfinder';
 
 interface Account {
@@ -43,6 +44,8 @@ const props = defineProps<{
 const type = ref('expense');
 const sourceAccountId = ref('');
 const destinationAccountId = ref('');
+const splitEnabled = ref(false);
+const splitRows = ref([{ id: 1 }, { id: 2 }]);
 
 const filteredCategories = computed(() =>
     props.categories.filter((category) => category.type === type.value),
@@ -63,6 +66,24 @@ watch(sourceAccountId, (accountId) => {
         destinationAccountId.value = '';
     }
 });
+
+const addSplit = () => {
+    splitRows.value.push({ id: Date.now() });
+};
+
+const removeSplit = (id: number) => {
+    if (splitRows.value.length > 2) {
+        splitRows.value = splitRows.value.filter((split) => split.id !== id);
+    }
+};
+
+const saveDraft = (event: MouseEvent) => {
+    const form = (event.currentTarget as HTMLButtonElement).form;
+
+    if (form) {
+        router.post(storeDraft.url(), new FormData(form));
+    }
+};
 </script>
 
 <template>
@@ -107,13 +128,13 @@ watch(sourceAccountId, (accountId) => {
                 <InputError :message="errors.account_id" />
             </div>
 
-            <div v-if="type !== 'transfer'" class="grid gap-2">
+            <div v-if="type !== 'transfer' && !splitEnabled" class="grid gap-2">
                 <Label for="category_id">Category</Label>
                 <select
                     id="category_id"
                     name="category_id"
                     class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
-                    required
+                    :required="!splitEnabled"
                 >
                     <option
                         v-for="category in filteredCategories"
@@ -150,12 +171,13 @@ watch(sourceAccountId, (accountId) => {
             </div>
 
             <div class="grid gap-2">
-                <Label for="amount">Amount in minor units</Label>
+                <Label for="amount">Amount or calculation in minor units</Label>
                 <Input
                     id="amount"
                     name="amount"
-                    type="number"
-                    min="1"
+                    type="text"
+                    inputmode="numeric"
+                    placeholder="10000 + 5000"
                     required
                 />
                 <InputError :message="errors.amount" />
@@ -225,6 +247,61 @@ watch(sourceAccountId, (accountId) => {
             </div>
         </div>
 
+        <div v-if="type !== 'transfer'" class="grid gap-4">
+            <label class="flex items-center gap-2 text-sm font-medium">
+                <input
+                    v-model="splitEnabled"
+                    type="checkbox"
+                    class="size-4 rounded border-input"
+                />
+                Split across categories
+            </label>
+
+            <div v-if="splitEnabled" class="grid gap-3 rounded-md border p-4">
+                <div
+                    v-for="(split, index) in splitRows"
+                    :key="split.id"
+                    class="grid gap-3 md:grid-cols-[1fr_1fr_auto]"
+                >
+                    <select
+                        :name="`splits[${index}][category_id]`"
+                        class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                        required
+                    >
+                        <option value="" disabled selected>
+                            Select category
+                        </option>
+                        <option
+                            v-for="category in filteredCategories"
+                            :key="category.id"
+                            :value="category.id"
+                        >
+                            {{ category.name }}
+                        </option>
+                    </select>
+                    <Input
+                        :name="`splits[${index}][amount]`"
+                        type="text"
+                        inputmode="numeric"
+                        placeholder="5000 * 2"
+                        required
+                    />
+                    <Button
+                        type="button"
+                        variant="outline"
+                        :disabled="splitRows.length <= 2"
+                        @click="removeSplit(split.id)"
+                    >
+                        Remove
+                    </Button>
+                </div>
+                <InputError :message="errors.splits" />
+                <Button type="button" variant="outline" @click="addSplit">
+                    Add split
+                </Button>
+            </div>
+        </div>
+
         <div class="grid gap-2">
             <Label for="description">Description</Label>
             <textarea
@@ -278,6 +355,14 @@ watch(sourceAccountId, (accountId) => {
 
         <div class="flex items-center gap-3">
             <Button :disabled="processing">Save transaction</Button>
+            <Button
+                type="button"
+                variant="outline"
+                :disabled="processing"
+                @click="saveDraft"
+            >
+                Save draft
+            </Button>
             <Button variant="outline" as-child>
                 <Link :href="index()">Cancel</Link>
             </Button>

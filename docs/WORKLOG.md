@@ -50,6 +50,31 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 11:15 WIB - Final Core Transaction Slice Implemented
+
+- **Branch:** `feat/p2-core-income-expense`.
+- **Feature IDs:** `P2-21` to `P2-24`.
+- **Status:** In progress.
+- **Completed:** Pushed transaction metadata checkpoint `fd28c96`. Added
+  balanced multi-category split posting, safe integer arithmetic amount
+  expressions, balance-neutral incomplete drafts with structured form data,
+  authorized duplication into a new draft, and transaction-form controls for
+  split entry, calculator input, and saving drafts.
+- **Verification:** `composer ci:check` passed with 168 Pest tests and 697
+  assertions plus PHPStan, Pint, frontend lint, Prettier, type checks, Vitest,
+  and production build. Focused advanced-entry, transaction, transfer, and
+  lifecycle tests pass with 31 tests and 122 assertions. Governance and
+  `git diff --check` passed. Playwright smoke coverage passed on Chromium and
+  mobile Safari.
+- **Decisions:** Drafts store sanitized workspace-scoped input without ledger
+  entries. Duplication creates a new draft rather than copying posted entries.
+  Calculator division must resolve to a whole minor-unit amount.
+- **Blockers:** None.
+- **Uncommitted:** `P2-21` to `P2-24` implementation and this checkpoint remain
+  uncommitted and unpushed.
+- **Next:** Review the final diff, then commit and push the completed F-008
+  slice.
+
 ### 2026-06-12 10:29 WIB - Phase 2 Transaction Metadata Implemented
 
 - **Branch:** `feat/p2-core-income-expense`.
@@ -226,7 +251,7 @@ Add new entries at the top of the `Entries` section:
   `Workspace::auditLogs(): HasMany`.
 - **Verification:** New `tests/Feature/AuditLogTest.php` (4 tests) passes.
   Full suite: 131 tests, 513 assertions pass. `vendor/bin/pint --dirty
-  --format agent`, `composer analyse` (Larastan level 6), and
+--format agent`, `composer analyse` (Larastan level 6), and
   `bash scripts/check-governance.sh` pass.
 - **Decisions:** Audit log infrastructure is not yet called from any domain
   action in this slice; `AuditAction` includes all four lifecycle actions
@@ -421,26 +446,23 @@ Add new entries at the top of the `Entries` section:
   `P1-31` pages.
 - **Status:** Completed.
 - **Completed:**
-  - Cataloged a new feature `P1-34` (Public landing page, Phase 1, Public
-    Experience) in `docs/FEATURE_CATALOG.md`, added it to the Phase 1 scope
-    and PR sequence in `docs/MASTER_PLAN.md`, and added delivery package
-    `F-021` plus an active override row in `docs/PROGRESS.md`.
-  - Replaced the unmodified Laravel/Inertia starter-kit `Welcome.vue` with a
-    branded landing page (Money Manager hero, feature highlights, login and
-    register CTAs) using existing Button/Card UI components and theme tokens
-    so it matches dark/light mode and the rest of the app.
-  - Renamed the leftover "Laravel Starter Kit" sidebar branding in
-    `AppLogo.vue` to "Money Manager".
-  - Fixed a layout bug where Accounts, Categories, Merchants, and Tags pages
-    (index/create/edit) had no padding and content touched the sidebar/edges;
-    added `p-4` to match `Dashboard.vue`.
-- **Verification:**
-  - `npm run format:check`, `npm run lint:check`, `npm run types:check`,
-    `npm run build` → all passed.
-  - `APP_URL=http://localhost:8000 npx playwright test
-    tests/Browser/welcome.spec.ts` (chromium) → passed, title contains "Money
-    Manager".
-  - `bash scripts/check-governance.sh` → passed.
+    - Cataloged a new feature `P1-34` (Public landing page, Phase 1, Public
+      Experience) in `docs/FEATURE_CATALOG.md`, added it to the Phase 1 scope
+      and PR sequence in `docs/MASTER_PLAN.md`, and added delivery package
+      `F-021` plus an active override row in `docs/PROGRESS.md`.
+    - Replaced the unmodified Laravel/Inertia starter-kit `Welcome.vue` with a
+      branded landing page (Money Manager hero, feature highlights, login and
+      register CTAs) using existing Button/Card UI components and theme tokens
+      so it matches dark/light mode and the rest of the app.
+    - Renamed the leftover "Laravel Starter Kit" sidebar branding in
+      `AppLogo.vue` to "Money Manager".
+    - Fixed a layout bug where Accounts, Categories, Merchants, and Tags pages
+      (index/create/edit) had no padding and content touched the sidebar/edges;
+      added `p-4` to match `Dashboard.vue`.
+- **Verification:** - `npm run format:check`, `npm run lint:check`, `npm run types:check`,
+  `npm run build` → all passed. - `APP_URL=http://localhost:8000 npx playwright test
+tests/Browser/welcome.spec.ts` (chromium) → passed, title contains "Money
+  Manager". - `bash scripts/check-governance.sh` → passed.
 - **Decisions:** Landing page redesign was previously uncataloged scope; added
   as `P1-34` per user request before implementation.
 - **Blockers:** None.
@@ -458,13 +480,13 @@ Add new entries at the top of the `Entries` section:
   `composer dev` still runs correctly with `concurrently@10` (Node >=22, which
   this environment satisfies).
 - **Verification:**
-  - `npm install` → 0 vulnerabilities.
-  - `php artisan test --compact` → 116 tests, 467 assertions, passed.
-  - `composer analyse` → 0 errors.
-  - `vendor/bin/pint --test` → passed.
-  - `npm run lint:check`, `npm run format:check`, `npm run types:check`,
-    `npm run build` → all passed.
-  - `npm audit --audit-level=high` → 0 vulnerabilities.
+    - `npm install` → 0 vulnerabilities.
+    - `php artisan test --compact` → 116 tests, 467 assertions, passed.
+    - `composer analyse` → 0 errors.
+    - `vendor/bin/pint --test` → passed.
+    - `npm run lint:check`, `npm run format:check`, `npm run types:check`,
+      `npm run build` → all passed.
+    - `npm audit --audit-level=high` → 0 vulnerabilities.
 - **Decisions:** None beyond the approved dependency bump.
 - **Blockers:** None. The previously noted npm audit blocker is resolved.
 - **Uncommitted:** `package.json` and `package-lock.json` (concurrently bump),
@@ -684,32 +706,32 @@ Add new entries at the top of the `Entries` section:
 - **Feature IDs:** `P1-12` to `P1-33`.
 - **Status:** In Progress.
 - **Completed:**
-  - Added preference columns to workspaces table (`default_currency`, `timezone`, `locale`,
-    `number_format`, `first_day_of_week`, `month_start_day`, `adjust_month_for_weekend`).
-  - Created `currencies` table with 25 major currencies seeded via `CurrencySeeder`.
-  - Updated `Workspace` model with preference fillable fields, casts, and hasMany relationships.
-  - Updated `WorkspaceFactory` to include preference column defaults.
-  - Created `WorkspaceController` (settings) with `edit` and `update` actions.
-  - Created `WorkspacePreferencesRequest` with validation for all preference fields.
-  - Added `settings/workspace` GET/PATCH routes under `auth + verified + workspace` middleware.
-  - Created `settings/Workspace.vue` Inertia page.
-  - Added `AuthorizesRequests` trait to the base `Controller` class.
-  - Created full backend for P1-19 to P1-33 (no Vue pages yet):
-    - Migrations: `account_groups`, `accounts`, `categories`, `merchants`, `tags`.
-    - Enums: `AccountType`, `CategoryType`.
-    - Models + factories: `AccountGroup`, `Account`, `Category`, `Merchant`, `Tag`.
-    - Policies: `AccountGroupPolicy`, `AccountPolicy`, `CategoryPolicy`, `MerchantPolicy`, `TagPolicy`.
-    - Controllers: `AccountGroupController`, `AccountController`, `CategoryController`,
-      `MerchantController`, `TagController`.
-    - Form requests for store/update on all five resource types.
-    - All routes registered under `auth + verified + workspace` middleware.
-    - `StarterPresetsSeeder` for workspace-scoped default accounts and categories.
-  - 7 new workspace preferences tests added (82 total, all passing).
+    - Added preference columns to workspaces table (`default_currency`, `timezone`, `locale`,
+      `number_format`, `first_day_of_week`, `month_start_day`, `adjust_month_for_weekend`).
+    - Created `currencies` table with 25 major currencies seeded via `CurrencySeeder`.
+    - Updated `Workspace` model with preference fillable fields, casts, and hasMany relationships.
+    - Updated `WorkspaceFactory` to include preference column defaults.
+    - Created `WorkspaceController` (settings) with `edit` and `update` actions.
+    - Created `WorkspacePreferencesRequest` with validation for all preference fields.
+    - Added `settings/workspace` GET/PATCH routes under `auth + verified + workspace` middleware.
+    - Created `settings/Workspace.vue` Inertia page.
+    - Added `AuthorizesRequests` trait to the base `Controller` class.
+    - Created full backend for P1-19 to P1-33 (no Vue pages yet):
+        - Migrations: `account_groups`, `accounts`, `categories`, `merchants`, `tags`.
+        - Enums: `AccountType`, `CategoryType`.
+        - Models + factories: `AccountGroup`, `Account`, `Category`, `Merchant`, `Tag`.
+        - Policies: `AccountGroupPolicy`, `AccountPolicy`, `CategoryPolicy`, `MerchantPolicy`, `TagPolicy`.
+        - Controllers: `AccountGroupController`, `AccountController`, `CategoryController`,
+          `MerchantController`, `TagController`.
+        - Form requests for store/update on all five resource types.
+        - All routes registered under `auth + verified + workspace` middleware.
+        - `StarterPresetsSeeder` for workspace-scoped default accounts and categories.
+    - 7 new workspace preferences tests added (82 total, all passing).
 - **Verification:** `php artisan test --compact` → 82/82 passed; `vendor/bin/pint --dirty` → clean.
 - **Decisions:**
-  - Authorization for workspace update handled in controller via `$this->authorize('update', $workspace)`
-    rather than in form request (route has no `workspace` parameter).
-  - CurrencySeeder must be called in test `beforeEach` when testing routes that validate `currency_code`.
+    - Authorization for workspace update handled in controller via `$this->authorize('update', $workspace)`
+      rather than in form request (route has no `workspace` parameter).
+    - CurrencySeeder must be called in test `beforeEach` when testing routes that validate `currency_code`.
 - **Blockers:** None.
 - **Uncommitted:** All changes on `feat/p1-financial-setup` are uncommitted.
 - **Next:** Commit and push this checkpoint. Vue pages and tests for P1-19 to P1-33 in next session.

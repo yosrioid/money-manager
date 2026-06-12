@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Domain\Transactions\EvaluateAmountExpression;
 use App\Enums\CategoryType;
 use App\Enums\TransactionType;
 use App\Models\Account;
@@ -32,17 +33,21 @@ class StoreTransactionRequest extends FormRequest
         return [
             'type' => ['required', Rule::in([TransactionType::Income->value, TransactionType::Expense->value, TransactionType::Transfer->value])],
             'account_id' => ['required', 'integer', Rule::exists('accounts', 'id')->where('workspace_id', $workspace->id)],
-            'category_id' => ['required_unless:type,transfer', 'prohibited_if:type,transfer', 'integer', Rule::exists('categories', 'id')->where('workspace_id', $workspace->id)],
+            'category_id' => ['nullable', 'prohibited_if:type,transfer', 'integer', Rule::exists('categories', 'id')->where('workspace_id', $workspace->id)],
             'destination_account_id' => ['required_if:type,transfer', 'prohibited_unless:type,transfer', 'integer', Rule::exists('accounts', 'id')->where('workspace_id', $workspace->id)],
-            'fee_amount' => ['nullable', 'prohibited_unless:type,transfer', 'integer', 'min:0'],
+            'fee_amount' => ['nullable', 'prohibited_unless:type,transfer'],
             'fee_category_id' => ['nullable', 'prohibited_unless:type,transfer', 'integer', Rule::exists('categories', 'id')->where('workspace_id', $workspace->id)],
-            'amount' => ['required', 'integer', 'min:1'],
+            'amount' => ['required'],
             'description' => ['required', 'string', 'max:255'],
             'merchant_id' => ['nullable', 'prohibited_if:type,transfer', 'integer', Rule::exists('merchants', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
             'memo' => ['nullable', 'string', 'max:2000'],
             'tag_ids' => ['nullable', 'array', 'max:20'],
             'tag_ids.*' => ['integer', 'distinct', Rule::exists('tags', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
             'occurred_at' => ['required', 'date'],
+            'splits' => ['nullable', 'prohibited_if:type,transfer', 'array', 'min:2', 'max:50'],
+            'splits.*' => ['array:category_id,amount'],
+            'splits.*.category_id' => ['required', 'integer', 'distinct', Rule::exists('categories', 'id')->where('workspace_id', $workspace->id)],
+            'splits.*.amount' => ['required'],
         ];
     }
 
@@ -59,16 +64,39 @@ class StoreTransactionRequest extends FormRequest
                 return;
             }
 
+            $evaluator = app(EvaluateAmountExpression::class);
+
+            try {
+                $amount = $evaluator->evaluate($this->input('amount'));
+            } catch (\LogicException) {
+                $validator->errors()->add('amount', 'The amount must be a safe arithmetic expression that resolves to a positive whole number.');
+
+                return;
+            }
+
             if ($type === TransactionType::Transfer->value) {
-                $this->validateTransfer($validator);
+                $this->validateTransfer($validator, $evaluator);
+
+                return;
+            }
+
+            $splits = $this->input('splits');
+
+            if (is_array($splits) && $splits !== []) {
+                $this->validateSplits($validator, $workspace, $type, $amount, $splits, $evaluator);
 
                 return;
             }
 
             $categoryId = $this->input('category_id');
-            $category = is_numeric($categoryId)
-                ? Category::query()->where('workspace_id', $workspace->id)->find($categoryId)
-                : null;
+
+            if (! is_numeric($categoryId)) {
+                $validator->errors()->add('category_id', 'A category is required when the transaction is not split.');
+
+                return;
+            }
+
+            $category = Category::query()->where('workspace_id', $workspace->id)->find($categoryId);
 
             if (! $category instanceof Category) {
                 return;
@@ -82,7 +110,7 @@ class StoreTransactionRequest extends FormRequest
         }];
     }
 
-    private function validateTransfer(Validator $validator): void
+    private function validateTransfer(Validator $validator, EvaluateAmountExpression $evaluator): void
     {
         $workspace = $this->attributes->get('workspace');
 
@@ -92,7 +120,13 @@ class StoreTransactionRequest extends FormRequest
 
         $sourceAccountId = $this->input('account_id');
         $destinationAccountId = $this->input('destination_account_id');
-        $feeAmount = $this->integer('fee_amount');
+        try {
+            $feeAmount = filled($this->input('fee_amount')) ? $evaluator->evaluate($this->input('fee_amount')) : 0;
+        } catch (\LogicException) {
+            $validator->errors()->add('fee_amount', 'The fee must be a safe arithmetic expression that resolves to a positive whole number.');
+
+            return;
+        }
         $feeCategoryId = $this->input('fee_category_id');
 
         if (is_numeric($sourceAccountId) && is_numeric($destinationAccountId)) {
@@ -126,6 +160,37 @@ class StoreTransactionRequest extends FormRequest
 
         if ($feeCategory instanceof Category && $feeCategory->getRawOriginal('type') !== CategoryType::Expense->value) {
             $validator->errors()->add('fee_category_id', 'The transfer fee category must be an expense category.');
+        }
+    }
+
+    /**
+     * @param  array<int, mixed>  $splits
+     */
+    private function validateSplits(Validator $validator, Workspace $workspace, string $type, int $amount, array $splits, EvaluateAmountExpression $evaluator): void
+    {
+        $expectedType = $type === TransactionType::Income->value ? CategoryType::Income : CategoryType::Expense;
+        $splitTotal = 0;
+
+        foreach ($splits as $index => $split) {
+            if (! is_array($split)) {
+                continue;
+            }
+
+            try {
+                $splitTotal += $evaluator->evaluate($split['amount'] ?? '');
+            } catch (\LogicException) {
+                $validator->errors()->add("splits.{$index}.amount", 'Each split amount must resolve to a positive whole number.');
+            }
+
+            $category = Category::query()->where('workspace_id', $workspace->id)->find($split['category_id'] ?? null);
+
+            if ($category instanceof Category && $category->getRawOriginal('type') !== $expectedType->value) {
+                $validator->errors()->add("splits.{$index}.category_id", 'Each split category must match the transaction type.');
+            }
+        }
+
+        if ($splitTotal !== $amount) {
+            $validator->errors()->add('splits', 'Split amounts must equal the transaction amount.');
         }
     }
 }

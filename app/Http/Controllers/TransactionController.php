@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Transactions\DuplicateTransaction;
+use App\Domain\Transactions\EvaluateAmountExpression;
 use App\Domain\Transactions\RecordIncomeExpense;
 use App\Domain\Transactions\RecordTransfer;
+use App\Domain\Transactions\SaveTransactionDraft;
 use App\Domain\Workspaces\WorkspaceContext;
 use App\Enums\TransactionType;
+use App\Http\Requests\StoreTransactionDraftRequest;
 use App\Http\Requests\StoreTransactionRequest;
+use App\Models\Transaction;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -32,7 +37,7 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function store(StoreTransactionRequest $request, RecordIncomeExpense $recordIncomeExpense, RecordTransfer $recordTransfer): RedirectResponse
+    public function store(StoreTransactionRequest $request, RecordIncomeExpense $recordIncomeExpense, RecordTransfer $recordTransfer, EvaluateAmountExpression $evaluator): RedirectResponse
     {
         $workspace = $this->workspaceContext->get();
         $user = $request->user();
@@ -48,6 +53,7 @@ class TransactionController extends Controller
             : null;
         $tags = $workspace->tags()->whereKey($validated['tag_ids'] ?? [])->get()->all();
         $occurredAt = Carbon::parse($validated['occurred_at'], $workspace->timezone)->utc();
+        $amount = $evaluator->evaluate($validated['amount']);
 
         if ($type === TransactionType::Transfer) {
             $destinationAccount = $workspace->accounts()->whereKey($validated['destination_account_id'])->firstOrFail();
@@ -58,8 +64,8 @@ class TransactionController extends Controller
             $recordTransfer->record(
                 $account,
                 $destinationAccount,
-                (int) $validated['amount'],
-                (int) ($validated['fee_amount'] ?? 0),
+                $amount,
+                filled($validated['fee_amount'] ?? null) ? $evaluator->evaluate($validated['fee_amount']) : 0,
                 $feeCategory,
                 $validated['description'],
                 $occurredAt,
@@ -68,13 +74,26 @@ class TransactionController extends Controller
                 $tags,
             );
         } else {
-            $category = $workspace->categories()->whereKey($validated['category_id'])->firstOrFail();
+            if (isset($validated['splits']) && is_array($validated['splits'])) {
+                $splits = [];
 
-            $recordIncomeExpense->record(
+                foreach ($validated['splits'] as $split) {
+                    $splits[] = [
+                        'category' => $workspace->categories()->whereKey($split['category_id'])->firstOrFail(),
+                        'amount' => $evaluator->evaluate($split['amount']),
+                    ];
+                }
+            } else {
+                $splits = [[
+                    'category' => $workspace->categories()->whereKey($validated['category_id'])->firstOrFail(),
+                    'amount' => $amount,
+                ]];
+            }
+
+            $recordIncomeExpense->recordSplit(
                 $account,
-                $category,
+                $splits,
                 $type,
-                (int) $validated['amount'],
                 $validated['description'],
                 $occurredAt,
                 $user,
@@ -85,6 +104,32 @@ class TransactionController extends Controller
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Transaction recorded.')]);
+
+        return to_route('accounts.index');
+    }
+
+    public function storeDraft(StoreTransactionDraftRequest $request, SaveTransactionDraft $saveTransactionDraft): RedirectResponse
+    {
+        $user = $request->user();
+
+        abort_unless($user instanceof User, 401);
+
+        $saveTransactionDraft->save($this->workspaceContext->get(), $user, $request->validated());
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Transaction draft saved.')]);
+
+        return to_route('accounts.index');
+    }
+
+    public function duplicate(Transaction $transaction, DuplicateTransaction $duplicateTransaction): RedirectResponse
+    {
+        abort_unless($transaction->workspace_id === $this->workspaceContext->get()->id, 404);
+        $this->authorize('view', $transaction);
+        $user = request()->user();
+
+        abort_unless($user instanceof User, 401);
+
+        $duplicateTransaction->duplicate($transaction, $user);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Transaction duplicated as a draft.')]);
 
         return to_route('accounts.index');
     }

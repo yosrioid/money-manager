@@ -23,6 +23,7 @@ use LogicException;
     'memo',
     'occurred_at',
     'posted_at',
+    'draft_data',
     'reverses_transaction_id',
     'replaces_transaction_id',
 ])]
@@ -38,6 +39,7 @@ class Transaction extends Model
             'status' => TransactionStatus::class,
             'occurred_at' => 'immutable_datetime',
             'posted_at' => 'immutable_datetime',
+            'draft_data' => 'array',
         ];
     }
 
