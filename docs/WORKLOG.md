@@ -50,6 +50,35 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 21:15 WIB - `P3-03` Weekly View
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-03`.
+- **Status:** In progress.
+- **Completed:** Renamed `SummarizeTransactionCalendar` to
+  `SummarizeTransactionPeriod` and added `forWeek()` alongside `forMonth()`,
+  sharing the same per-currency income/expense/net/count aggregation. Added
+  `transactions.weekly` (`TransactionController::weekly()`) rendering
+  `transactions/Weekly`, a 7-day grid with per-day totals, a weekly aggregate
+  total, and previous/next week navigation (`?week=YYYY-MM-DD`, defaults to
+  the current workspace-local week starting Sunday). Added `transactions.day`
+  (`TransactionController::day()`) rendering `transactions/Day`, a
+  single-date drill-down listing posted transactions for that workspace-local
+  date with previous/next day navigation (`?date=YYYY-MM-DD`, defaults to the
+  current workspace-local date). Extracted `transformTransaction()` and
+  `parseLocalDate()` helpers on `TransactionController`, shared by `index()`,
+  `day()`, `weekly()`. Added "Weekly" to `TransactionViewNav`. Each calendar
+  cell on `Weekly.vue` links to its `Day.vue` drill-down.
+- **Verification:** Added `tests/Feature/TransactionWeeklyTest.php` (5 tests,
+  80 assertions). Full suite: 192 Pest tests / 945 assertions,
+  PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript checks
+  (`vue-tsc`), and a production build all passed.
+- **Decisions:** Weeks start on Sunday (workspace-local), matching the
+  `Calendar.vue` weekday-label convention. The weekly totals card sums each
+  day's income/expense/net per currency across the 7-day window.
+- **Blockers:** None.
+- **Next:** Continue Phase 3 with `P3-04` (monthly view).
+
 ### 2026-06-12 20:30 WIB - `P3-02` Calendar View
 
 - **Branch:** `feat/phase-3`.

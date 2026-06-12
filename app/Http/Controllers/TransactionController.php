@@ -7,7 +7,7 @@ use App\Domain\Transactions\EvaluateAmountExpression;
 use App\Domain\Transactions\RecordIncomeExpense;
 use App\Domain\Transactions\RecordTransfer;
 use App\Domain\Transactions\SaveTransactionDraft;
-use App\Domain\Transactions\SummarizeTransactionCalendar;
+use App\Domain\Transactions\SummarizeTransactionPeriod;
 use App\Domain\Workspaces\WorkspaceContext;
 use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
@@ -16,6 +16,7 @@ use App\Http\Requests\StoreTransactionRequest;
 use App\Models\Transaction;
 use App\Models\TransactionEntry;
 use App\Models\User;
+use App\Models\Workspace;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,35 +44,16 @@ class TransactionController extends Controller
             ->paginate(30)
             ->withQueryString();
 
-        $transactions->getCollection()->transform(function (Transaction $transaction) use ($workspace): array {
-            $occurredAt = Carbon::parse($transaction->getRawOriginal('occurred_at'));
-
-            return [
-                'id' => $transaction->id,
-                'type' => $transaction->type,
-                'status' => $transaction->status,
-                'description' => $transaction->description,
-                'memo' => $transaction->memo,
-                'occurred_at' => $occurredAt->toIso8601String(),
-                'local_date' => $occurredAt->setTimezone($workspace->timezone)->toDateString(),
-                'merchant' => $transaction->merchant?->only(['id', 'name']),
-                'tags' => $transaction->tags->map->only(['id', 'name', 'color'])->all(),
-                'entries' => $transaction->entries->map(fn (TransactionEntry $entry): array => [
-                    'type' => $entry->type,
-                    'amount' => $entry->amount,
-                    'currency_code' => $entry->currency_code,
-                    'account' => $entry->account?->only(['id', 'name']),
-                    'category' => $entry->category?->only(['id', 'name']),
-                ])->all(),
-            ];
-        });
+        $transactions->getCollection()->transform(
+            fn (Transaction $transaction): array => $this->transformTransaction($transaction, $workspace)
+        );
 
         return Inertia::render('transactions/Index', [
             'transactions' => $transactions,
         ]);
     }
 
-    public function calendar(Request $request, SummarizeTransactionCalendar $summarizeTransactionCalendar): Response
+    public function calendar(Request $request, SummarizeTransactionPeriod $summarizeTransactionPeriod): Response
     {
         $this->authorize('viewAny', Transaction::class);
 
@@ -84,13 +66,73 @@ class TransactionController extends Controller
 
         $month = $month->startOfMonth();
 
-        $days = $summarizeTransactionCalendar->summarize($workspace, $month);
+        $days = $summarizeTransactionPeriod->forMonth($workspace, $month);
 
         return Inertia::render('transactions/Calendar', [
             'month' => $month->toDateString(),
             'days' => $days,
             'previousMonth' => $month->copy()->subMonth()->format('Y-m'),
             'nextMonth' => $month->copy()->addMonth()->format('Y-m'),
+        ]);
+    }
+
+    public function weekly(Request $request, SummarizeTransactionPeriod $summarizeTransactionPeriod): Response
+    {
+        $this->authorize('viewAny', Transaction::class);
+
+        $workspace = $this->workspaceContext->get();
+
+        $reference = $this->parseLocalDate($request->query('week'), $workspace);
+        $weekStart = $reference->copy()->subDays($reference->dayOfWeek)->startOfDay();
+
+        $days = $summarizeTransactionPeriod->forWeek($workspace, $weekStart);
+
+        $totals = ['income' => [], 'expense' => [], 'net' => []];
+
+        foreach ($days as $day) {
+            foreach (['income', 'expense', 'net'] as $key) {
+                foreach ($day[$key] as $currency => $amount) {
+                    $totals[$key][$currency] = ($totals[$key][$currency] ?? 0) + $amount;
+                }
+            }
+        }
+
+        return Inertia::render('transactions/Weekly', [
+            'weekStart' => $weekStart->toDateString(),
+            'days' => $days,
+            'totals' => $totals,
+            'previousWeek' => $weekStart->copy()->subDays(7)->toDateString(),
+            'nextWeek' => $weekStart->copy()->addDays(7)->toDateString(),
+        ]);
+    }
+
+    public function day(Request $request): Response
+    {
+        $this->authorize('viewAny', Transaction::class);
+
+        $workspace = $this->workspaceContext->get();
+
+        $date = $this->parseLocalDate($request->query('date'), $workspace);
+
+        $start = $date->copy()->startOfDay();
+        $end = $start->copy()->addDay();
+
+        $transactions = $workspace->transactions()
+            ->whereNotNull('posted_at')
+            ->where('occurred_at', '>=', $start->copy()->utc())
+            ->where('occurred_at', '<', $end->copy()->utc())
+            ->with(['merchant', 'tags', 'entries.account', 'entries.category'])
+            ->orderByDesc('occurred_at')
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn (Transaction $transaction): array => $this->transformTransaction($transaction, $workspace))
+            ->all();
+
+        return Inertia::render('transactions/Day', [
+            'date' => $date->toDateString(),
+            'transactions' => $transactions,
+            'previousDate' => $date->copy()->subDay()->toDateString(),
+            'nextDate' => $date->copy()->addDay()->toDateString(),
         ]);
     }
 
@@ -255,5 +297,45 @@ class TransactionController extends Controller
             && $transaction->getRawOriginal('status') === TransactionStatus::Draft->value,
             404,
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function transformTransaction(Transaction $transaction, Workspace $workspace): array
+    {
+        $occurredAt = Carbon::parse($transaction->getRawOriginal('occurred_at'));
+
+        return [
+            'id' => $transaction->id,
+            'type' => $transaction->type,
+            'status' => $transaction->status,
+            'description' => $transaction->description,
+            'memo' => $transaction->memo,
+            'occurred_at' => $occurredAt->toIso8601String(),
+            'local_date' => $occurredAt->setTimezone($workspace->timezone)->toDateString(),
+            'merchant' => $transaction->merchant?->only(['id', 'name']),
+            'tags' => $transaction->tags->map->only(['id', 'name', 'color'])->all(),
+            'entries' => $transaction->entries->map(fn (TransactionEntry $entry): array => [
+                'type' => $entry->type,
+                'amount' => $entry->amount,
+                'currency_code' => $entry->currency_code,
+                'account' => $entry->account?->only(['id', 'name']),
+                'category' => $entry->category?->only(['id', 'name']),
+            ])->all(),
+        ];
+    }
+
+    /**
+     * Parse a workspace-local date query parameter, defaulting to the current
+     * workspace-local date when missing or invalid.
+     */
+    private function parseLocalDate(mixed $value, Workspace $workspace): Carbon
+    {
+        if (is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return Carbon::parse($value, $workspace->timezone)->startOfDay();
+        }
+
+        return Carbon::now($workspace->timezone)->startOfDay();
     }
 }

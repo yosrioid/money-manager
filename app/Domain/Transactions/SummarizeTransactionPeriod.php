@@ -8,7 +8,7 @@ use App\Models\Workspace;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 
-class SummarizeTransactionCalendar
+class SummarizeTransactionPeriod
 {
     /**
      * Summarize posted income and expense activity per workspace-local date
@@ -16,11 +16,31 @@ class SummarizeTransactionCalendar
      *
      * @return array<string, array{income: array<string, int>, expense: array<string, int>, net: array<string, int>, count: int}>
      */
-    public function summarize(Workspace $workspace, CarbonInterface $month): array
+    public function forMonth(Workspace $workspace, CarbonInterface $month): array
     {
         $start = Carbon::parse($month->toDateString(), $workspace->timezone)->startOfMonth()->startOfDay();
-        $end = $start->copy()->addMonth();
 
+        return $this->summarize($workspace, $start, $start->copy()->addMonth());
+    }
+
+    /**
+     * Summarize posted income and expense activity per workspace-local date
+     * for the 7-day period starting on the given workspace-local date.
+     *
+     * @return array<string, array{income: array<string, int>, expense: array<string, int>, net: array<string, int>, count: int}>
+     */
+    public function forWeek(Workspace $workspace, CarbonInterface $weekStart): array
+    {
+        $start = Carbon::parse($weekStart->toDateString(), $workspace->timezone)->startOfDay();
+
+        return $this->summarize($workspace, $start, $start->copy()->addDays(7));
+    }
+
+    /**
+     * @return array<string, array{income: array<string, int>, expense: array<string, int>, net: array<string, int>, count: int}>
+     */
+    private function summarize(Workspace $workspace, CarbonInterface $start, CarbonInterface $end): array
+    {
         $transactions = $workspace->transactions()
             ->whereNotNull('posted_at')
             ->where('occurred_at', '>=', $start->copy()->utc())
