@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AccountType;
+use App\Enums\TransactionStatus;
 use Database\Factories\AccountFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -63,6 +64,16 @@ class Account extends Model
     public function ledgerEntries(): HasMany
     {
         return $this->hasMany(TransactionEntry::class);
+    }
+
+    /**
+     * @return HasMany<TransactionEntry, $this>
+     */
+    public function postedLedgerEntries(): HasMany
+    {
+        return $this->ledgerEntries()
+            ->whereHas('transaction', fn (Builder $query) => $query->whereNotNull('posted_at')
+                ->where('status', '!=', TransactionStatus::Replaced));
     }
 
     /**

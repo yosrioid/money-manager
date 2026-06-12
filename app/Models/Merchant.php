@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['workspace_id', 'default_category_id', 'name', 'archived_at'])]
 class Merchant extends Model
@@ -39,6 +40,14 @@ class Merchant extends Model
     public function defaultCategory(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'default_category_id');
+    }
+
+    /**
+     * @return HasMany<Transaction, $this>
+     */
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
     }
 
     /**

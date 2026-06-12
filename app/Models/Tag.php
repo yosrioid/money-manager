@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[Fillable(['workspace_id', 'name', 'color', 'archived_at'])]
 class Tag extends Model
@@ -31,6 +32,17 @@ class Tag extends Model
     public function workspace(): BelongsTo
     {
         return $this->belongsTo(Workspace::class);
+    }
+
+    /**
+     * @return BelongsToMany<Transaction, $this, TransactionTag, 'pivot'>
+     */
+    public function transactions(): BelongsToMany
+    {
+        return $this->belongsToMany(Transaction::class, 'transaction_tags')
+            ->using(TransactionTag::class)
+            ->withPivot('workspace_id')
+            ->withTimestamps();
     }
 
     /**

@@ -50,6 +50,349 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 13:50 WIB - Phase 2 Review Findings Addressed
+
+- **Branch:** `feat/p2-core-income-expense`.
+- **Feature IDs:** `P2-01` to `P2-10`, `P2-23`, `P2-24`.
+- **Status:** In review.
+- **Completed:** Prevented empty replacement transactions from removing posted
+  balances; rejected archived account and category references at request and
+  domain boundaries; rejected idempotency-key reuse with conflicting payloads;
+  and added authorized draft resume, update, duplicate-to-draft, and
+  post-from-draft flows.
+- **Verification:** Focused regression suite passed with 29 tests and 146
+  assertions. `composer ci:check` passed with 180 tests and 763 assertions;
+  `npm run build`, `npm run test:e2e`, `bash scripts/check-governance.sh`,
+  `composer audit`, `npm audit --audit-level=high`, and `git diff --check`
+  passed.
+- **Decisions:** Successful posting from a resumed draft marks the original
+  balance-neutral draft as voided. Exact idempotent retries return the original
+  transaction, while a changed payload using the same key fails explicitly.
+- **Blockers:** None.
+- **Uncommitted:** Review-fix implementation, regression tests, and this
+  checkpoint remain uncommitted.
+- **Next:** Review the final diff, commit and push the review fixes when
+  requested, then verify PR #10 CI.
+
+### 2026-06-12 13:35 WIB - Phase 2 Pull Request Opened
+
+- **Branch:** `feat/p2-core-income-expense`.
+- **Feature IDs:** `P2-01` to `P2-24`.
+- **Status:** In review.
+- **Completed:** Opened draft
+  [PR #10](https://github.com/yosrioid/money-manager/pull/10) against `main`
+  containing the complete Phase 2 ledger and core transaction implementation.
+- **Verification:** Local final quality, security, governance, and browser gates
+  passed before PR creation. GitHub Actions run
+  [#27398888540](https://github.com/yosrioid/money-manager/actions/runs/27398888540)
+  passed both quality and browser jobs.
+- **Decisions:** Keep the PR as draft until reviewer feedback is resolved and
+  merge is explicitly approved.
+- **Blockers:** Review and merge approval remain pending.
+- **Uncommitted:** This CI checkpoint needs a documentation commit and push.
+- **Next:** Push this final CI checkpoint, verify the resulting docs-only CI,
+  then hand PR #10 to review.
+
+### 2026-06-12 13:28 WIB - Phase 2 Branch Ready For Pull Request
+
+- **Branch:** `feat/p2-core-income-expense`.
+- **Feature IDs:** `P2-01` to `P2-24`.
+- **Status:** Ready for review.
+- **Completed:** Completed the Phase 2 full review, duplicate-submission
+  protection, atomic rollback coverage, and correction-flow category/workspace
+  integrity hardening. Confirmed the branch is current with `origin/main`.
+- **Verification:** Final `composer ci:check` passed with 173 Pest tests and 716
+  assertions plus PHPStan, Pint, frontend lint, Prettier, type checks, Vitest,
+  and production build. Governance, `git diff --check`, Composer audit, npm
+  high-severity audit, and Playwright on Chromium and mobile Safari passed.
+- **Decisions:** Keep Phase 2 and its feature packages `In Progress` until a
+  pull request is created, reviewed, and merged.
+- **Blockers:** None.
+- **Uncommitted:** Final hardening and this checkpoint are ready to commit and
+  push.
+- **Next:** Commit and push the final hardening checkpoint. The branch will
+  then be ready for pull request creation.
+
+### 2026-06-12 13:20 WIB - Phase 2 Full Review Hardening
+
+- **Branch:** `feat/p2-core-income-expense`.
+- **Feature IDs:** `P2-01` to `P2-24`.
+- **Status:** In progress.
+- **Completed:** Audited the full Phase 2 branch against the master-plan exit
+  gate. Added a workspace-scoped transaction idempotency key, stable
+  create-form key propagation, and replay protection after affected account
+  locks are acquired. Added regression coverage proving replayed submissions
+  post only once and failures during audit recording roll back all financial
+  writes. Fixed correction flows so reversal preserves category references and
+  replacement validates and preserves workspace-scoped account/category
+  references.
+- **Verification:** Sequential full test coverage passes with 173 tests and 716
+  assertions. PHPStan debug analysis, Pint, frontend lint, Prettier, type
+  checking, Vitest, production build, governance, and `git diff --check`
+  passed. Composer and npm security audits found no advisories, and Playwright
+  passed on Chromium and mobile Safari. Final `composer ci:check` passed. The
+  Composer PHPStan wrapper had intermittently stopped without diagnostics while
+  direct PHPStan passed. One parallel verification attempt caused a transient
+  missing Vite manifest; sequential build and tests passed.
+- **Decisions:** Idempotency keys are unique per workspace and nullable for
+  non-HTTP ledger operations. Replayed HTTP submissions return the already
+  posted transaction without adding entries or audit records.
+- **Blockers:** No pull request exists for this branch. Creating or modifying a
+  PR requires explicit user approval.
+- **Uncommitted:** Idempotency hardening, regression tests, migration, and this
+  checkpoint are uncommitted and unpushed.
+- **Next:** Review the final diff, then commit and push only after explicit user
+  approval.
+
+### 2026-06-12 11:15 WIB - Final Core Transaction Slice Implemented
+
+- **Branch:** `feat/p2-core-income-expense`.
+- **Feature IDs:** `P2-21` to `P2-24`.
+- **Status:** In progress.
+- **Completed:** Pushed transaction metadata checkpoint `fd28c96`. Added
+  balanced multi-category split posting, safe integer arithmetic amount
+  expressions, balance-neutral incomplete drafts with structured form data,
+  authorized duplication into a new draft, and transaction-form controls for
+  split entry, calculator input, and saving drafts.
+- **Verification:** `composer ci:check` passed with 168 Pest tests and 697
+  assertions plus PHPStan, Pint, frontend lint, Prettier, type checks, Vitest,
+  and production build. Focused advanced-entry, transaction, transfer, and
+  lifecycle tests pass with 31 tests and 122 assertions. Governance and
+  `git diff --check` passed. Playwright smoke coverage passed on Chromium and
+  mobile Safari.
+- **Decisions:** Drafts store sanitized workspace-scoped input without ledger
+  entries. Duplication creates a new draft rather than copying posted entries.
+  Calculator division must resolve to a whole minor-unit amount.
+- **Blockers:** None.
+- **Uncommitted:** `P2-21` to `P2-24` implementation and this checkpoint remain
+  uncommitted and unpushed.
+- **Next:** Review the final diff, then commit and push the completed F-008
+  slice.
+
+### 2026-06-12 10:29 WIB - Phase 2 Transaction Metadata Implemented
+
+- **Branch:** `feat/p2-core-income-expense`.
+- **Feature IDs:** `P2-17` to `P2-20`.
+- **Status:** In progress.
+- **Completed:** Added optional merchant/recipient and memo fields to
+  transactions, a workspace-scoped `transaction_tags` pivot, model
+  relationships, active-resource validation, and metadata propagation through
+  the canonical posting service. Updated the transaction form with
+  merchant/recipient, memo, tag selection, and the active workspace timezone.
+  Transaction input time is interpreted in the workspace timezone and stored
+  in UTC. Committed and pushed the preceding `P2-13` to `P2-16` slice in
+  `49ad0c7`.
+- **Verification:** `composer ci:check` passed with 163 Pest tests and 673
+  assertions plus PHPStan, Pint, frontend lint, Prettier, type checks, Vitest,
+  and production build. Focused metadata, transaction, and transfer tests pass
+  with 24 tests and 132 assertions. Governance, `git diff --check`, Composer
+  audit, npm high-severity audit, and 2/2 Playwright smoke tests passed.
+  `migrate:fresh --seed` did not run because the sandbox blocked the PostgreSQL
+  connection before any database operation.
+- **Decisions:** Merchant/recipient is available only for income and expense.
+  Memo and tags are available for all current posted entry flows. Tags and
+  merchants must be active and belong to the transaction workspace.
+  Draft-effective-time editing remains coupled to `P2-23`; this slice covers
+  correct workspace-local entry and UTC persistence.
+- **Blockers:** None. The in-app browser was unavailable, but Playwright
+  acceptance tests passed outside the restricted sandbox.
+- **Uncommitted:** Transaction metadata implementation, migrations, tests,
+  progress updates, and this checkpoint are uncommitted and unpushed.
+- **Next:** Review and commit the focused `P2-17` to `P2-20` slice when
+  requested, then continue `F-008` with `P2-21` to `P2-24`.
+
+### 2026-06-12 10:16 WIB - Phase 2 Transfer Workflows Implemented
+
+- **Branch:** `feat/p2-core-income-expense`.
+- **Feature IDs:** `P2-13` to `P2-16`, with focused `P2-08`, `P2-11`, and
+  `P2-12` posting-integrity hardening.
+- **Status:** In progress.
+- **Completed:** Added the balanced same-currency transfer workflow with
+  optional fee expense leg, normal bank-to-cash withdrawal and
+  bank-to-credit-card settlement support, transfer fields in the existing
+  transaction form, and posting audit-log recording. Hardened income/expense
+  domain validation so workspace, category type, and positive amount
+  invariants do not depend only on HTTP validation. Updated the official Phase
+  2 and `F-008` progress status to `In Progress`.
+- **Verification:** `composer ci:check` passed with 157 Pest tests and 628
+  assertions plus PHPStan, Pint, frontend lint, Prettier, type checks, Vitest,
+  and production build. Focused transaction, transfer, and audit tests passed
+  with 22 tests and 99 assertions. Governance, `git diff --check`, Composer
+  audit, npm high-severity audit, and 2/2 Playwright smoke tests passed.
+- **Decisions:** Withdrawal and credit-card settlement remain normal transfers
+  per the catalog. A transfer fee is represented by an expense-category leg in
+  the same transaction, keeping the fee explicitly linked and the complete
+  transaction balanced. Cross-currency transfer remains Phase 5 scope and is
+  rejected.
+- **Blockers:** The in-app browser was unavailable, but Playwright acceptance
+  tests passed outside the restricted sandbox.
+- **Uncommitted:** Transfer implementation, tests, progress updates, and this
+  checkpoint are uncommitted and unpushed.
+- **Next:** Review and commit this focused slice when requested, then continue
+  `F-008` with `P2-17` to `P2-20`.
+
+### 2026-06-11 19:00 WIB - Phase 2 Core Income/Expense Entry Implemented
+
+- **Branch:** `feat/p2-core-income-expense` (branched from
+  `feat/p2-ledger-foundation`, which is fully implemented but not yet PR'd).
+- **Feature IDs:** `P2-11`, `P2-12` (start of `F-008`, `P2-11`-`P2-24`).
+- **Status:** In progress.
+- **Completed:** Implemented the first slice of `F-008`, balanced income and
+  expense posting: added migration adding nullable `category_id` (FK to
+  `categories`, restrictOnDelete) to `transaction_entries`, placed after
+  `account_id` so a future split transaction can carry multiple category legs
+  on one transaction; added `LedgerEntryType::Category`,
+  `TransactionType::Income`, `TransactionType::Expense`; added
+  `TransactionEntry::category()` relation; added generic
+  `App\Domain\Ledger\PostTransaction` (the canonical posting service named in
+  `docs/ARCHITECTURE.md`'s service boundaries) which validates workspace
+  membership and balance-to-zero, locks affected accounts via
+  `LockAccountsForPosting`, and posts a `Draft -> Posted` transaction with its
+  entries; added thin `App\Domain\Transactions\RecordIncomeExpense` which
+  builds the two balanced entries (Income: account `+amount`/category
+  `-amount`; Expense: account `-amount`/category `+amount`) and calls
+  `PostTransaction::post()`. Added `TransactionPolicy` (mirrors
+  `AccountPolicy`), `StoreTransactionRequest` (validates `type`, workspace
+  scoped `account_id`/`category_id`, `amount >= 1`, `description`,
+  `occurred_at`, plus a `withValidator` check that the category's `type`
+  matches the transaction `type`), `TransactionController` (`create`/`store`),
+  and routes `transactions.create`/`transactions.store`. Added
+  `resources/js/pages/transactions/CreateTransaction.vue` and
+  `resources/js/components/transactions/TransactionForm.vue` (mirroring the
+  `AccountForm.vue` conventions, with a type/account/category select, amount,
+  occurred-at, and description fields). Added an "Add transaction" button to
+  `accounts/Index.vue` so the new page is reachable. Existing actions
+  (`PostOpeningBalance`, `ReverseTransaction`, `ReplaceTransaction`) were not
+  refactored to use `PostTransaction` — out of scope for this slice.
+- **Verification:** New `tests/Feature/TransactionRecordingTest.php` (6 tests)
+  covering income/expense posting and balance updates, category/type
+  mismatch, cross-workspace account/category rejection, amount validation,
+  and the create-page Inertia props. Full suite: 145 tests / 576 assertions
+  passed. `vendor/bin/pint --dirty --format agent` (auto-fixed minor style in
+  the new controller and test). `composer analyse` (Larastan level 6, 0
+  errors — fixed a `notIdentical.alwaysTrue` false positive on
+  `Category::$type` using the established `getRawOriginal()->value` pattern).
+  `npm run lint:check`, `npm run types:check`, and `npm run build` passed.
+  `bash scripts/check-governance.sh` passed.
+- **Decisions:** Currency for posted entries is taken from the account's
+  `currency_code` (not user-supplied), matching `PostOpeningBalance`. A single
+  `transactions/create` page with a type select covers both `P2-11` and
+  `P2-12`. After posting, redirect to `accounts.index` (no transaction list
+  page exists yet — `F-009` is Phase 3 scope).
+- **Blockers:** None.
+- **Uncommitted:** All changes on `feat/p2-core-income-expense` are
+  uncommitted, pending explicit user approval to commit.
+- **Next:** After commit approval, continue `F-008` with `P2-13`-`P2-16`
+  (transfer, fee, withdrawal, settlement). `feat/p2-ledger-foundation`
+  (`F-007`, 3 commits) also still needs a PR.
+
+### 2026-06-11 18:00 WIB - Phase 2 Ledger Foundation Slice 3 Implemented
+
+- **Branch:** `feat/p2-ledger-foundation`.
+- **Feature IDs:** `P2-05`, `P2-07` (part of `F-007`, `P2-01`-`P2-10`).
+- **Status:** In progress.
+- **Completed:** Implemented Slice 3 of 3 for the Phase 2 ledger foundation:
+  added a migration adding nullable self-referencing
+  `reverses_transaction_id`/`replaces_transaction_id` columns to
+  `transactions`; added matching `Transaction` relations (`reverses`,
+  `reversal`, `replaces`, `replacement`); added
+  `App\Domain\Ledger\LockAccountsForPosting` (sorted `lockForUpdate` over
+  affected accounts); added `App\Domain\Ledger\ReverseTransaction` (creates a
+  posted reversal transaction with negated entries, marks the original
+  `Reversed`, records a `TransactionReversed` audit log) and
+  `App\Domain\Ledger\ReplaceTransaction` (creates a posted replacement
+  transaction with caller-supplied balanced entries, marks the original
+  `Replaced`, records a `TransactionReplaced` audit log). Both run inside
+  `DB::transaction()` with workspace-membership authorization.
+- **Fixes:** Discovered and fixed a balance-calculation bug introduced by
+  Slice 1: filtering ledger entries by `transaction.status === Posted`
+  excluded a reversed transaction's original entries (which must remain
+  counted, offset by the reversal's negated entries) and double-counted a
+  replaced transaction's original entries alongside its replacement.
+  `Account::postedLedgerEntries()` and
+  `CalculateAccountBalance::calculateAsOf()` now filter by
+  `posted_at IS NOT NULL AND status != Replaced`.
+- **Verification:** New `tests/Feature/ReverseTransactionTest.php` (4 tests)
+  and `tests/Feature/ReplaceTransactionTest.php` (4 tests) pass. Full suite:
+  139 tests, 541 assertions pass. `vendor/bin/pint --dirty --format agent`,
+  `composer analyse` (Larastan level 6), and `bash scripts/check-governance.sh`
+  pass.
+- **Decisions:** The reversal/replacement link is stored only on the new
+  transaction, not the original, to keep the original's status transition
+  status-only per the Slice 1 guard. The new transaction reuses the
+  original's `type` and `currency_code`; `TransactionType` is not extended
+  (new types are F-008 scope).
+- **Blockers:** None.
+- **Uncommitted:** All Slice 3 changes are uncommitted on
+  `feat/p2-ledger-foundation`, pending user review and explicit commit
+  approval.
+- **Next:** All 3 slices of `F-007` are implemented. After commit approval,
+  open a pull request to `main` for review.
+
+### 2026-06-11 17:15 WIB - Phase 2 Ledger Foundation Slice 2 Implemented
+
+- **Branch:** `feat/p2-ledger-foundation`.
+- **Feature IDs:** `P2-08` (part of `F-007`, `P2-01`-`P2-10`).
+- **Status:** In progress.
+- **Completed:** Implemented Slice 2 of 3 for the Phase 2 ledger foundation:
+  added the generic `audit_logs` table migration (`workspace_id`, `actor_id`,
+  `action`, `subject_type`, `subject_id`, `metadata`, `created_at`, no
+  `updated_at`) per `docs/ARCHITECTURE.md`; added the immutable `AuditLog`
+  model (`UPDATED_AT = null`, `metadata` array cast, `action` enum cast,
+  `save()`/`delete()` guards); added `AuditAction` enum (`TransactionPosted`,
+  `TransactionVoided`, `TransactionReversed`, `TransactionReplaced`); added
+  `App\Domain\Audit\RecordAuditLog` service; added
+  `Workspace::auditLogs(): HasMany`.
+- **Verification:** New `tests/Feature/AuditLogTest.php` (4 tests) passes.
+  Full suite: 131 tests, 513 assertions pass. `vendor/bin/pint --dirty
+--format agent`, `composer analyse` (Larastan level 6), and
+  `bash scripts/check-governance.sh` pass.
+- **Decisions:** Audit log infrastructure is not yet called from any domain
+  action in this slice; `AuditAction` includes all four lifecycle actions
+  upfront so Slice 3's reversal/replacement/posting actions can record entries
+  without further enum changes.
+- **Blockers:** None.
+- **Uncommitted:** All Slice 2 changes are uncommitted on
+  `feat/p2-ledger-foundation`, pending user review and explicit commit
+  approval.
+- **Next:** After commit approval, proceed to Slice 3
+  (`ReverseTransaction`/`ReplaceTransaction` domain actions and account-locking
+  helper, wired to `RecordAuditLog`).
+
+### 2026-06-11 16:30 WIB - Phase 2 Ledger Foundation Slice 1 Implemented
+
+- **Branch:** `feat/p2-ledger-foundation` (created from up-to-date `main`).
+- **Feature IDs:** `P2-03`, `P2-09`, `P2-10` (part of `F-007`, `P2-01`-`P2-10`).
+- **Status:** In progress.
+- **Completed:** Implemented Slice 1 of 3 for the Phase 2 ledger foundation:
+  added `Voided`, `Reversed`, and `Replaced` cases to `TransactionStatus`;
+  refined `Transaction::save()`'s immutability guard into a transition matrix
+  (terminal states are immutable; `Posted -> Reversed`/`Replaced` and
+  `Draft -> Voided` are the only allowed status-only transitions); added
+  `Account::postedLedgerEntries()`; fixed `CalculateAccountBalance` to derive
+  balances from posted entries only and added `calculateAsOf()` for
+  balance-at-date; updated `AccountController` and `AccountGroupController`
+  balance sums to use the posted-only relation.
+- **Verification:** New tests `tests/Feature/TransactionLifecycleGuardTest.php`
+  (8 tests) and `tests/Feature/AccountBalanceCalculationTest.php` (3 tests)
+  pass. Regression: `OpeningBalanceLedgerTest` (5 tests) and all `Account*`
+  feature tests (17 tests) pass. `vendor/bin/pint --dirty --format agent` and
+  `composer analyse` (Larastan level 6) pass.
+- **Decisions:** Confirmed with user — `Voided` applies only to
+  `Draft -> Voided` (discarded drafts, never hard-deleted); audit log will use
+  a generic `audit_logs` table per `docs/ARCHITECTURE.md`; replacement will be
+  a single-step `Posted -> Replaced` transition (no intermediate `Reversed`
+  state for the original); reversal/replacement domain actions and audit log
+  infrastructure are deferred to Slices 2 and 3.
+- **Blockers:** None.
+- **Uncommitted:** All Slice 1 changes are uncommitted on
+  `feat/p2-ledger-foundation`, pending user review and explicit commit
+  approval.
+- **Next:** After commit approval, plan Slice 2 (generic `audit_logs` table,
+  `AuditLog` model, `AuditAction` enum, `RecordAuditLog` service), then Slice 3
+  (`ReverseTransaction`/`ReplaceTransaction` domain actions and account-locking
+  helper, wired to the audit log).
+
 ### 2026-06-11 15:10 WIB - Published Alpha Tracker Pull Request Opened
 
 - **Branch:** `docs/v0.1.0-alpha.1-published`.
@@ -197,26 +540,23 @@ Add new entries at the top of the `Entries` section:
   `P1-31` pages.
 - **Status:** Completed.
 - **Completed:**
-  - Cataloged a new feature `P1-34` (Public landing page, Phase 1, Public
-    Experience) in `docs/FEATURE_CATALOG.md`, added it to the Phase 1 scope
-    and PR sequence in `docs/MASTER_PLAN.md`, and added delivery package
-    `F-021` plus an active override row in `docs/PROGRESS.md`.
-  - Replaced the unmodified Laravel/Inertia starter-kit `Welcome.vue` with a
-    branded landing page (Money Manager hero, feature highlights, login and
-    register CTAs) using existing Button/Card UI components and theme tokens
-    so it matches dark/light mode and the rest of the app.
-  - Renamed the leftover "Laravel Starter Kit" sidebar branding in
-    `AppLogo.vue` to "Money Manager".
-  - Fixed a layout bug where Accounts, Categories, Merchants, and Tags pages
-    (index/create/edit) had no padding and content touched the sidebar/edges;
-    added `p-4` to match `Dashboard.vue`.
-- **Verification:**
-  - `npm run format:check`, `npm run lint:check`, `npm run types:check`,
-    `npm run build` → all passed.
-  - `APP_URL=http://localhost:8000 npx playwright test
-    tests/Browser/welcome.spec.ts` (chromium) → passed, title contains "Money
-    Manager".
-  - `bash scripts/check-governance.sh` → passed.
+    - Cataloged a new feature `P1-34` (Public landing page, Phase 1, Public
+      Experience) in `docs/FEATURE_CATALOG.md`, added it to the Phase 1 scope
+      and PR sequence in `docs/MASTER_PLAN.md`, and added delivery package
+      `F-021` plus an active override row in `docs/PROGRESS.md`.
+    - Replaced the unmodified Laravel/Inertia starter-kit `Welcome.vue` with a
+      branded landing page (Money Manager hero, feature highlights, login and
+      register CTAs) using existing Button/Card UI components and theme tokens
+      so it matches dark/light mode and the rest of the app.
+    - Renamed the leftover "Laravel Starter Kit" sidebar branding in
+      `AppLogo.vue` to "Money Manager".
+    - Fixed a layout bug where Accounts, Categories, Merchants, and Tags pages
+      (index/create/edit) had no padding and content touched the sidebar/edges;
+      added `p-4` to match `Dashboard.vue`.
+- **Verification:** - `npm run format:check`, `npm run lint:check`, `npm run types:check`,
+  `npm run build` → all passed. - `APP_URL=http://localhost:8000 npx playwright test
+tests/Browser/welcome.spec.ts` (chromium) → passed, title contains "Money
+  Manager". - `bash scripts/check-governance.sh` → passed.
 - **Decisions:** Landing page redesign was previously uncataloged scope; added
   as `P1-34` per user request before implementation.
 - **Blockers:** None.
@@ -234,13 +574,13 @@ Add new entries at the top of the `Entries` section:
   `composer dev` still runs correctly with `concurrently@10` (Node >=22, which
   this environment satisfies).
 - **Verification:**
-  - `npm install` → 0 vulnerabilities.
-  - `php artisan test --compact` → 116 tests, 467 assertions, passed.
-  - `composer analyse` → 0 errors.
-  - `vendor/bin/pint --test` → passed.
-  - `npm run lint:check`, `npm run format:check`, `npm run types:check`,
-    `npm run build` → all passed.
-  - `npm audit --audit-level=high` → 0 vulnerabilities.
+    - `npm install` → 0 vulnerabilities.
+    - `php artisan test --compact` → 116 tests, 467 assertions, passed.
+    - `composer analyse` → 0 errors.
+    - `vendor/bin/pint --test` → passed.
+    - `npm run lint:check`, `npm run format:check`, `npm run types:check`,
+      `npm run build` → all passed.
+    - `npm audit --audit-level=high` → 0 vulnerabilities.
 - **Decisions:** None beyond the approved dependency bump.
 - **Blockers:** None. The previously noted npm audit blocker is resolved.
 - **Uncommitted:** `package.json` and `package-lock.json` (concurrently bump),
@@ -460,32 +800,32 @@ Add new entries at the top of the `Entries` section:
 - **Feature IDs:** `P1-12` to `P1-33`.
 - **Status:** In Progress.
 - **Completed:**
-  - Added preference columns to workspaces table (`default_currency`, `timezone`, `locale`,
-    `number_format`, `first_day_of_week`, `month_start_day`, `adjust_month_for_weekend`).
-  - Created `currencies` table with 25 major currencies seeded via `CurrencySeeder`.
-  - Updated `Workspace` model with preference fillable fields, casts, and hasMany relationships.
-  - Updated `WorkspaceFactory` to include preference column defaults.
-  - Created `WorkspaceController` (settings) with `edit` and `update` actions.
-  - Created `WorkspacePreferencesRequest` with validation for all preference fields.
-  - Added `settings/workspace` GET/PATCH routes under `auth + verified + workspace` middleware.
-  - Created `settings/Workspace.vue` Inertia page.
-  - Added `AuthorizesRequests` trait to the base `Controller` class.
-  - Created full backend for P1-19 to P1-33 (no Vue pages yet):
-    - Migrations: `account_groups`, `accounts`, `categories`, `merchants`, `tags`.
-    - Enums: `AccountType`, `CategoryType`.
-    - Models + factories: `AccountGroup`, `Account`, `Category`, `Merchant`, `Tag`.
-    - Policies: `AccountGroupPolicy`, `AccountPolicy`, `CategoryPolicy`, `MerchantPolicy`, `TagPolicy`.
-    - Controllers: `AccountGroupController`, `AccountController`, `CategoryController`,
-      `MerchantController`, `TagController`.
-    - Form requests for store/update on all five resource types.
-    - All routes registered under `auth + verified + workspace` middleware.
-    - `StarterPresetsSeeder` for workspace-scoped default accounts and categories.
-  - 7 new workspace preferences tests added (82 total, all passing).
+    - Added preference columns to workspaces table (`default_currency`, `timezone`, `locale`,
+      `number_format`, `first_day_of_week`, `month_start_day`, `adjust_month_for_weekend`).
+    - Created `currencies` table with 25 major currencies seeded via `CurrencySeeder`.
+    - Updated `Workspace` model with preference fillable fields, casts, and hasMany relationships.
+    - Updated `WorkspaceFactory` to include preference column defaults.
+    - Created `WorkspaceController` (settings) with `edit` and `update` actions.
+    - Created `WorkspacePreferencesRequest` with validation for all preference fields.
+    - Added `settings/workspace` GET/PATCH routes under `auth + verified + workspace` middleware.
+    - Created `settings/Workspace.vue` Inertia page.
+    - Added `AuthorizesRequests` trait to the base `Controller` class.
+    - Created full backend for P1-19 to P1-33 (no Vue pages yet):
+        - Migrations: `account_groups`, `accounts`, `categories`, `merchants`, `tags`.
+        - Enums: `AccountType`, `CategoryType`.
+        - Models + factories: `AccountGroup`, `Account`, `Category`, `Merchant`, `Tag`.
+        - Policies: `AccountGroupPolicy`, `AccountPolicy`, `CategoryPolicy`, `MerchantPolicy`, `TagPolicy`.
+        - Controllers: `AccountGroupController`, `AccountController`, `CategoryController`,
+          `MerchantController`, `TagController`.
+        - Form requests for store/update on all five resource types.
+        - All routes registered under `auth + verified + workspace` middleware.
+        - `StarterPresetsSeeder` for workspace-scoped default accounts and categories.
+    - 7 new workspace preferences tests added (82 total, all passing).
 - **Verification:** `php artisan test --compact` → 82/82 passed; `vendor/bin/pint --dirty` → clean.
 - **Decisions:**
-  - Authorization for workspace update handled in controller via `$this->authorize('update', $workspace)`
-    rather than in form request (route has no `workspace` parameter).
-  - CurrencySeeder must be called in test `beforeEach` when testing routes that validate `currency_code`.
+    - Authorization for workspace update handled in controller via `$this->authorize('update', $workspace)`
+      rather than in form request (route has no `workspace` parameter).
+    - CurrencySeeder must be called in test `beforeEach` when testing routes that validate `currency_code`.
 - **Blockers:** None.
 - **Uncommitted:** All changes on `feat/p1-financial-setup` are uncommitted.
 - **Next:** Commit and push this checkpoint. Vue pages and tests for P1-19 to P1-33 in next session.

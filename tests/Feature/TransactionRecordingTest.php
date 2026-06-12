@@ -1,0 +1,417 @@
+<?php
+
+use App\Domain\Audit\RecordAuditLog;
+use App\Domain\Ledger\CalculateAccountBalance;
+use App\Domain\Ledger\PostTransaction;
+use App\Domain\Transactions\RecordIncomeExpense;
+use App\Domain\Workspaces\CreatePersonalWorkspace;
+use App\Enums\LedgerEntryType;
+use App\Enums\TransactionStatus;
+use App\Enums\TransactionType;
+use App\Models\Account;
+use App\Models\Category;
+use App\Models\Transaction;
+use App\Models\User;
+use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia as Assert;
+
+use function Pest\Laravel\mock;
+
+function createTransactionWorkspace(): array
+{
+    $user = User::factory()->create();
+    $workspace = app(CreatePersonalWorkspace::class)->create($user);
+
+    return [$user, $workspace];
+}
+
+test('user can record an income transaction', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $category = Category::factory()->for($workspace)->income()->create();
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), [
+            'type' => 'income',
+            'account_id' => $account->id,
+            'category_id' => $category->id,
+            'amount' => 50000,
+            'description' => 'Freelance payment',
+            'occurred_at' => now()->toDateTimeString(),
+        ])
+        ->assertRedirect(route('accounts.index'));
+
+    $transaction = Transaction::query()->sole();
+
+    expect($transaction)
+        ->type->toBe(TransactionType::Income)
+        ->status->toBe(TransactionStatus::Posted);
+
+    expect($transaction->entries()->sum('amount'))->toBe(0);
+    expect(app(CalculateAccountBalance::class)->calculate($account->fresh()))->toBe(50000);
+});
+
+test('user can record an expense transaction', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), [
+            'type' => 'expense',
+            'account_id' => $account->id,
+            'category_id' => $category->id,
+            'amount' => 15000,
+            'description' => 'Groceries',
+            'occurred_at' => now()->toDateTimeString(),
+        ])
+        ->assertRedirect(route('accounts.index'));
+
+    $transaction = Transaction::query()->sole();
+
+    expect($transaction)
+        ->type->toBe(TransactionType::Expense)
+        ->status->toBe(TransactionStatus::Posted);
+
+    expect($transaction->entries()->sum('amount'))->toBe(0);
+    expect(app(CalculateAccountBalance::class)->calculate($account->fresh()))->toBe(-15000);
+});
+
+test('replayed transaction submission posts only once', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+    $idempotencyKey = (string) Str::uuid();
+    $payload = [
+        'idempotency_key' => $idempotencyKey,
+        'type' => 'expense',
+        'account_id' => $account->id,
+        'category_id' => $category->id,
+        'amount' => 15000,
+        'description' => 'Replayed expense',
+        'occurred_at' => now()->toDateTimeString(),
+    ];
+
+    $this->actingAs($user)->post(route('transactions.store'), $payload)->assertRedirect(route('accounts.index'));
+    $this->actingAs($user)->post(route('transactions.store'), $payload)->assertRedirect(route('accounts.index'));
+
+    expect(Transaction::query()->count())->toBe(1)
+        ->and(Transaction::query()->sole()->idempotency_key)->toBe($idempotencyKey)
+        ->and(app(CalculateAccountBalance::class)->calculate($account->fresh()))->toBe(-15000);
+});
+
+test('reusing an idempotency key with different transaction data is rejected', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+    $idempotencyKey = (string) Str::uuid();
+    $occurredAt = now();
+    $post = app(PostTransaction::class);
+    $entries = [
+        ['account_id' => $account->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => -15000],
+        ['account_id' => null, 'category_id' => $category->id, 'type' => LedgerEntryType::Category, 'amount' => 15000],
+    ];
+
+    $post->post(
+        $workspace,
+        TransactionType::Expense,
+        $account->currency_code,
+        'Original expense',
+        $occurredAt,
+        $entries,
+        $user,
+        idempotencyKey: $idempotencyKey,
+    );
+
+    $changedEntries = [
+        ['account_id' => $account->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => -20000],
+        ['account_id' => null, 'category_id' => $category->id, 'type' => LedgerEntryType::Category, 'amount' => 20000],
+    ];
+
+    expect(fn () => $post->post(
+        $workspace,
+        TransactionType::Expense,
+        $account->currency_code,
+        'Changed expense',
+        $occurredAt,
+        $changedEntries,
+        $user,
+        idempotencyKey: $idempotencyKey,
+    ))->toThrow(LogicException::class, 'The idempotency key has already been used for a different transaction.');
+
+    expect(Transaction::query()->count())->toBe(1)
+        ->and(app(CalculateAccountBalance::class)->calculate($account->fresh()))->toBe(-15000);
+});
+
+test('posting rolls back all financial writes when audit recording fails', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+
+    mock(RecordAuditLog::class)
+        ->shouldReceive('record')
+        ->once()
+        ->andThrow(new RuntimeException('Audit storage unavailable.'));
+
+    $this->withoutExceptionHandling();
+
+    expect(fn () => $this->actingAs($user)->post(route('transactions.store'), [
+        'type' => 'expense',
+        'account_id' => $account->id,
+        'category_id' => $category->id,
+        'amount' => 15000,
+        'description' => 'Atomic expense',
+        'occurred_at' => now()->toDateTimeString(),
+    ]))->toThrow(RuntimeException::class, 'Audit storage unavailable.');
+
+    expect(Transaction::query()->count())->toBe(0)
+        ->and(app(CalculateAccountBalance::class)->calculate($account->fresh()))->toBe(0);
+});
+
+test('category type must match transaction type', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $expenseCategory = Category::factory()->for($workspace)->expense()->create();
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), [
+            'type' => 'income',
+            'account_id' => $account->id,
+            'category_id' => $expenseCategory->id,
+            'amount' => 1000,
+            'description' => 'Mismatched category',
+            'occurred_at' => now()->toDateTimeString(),
+        ])
+        ->assertSessionHasErrors('category_id');
+
+    expect(Transaction::query()->count())->toBe(0);
+});
+
+test('account and category from another workspace are rejected', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    [, $otherWorkspace] = createTransactionWorkspace();
+
+    $account = Account::factory()->for($workspace)->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+    $otherAccount = Account::factory()->for($otherWorkspace)->create();
+    $otherCategory = Category::factory()->for($otherWorkspace)->expense()->create();
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), [
+            'type' => 'expense',
+            'account_id' => $otherAccount->id,
+            'category_id' => $category->id,
+            'amount' => 1000,
+            'description' => 'Other workspace account',
+            'occurred_at' => now()->toDateTimeString(),
+        ])
+        ->assertSessionHasErrors('account_id');
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), [
+            'type' => 'expense',
+            'account_id' => $account->id,
+            'category_id' => $otherCategory->id,
+            'amount' => 1000,
+            'description' => 'Other workspace category',
+            'occurred_at' => now()->toDateTimeString(),
+        ])
+        ->assertSessionHasErrors('category_id');
+
+    expect(Transaction::query()->count())->toBe(0);
+});
+
+test('archived accounts and categories are rejected by transaction requests', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $activeAccount = Account::factory()->for($workspace)->create();
+    $archivedAccount = Account::factory()->for($workspace)->create(['archived_at' => now()]);
+    $activeCategory = Category::factory()->for($workspace)->expense()->create();
+    $archivedCategory = Category::factory()->for($workspace)->expense()->create(['archived_at' => now()]);
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), [
+            'type' => 'expense',
+            'account_id' => $archivedAccount->id,
+            'category_id' => $activeCategory->id,
+            'amount' => 1000,
+            'description' => 'Archived account',
+            'occurred_at' => now()->toDateTimeString(),
+        ])
+        ->assertSessionHasErrors('account_id');
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), [
+            'type' => 'expense',
+            'account_id' => $activeAccount->id,
+            'category_id' => $archivedCategory->id,
+            'amount' => 1000,
+            'description' => 'Archived category',
+            'occurred_at' => now()->toDateTimeString(),
+        ])
+        ->assertSessionHasErrors('category_id');
+
+    expect(Transaction::query()->count())->toBe(0);
+});
+
+test('generic posting service rejects archived financial references', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $archivedAccount = Account::factory()->for($workspace)->create(['archived_at' => now()]);
+    $archivedCategory = Category::factory()->for($workspace)->expense()->create(['archived_at' => now()]);
+    $post = app(PostTransaction::class);
+
+    expect(fn () => $post->post(
+        $workspace,
+        TransactionType::Expense,
+        $archivedAccount->currency_code,
+        'Archived references',
+        now(),
+        [
+            ['account_id' => $archivedAccount->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => -1000],
+            ['account_id' => null, 'category_id' => $archivedCategory->id, 'type' => LedgerEntryType::Category, 'amount' => 1000],
+        ],
+        $user,
+    ))->toThrow(LogicException::class);
+
+    expect(Transaction::query()->count())->toBe(0);
+});
+
+test('income and expense domain action rejects a category from another workspace', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    [, $otherWorkspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $otherCategory = Category::factory()->for($otherWorkspace)->expense()->create();
+
+    expect(fn () => app(RecordIncomeExpense::class)->record(
+        $account,
+        $otherCategory,
+        TransactionType::Expense,
+        1000,
+        'Invalid cross-workspace expense',
+        now(),
+        $user,
+    ))->toThrow(LogicException::class);
+
+    expect(Transaction::query()->count())->toBe(0);
+});
+
+test('generic posting service rejects financial references from another workspace', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    [, $otherWorkspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $otherAccount = Account::factory()->for($otherWorkspace)->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+    $otherCategory = Category::factory()->for($otherWorkspace)->expense()->create();
+
+    $post = app(PostTransaction::class);
+
+    expect(fn () => $post->post(
+        $workspace,
+        TransactionType::Expense,
+        $account->currency_code,
+        'Invalid account workspace',
+        now(),
+        [
+            ['account_id' => $otherAccount->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => -1000],
+            ['account_id' => null, 'category_id' => $category->id, 'type' => LedgerEntryType::Category, 'amount' => 1000],
+        ],
+        $user,
+    ))->toThrow(LogicException::class);
+
+    expect(fn () => $post->post(
+        $workspace,
+        TransactionType::Expense,
+        $account->currency_code,
+        'Invalid category workspace',
+        now(),
+        [
+            ['account_id' => $account->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => -1000],
+            ['account_id' => null, 'category_id' => $otherCategory->id, 'type' => LedgerEntryType::Category, 'amount' => 1000],
+        ],
+        $user,
+    ))->toThrow(LogicException::class);
+
+    expect(Transaction::query()->count())->toBe(0);
+});
+
+test('generic posting service rejects incomplete unbalanced and malformed entries', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+    $post = app(PostTransaction::class);
+
+    expect(fn () => $post->post(
+        $workspace,
+        TransactionType::Expense,
+        $account->currency_code,
+        'Incomplete transaction',
+        now(),
+        [
+            ['account_id' => $account->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => -1000],
+        ],
+        $user,
+    ))->toThrow(LogicException::class);
+
+    expect(fn () => $post->post(
+        $workspace,
+        TransactionType::Expense,
+        $account->currency_code,
+        'Unbalanced transaction',
+        now(),
+        [
+            ['account_id' => $account->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => -1000],
+            ['account_id' => null, 'category_id' => $category->id, 'type' => LedgerEntryType::Category, 'amount' => 500],
+        ],
+        $user,
+    ))->toThrow(LogicException::class);
+
+    expect(fn () => $post->post(
+        $workspace,
+        TransactionType::Expense,
+        $account->currency_code,
+        'Malformed transaction',
+        now(),
+        [
+            ['account_id' => $account->id, 'category_id' => $category->id, 'type' => LedgerEntryType::Account, 'amount' => -1000],
+            ['account_id' => null, 'category_id' => $category->id, 'type' => LedgerEntryType::Category, 'amount' => 1000],
+        ],
+        $user,
+    ))->toThrow(LogicException::class);
+
+    expect(Transaction::query()->count())->toBe(0);
+});
+
+test('amount must be a positive integer', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), [
+            'type' => 'expense',
+            'account_id' => $account->id,
+            'category_id' => $category->id,
+            'amount' => 0,
+            'description' => 'Zero amount',
+            'occurred_at' => now()->toDateTimeString(),
+        ])
+        ->assertSessionHasErrors('amount');
+
+    expect(Transaction::query()->count())->toBe(0);
+});
+
+test('transaction create page renders accounts and categories', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    Account::factory()->for($workspace)->create();
+    Category::factory()->for($workspace)->expense()->create();
+    Category::factory()->for($workspace)->income()->create();
+
+    $this->actingAs($user)
+        ->get(route('transactions.create'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('transactions/CreateTransaction')
+            ->has('accounts', 1)
+            ->has('categories', 2)
+            ->where('idempotencyKey', fn (string $value): bool => Str::isUuid($value)),
+        );
+});

@@ -122,6 +122,14 @@ class Workspace extends Model
         return $this->hasMany(TransactionEntry::class);
     }
 
+    /**
+     * @return HasMany<AuditLog, $this>
+     */
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(AuditLog::class);
+    }
+
     public function isOwnedBy(User $user): bool
     {
         return $this->owner_id === $user->id;
