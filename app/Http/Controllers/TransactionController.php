@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Transactions\RecordIncomeExpense;
+use App\Domain\Transactions\RecordTransfer;
 use App\Domain\Workspaces\WorkspaceContext;
 use App\Enums\TransactionType;
 use App\Http\Requests\StoreTransactionRequest;
@@ -28,7 +29,7 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function store(StoreTransactionRequest $request, RecordIncomeExpense $recordIncomeExpense): RedirectResponse
+    public function store(StoreTransactionRequest $request, RecordIncomeExpense $recordIncomeExpense, RecordTransfer $recordTransfer): RedirectResponse
     {
         $workspace = $this->workspaceContext->get();
         $user = $request->user();
@@ -38,17 +39,37 @@ class TransactionController extends Controller
         $validated = $request->validated();
 
         $account = $workspace->accounts()->whereKey($validated['account_id'])->firstOrFail();
-        $category = $workspace->categories()->whereKey($validated['category_id'])->firstOrFail();
+        $type = TransactionType::from($validated['type']);
 
-        $recordIncomeExpense->record(
-            $account,
-            $category,
-            TransactionType::from($validated['type']),
-            (int) $validated['amount'],
-            $validated['description'],
-            Carbon::parse($validated['occurred_at']),
-            $user,
-        );
+        if ($type === TransactionType::Transfer) {
+            $destinationAccount = $workspace->accounts()->whereKey($validated['destination_account_id'])->firstOrFail();
+            $feeCategory = isset($validated['fee_category_id'])
+                ? $workspace->categories()->whereKey($validated['fee_category_id'])->firstOrFail()
+                : null;
+
+            $recordTransfer->record(
+                $account,
+                $destinationAccount,
+                (int) $validated['amount'],
+                (int) ($validated['fee_amount'] ?? 0),
+                $feeCategory,
+                $validated['description'],
+                Carbon::parse($validated['occurred_at']),
+                $user,
+            );
+        } else {
+            $category = $workspace->categories()->whereKey($validated['category_id'])->firstOrFail();
+
+            $recordIncomeExpense->record(
+                $account,
+                $category,
+                $type,
+                (int) $validated['amount'],
+                $validated['description'],
+                Carbon::parse($validated['occurred_at']),
+                $user,
+            );
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Transaction recorded.')]);
 

@@ -50,6 +50,36 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 10:16 WIB - Phase 2 Transfer Workflows Implemented
+
+- **Branch:** `feat/p2-core-income-expense`.
+- **Feature IDs:** `P2-13` to `P2-16`, with focused `P2-08`, `P2-11`, and
+  `P2-12` posting-integrity hardening.
+- **Status:** In progress.
+- **Completed:** Added the balanced same-currency transfer workflow with
+  optional fee expense leg, normal bank-to-cash withdrawal and
+  bank-to-credit-card settlement support, transfer fields in the existing
+  transaction form, and posting audit-log recording. Hardened income/expense
+  domain validation so workspace, category type, and positive amount
+  invariants do not depend only on HTTP validation. Updated the official Phase
+  2 and `F-008` progress status to `In Progress`.
+- **Verification:** `composer ci:check` passed with 157 Pest tests and 628
+  assertions plus PHPStan, Pint, frontend lint, Prettier, type checks, Vitest,
+  and production build. Focused transaction, transfer, and audit tests passed
+  with 22 tests and 99 assertions. Governance, `git diff --check`, Composer
+  audit, npm high-severity audit, and 2/2 Playwright smoke tests passed.
+- **Decisions:** Withdrawal and credit-card settlement remain normal transfers
+  per the catalog. A transfer fee is represented by an expense-category leg in
+  the same transaction, keeping the fee explicitly linked and the complete
+  transaction balanced. Cross-currency transfer remains Phase 5 scope and is
+  rejected.
+- **Blockers:** The in-app browser was unavailable, but Playwright acceptance
+  tests passed outside the restricted sandbox.
+- **Uncommitted:** Transfer implementation, tests, progress updates, and this
+  checkpoint are uncommitted and unpushed.
+- **Next:** Review and commit this focused slice when requested, then continue
+  `F-008` with `P2-17` to `P2-20`.
+
 ### 2026-06-11 19:00 WIB - Phase 2 Core Income/Expense Entry Implemented
 
 - **Branch:** `feat/p2-core-income-expense` (branched from

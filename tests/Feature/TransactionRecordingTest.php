@@ -1,7 +1,10 @@
 <?php
 
 use App\Domain\Ledger\CalculateAccountBalance;
+use App\Domain\Ledger\PostTransaction;
+use App\Domain\Transactions\RecordIncomeExpense;
 use App\Domain\Workspaces\CreatePersonalWorkspace;
+use App\Enums\LedgerEntryType;
 use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
 use App\Models\Account;
@@ -119,6 +122,111 @@ test('account and category from another workspace are rejected', function () {
             'occurred_at' => now()->toDateTimeString(),
         ])
         ->assertSessionHasErrors('category_id');
+
+    expect(Transaction::query()->count())->toBe(0);
+});
+
+test('income and expense domain action rejects a category from another workspace', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    [, $otherWorkspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $otherCategory = Category::factory()->for($otherWorkspace)->expense()->create();
+
+    expect(fn () => app(RecordIncomeExpense::class)->record(
+        $account,
+        $otherCategory,
+        TransactionType::Expense,
+        1000,
+        'Invalid cross-workspace expense',
+        now(),
+        $user,
+    ))->toThrow(LogicException::class);
+
+    expect(Transaction::query()->count())->toBe(0);
+});
+
+test('generic posting service rejects financial references from another workspace', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    [, $otherWorkspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $otherAccount = Account::factory()->for($otherWorkspace)->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+    $otherCategory = Category::factory()->for($otherWorkspace)->expense()->create();
+
+    $post = app(PostTransaction::class);
+
+    expect(fn () => $post->post(
+        $workspace,
+        TransactionType::Expense,
+        $account->currency_code,
+        'Invalid account workspace',
+        now(),
+        [
+            ['account_id' => $otherAccount->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => -1000],
+            ['account_id' => null, 'category_id' => $category->id, 'type' => LedgerEntryType::Category, 'amount' => 1000],
+        ],
+        $user,
+    ))->toThrow(LogicException::class);
+
+    expect(fn () => $post->post(
+        $workspace,
+        TransactionType::Expense,
+        $account->currency_code,
+        'Invalid category workspace',
+        now(),
+        [
+            ['account_id' => $account->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => -1000],
+            ['account_id' => null, 'category_id' => $otherCategory->id, 'type' => LedgerEntryType::Category, 'amount' => 1000],
+        ],
+        $user,
+    ))->toThrow(LogicException::class);
+
+    expect(Transaction::query()->count())->toBe(0);
+});
+
+test('generic posting service rejects incomplete unbalanced and malformed entries', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+    $post = app(PostTransaction::class);
+
+    expect(fn () => $post->post(
+        $workspace,
+        TransactionType::Expense,
+        $account->currency_code,
+        'Incomplete transaction',
+        now(),
+        [
+            ['account_id' => $account->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => -1000],
+        ],
+        $user,
+    ))->toThrow(LogicException::class);
+
+    expect(fn () => $post->post(
+        $workspace,
+        TransactionType::Expense,
+        $account->currency_code,
+        'Unbalanced transaction',
+        now(),
+        [
+            ['account_id' => $account->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => -1000],
+            ['account_id' => null, 'category_id' => $category->id, 'type' => LedgerEntryType::Category, 'amount' => 500],
+        ],
+        $user,
+    ))->toThrow(LogicException::class);
+
+    expect(fn () => $post->post(
+        $workspace,
+        TransactionType::Expense,
+        $account->currency_code,
+        'Malformed transaction',
+        now(),
+        [
+            ['account_id' => $account->id, 'category_id' => $category->id, 'type' => LedgerEntryType::Account, 'amount' => -1000],
+            ['account_id' => null, 'category_id' => $category->id, 'type' => LedgerEntryType::Category, 'amount' => 1000],
+        ],
+        $user,
+    ))->toThrow(LogicException::class);
 
     expect(Transaction::query()->count())->toBe(0);
 });

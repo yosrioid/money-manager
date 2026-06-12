@@ -23,7 +23,7 @@ defineOptions({
     <div class="flex flex-col gap-6 p-4">
         <Heading
             title="Add transaction"
-            description="Record income or an expense against an account and category"
+            description="Record income, an expense, or a transfer between accounts"
         />
         <TransactionForm
             :form="TransactionController.store.form()"

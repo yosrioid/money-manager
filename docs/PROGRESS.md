@@ -26,10 +26,10 @@ phase is complete.
 
 ## Current Milestone
 
-- **Phase:** Phase 1 - Identity, Workspace, And Financial Setup
-- **Milestone:** Phase 1 complete; `v0.1.0-alpha.1` internal alpha preparation
-- **Status:** Done
-- **Updated:** 2026-06-11
+- **Phase:** Phase 2 - Ledger And Core Transactions
+- **Milestone:** Core transaction flows through `P2-16`
+- **Status:** In Progress
+- **Updated:** 2026-06-12
 
 ## Phase Status
 
@@ -37,7 +37,7 @@ phase is complete.
 | ------- | --------------------------------------------- | ------- | ------------------------------------- |
 | Phase 0 | Engineering Foundation                        | Done    | Foundation and governance established |
 | Phase 1 | Identity, Workspace, And Financial Setup      | Done    | Secure financial structure ready      |
-| Phase 2 | Ledger And Core Transactions                  | Planned | Balanced transaction engine ready     |
+| Phase 2 | Ledger And Core Transactions                  | In Progress | Balanced transaction engine ready     |
 | Phase 3 | Daily Use And Transaction Productivity        | Planned | Daily tracking experience ready       |
 | Phase 4 | Budgets, Goals, Statistics, And Data Exchange | Planned | MVP feature scope ready               |
 | Phase 5 | Cards, Debt, Assets, And Multi-Currency       | Planned | Advanced finance workflows ready      |
@@ -59,7 +59,7 @@ are defined by the mapped IDs in `docs/FEATURE_CATALOG.md`.
 | F-005 | Account groups and accounts                     | `P1-19` to `P1-25` | Done    | 2026-06-11 |
 | F-006 | Categories and reference data                   | `P1-26` to `P1-33` | Done    | 2026-06-11 |
 | F-007 | Double-entry ledger foundation                  | `P2-01` to `P2-10` | In Progress | -          |
-| F-008 | Core transaction flows                          | `P2-11` to `P2-24` | Planned | -          |
+| F-008 | Core transaction flows                          | `P2-11` to `P2-24` | In Progress | -          |
 | F-009 | Transaction history and navigation              | `P3-01` to `P3-12` | Planned | -          |
 | F-010 | Dashboard and fast-entry workflows              | `P3-13` to `P3-21` | Planned | -          |
 | F-011 | Budgets and goals                               | `P4-01` to `P4-10` | Planned | -          |
@@ -99,7 +99,7 @@ Keep the row through completion so partial package progress remains visible.
 | `P1-12` to `P1-33` | Done   | [#5](https://github.com/yosrioid/money-manager/pull/5) | Financial setup, reference data, opening balances, application lock, and tests merged |
 | `P1-34`            | Done   | [#6](https://github.com/yosrioid/money-manager/pull/6) | Branded public landing page merged                                                    |
 | `P2-01` to `P2-10` | In Progress | `feat/p2-ledger-foundation` | All 3 slices of `F-007` implemented: lifecycle status enum (Voided, Reversed, Replaced) with transition guard; posted-only balance calculation and balance-at-date; immutable generic `audit_logs` table, `AuditLog` model, `AuditAction` enum, and `RecordAuditLog` service; account-locking (`LockAccountsForPosting`), `ReverseTransaction`, and `ReplaceTransaction` domain actions wired to the audit log. Pending PR review. |
-| `P2-11`, `P2-12` | In Progress | `feat/p2-core-income-expense` | Income and expense entry implemented: `category_id` added to `transaction_entries`; new `LedgerEntryType::Category`, `TransactionType::Income`/`Expense`; generic `PostTransaction` posting service and thin `RecordIncomeExpense` action; `TransactionController`, `TransactionPolicy`, `transactions.create`/`transactions.store` routes, and the `transactions/CreateTransaction` page with an "Add transaction" entry point from Accounts. Pending PR review. |
+| `P2-11` to `P2-16` | In Progress | `feat/p2-core-income-expense` | Income, expense, and same-currency transfer entry implemented. Transfers support an optional linked expense-category fee; bank-to-cash withdrawal and bank-to-credit-card settlement use the same balanced transfer workflow. Posting records an audit log, and request plus domain validation protect account/category workspace, type, amount, and currency invariants. Pending full review and PR. |
 
 ## Completed Features
 
