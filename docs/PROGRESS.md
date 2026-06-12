@@ -85,7 +85,7 @@ mapped feature ID.
 | `P0-01` to `P0-06` | Done     | Engineering foundation and governance baseline               |
 | `P1-01` to `P1-34` | Done     | Phase 1 exit gate passed                                     |
 | `P2-01` to `P2-24` | Done     | Phase 2 exit gate passed                                     |
-| `P3-01`            | Done     | Daily transaction history delivered                          |
+| `P3-01`            | In Progress | Daily transaction history implemented on `feat/phase-3`   |
 | `P3-02` to `P8-10` | Planned  | See phase sequence and dependencies in `docs/MASTER_PLAN.md` |
 | `D-01` to `D-06`   | Deferred | Requires explicit scope approval                             |
 
@@ -102,29 +102,9 @@ Keep the row through completion so partial package progress remains visible.
 | `P1-34`            | Done      | [#6](https://github.com/yosrioid/money-manager/pull/6)   | Branded public landing page merged                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `P2-01` to `P2-10` | Done      | [#10](https://github.com/yosrioid/money-manager/pull/10) | All 3 slices of `F-007` implemented: lifecycle status enum (Voided, Reversed, Replaced) with transition guard; posted-only balance calculation and balance-at-date; immutable generic `audit_logs` table, `AuditLog` model, `AuditAction` enum, and `RecordAuditLog` service; account-locking (`LockAccountsForPosting`), `ReverseTransaction`, and `ReplaceTransaction` domain actions wired to the audit log. Correction flows preserve category references and reject cross-workspace replacement references.                                                                                                        |
 | `P2-11` to `P2-24` | Done      | [#10](https://github.com/yosrioid/money-manager/pull/10) | Core income, expense, transfer, metadata, split, calculator, draft, and duplication flows are implemented. Split entries remain balanced across one account leg and multiple category legs. Safe integer arithmetic expressions are supported without float or evaluation. Incomplete drafts and duplicated transactions persist structured input without ledger entries, can be resumed and updated, and become inactive after successful posting. Posting records an audit log, rejects archived financial references, and uses a workspace-scoped idempotency key that rejects conflicting payloads; request plus domain validation protect workspace, type, amount, currency, and metadata invariants. |
-| `P3-01`            | Done      | [#13](https://github.com/yosrioid/money-manager/pull/13) | Added a `transactions.index` page listing posted transactions (including reversed and replaced) grouped by workspace-local date, derived from `occurred_at` converted to the workspace timezone. Drafts are excluded (no `posted_at`). Paginated at 30 per page and linked from the sidebar.                                                                                                                                                                                                                                                                                                                       |
+| `P3-01`            | In Progress | `feat/phase-3`                                        | Added a `transactions.index` page listing posted transactions (including reversed and replaced) grouped by workspace-local date, derived from `occurred_at` converted to the workspace timezone. Drafts are excluded (no `posted_at`). Paginated at 30 per page and linked from the sidebar. Implemented on the Phase 3 branch; a pull request will be opened once Phase 3 is complete.                                                                                                                                                                                                                          |
 
 ## Completed Features
-
-### 2026-06-12 - P3-01 Daily Transaction History
-
-- **Outcome:** Added `transactions.index`, the first slice of `F-009`,
-  listing posted transactions grouped by workspace-local date.
-- **Key decisions:** Transactions are grouped by `occurred_at` converted to
-  the workspace timezone (`local_date`), not `posted_at`, so the history
-  reflects the date the user recorded for the transaction. Transactions with
-  any `posted_at` value are shown (including `Reversed` and `Replaced`, with
-  a status badge); draft and voided-draft transactions have no `posted_at`
-  and are excluded. The list is paginated at 30 per page.
-- **Tests:** Added `tests/Feature/TransactionHistoryTest.php` covering
-  date-grouping, draft exclusion, cross-workspace isolation, and pagination.
-  `composer ci:check` passed (184 Pest tests, 823 assertions, PHPStan/Larastan,
-  Pint, ESLint, Prettier, TypeScript checks, and a production build).
-- **Documentation:** Updated `docs/PROGRESS.md` and `docs/WORKLOG.md`.
-- **Follow-up:** Continue Phase 3 with `P3-02` to `P3-06` (calendar, weekly,
-  monthly, summary, and daily memo views) per the recommended PR sequence in
-  `docs/MASTER_PLAN.md`.
-- **PR:** [#13](https://github.com/yosrioid/money-manager/pull/13).
 
 ### 2026-06-12 - Phase 2 Ledger And Core Transactions
 

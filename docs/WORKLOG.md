@@ -50,6 +50,30 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 19:50 WIB - Phase 3 Branch Consolidation
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-01`.
+- **Status:** In progress.
+- **Completed:** Per user direction, switched Phase 3 to a single
+  branch-per-phase workflow: pull requests are opened only once a phase is
+  complete, with individual features committed to the shared phase branch.
+  Closed PR #13 (no merge) and the now-superseded
+  `feat/p3-daily-transaction-history` branch's PR, created `feat/phase-3` from
+  `main`, and cherry-picked the `P3-01` commit
+  (`feat(transactions): add daily transaction history (P3-01)`) onto it.
+  Updated `docs/PROGRESS.md` so `P3-01` reflects `In Progress` on
+  `feat/phase-3` instead of `Done` with a merged PR.
+- **Verification:** No code changes since the prior `P3-01` checkpoint;
+  `composer ci:check` already passed on that commit.
+- **Decisions:** Phase 3 features (`P3-01` onward) will be committed
+  sequentially to `feat/phase-3`. A single pull request to `main` will be
+  opened once the Phase 3 exit gate in `docs/MASTER_PLAN.md` is met.
+- **Blockers:** None.
+- **Uncommitted:** `docs/PROGRESS.md` and `docs/WORKLOG.md` updates for this
+  checkpoint are pending commit on `feat/phase-3`.
+- **Next:** Commit this checkpoint, then continue Phase 3 with `P3-02`.
+
 ### 2026-06-12 16:00 WIB - `P3-01` Daily Transaction History
 
 - **Branch:** `feat/p3-daily-transaction-history`.
