@@ -50,6 +50,69 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 14:45 WIB - `v0.2.0-alpha.1` Phase 2 Release Preparation
+
+- **Branch:** `docs/release-v0.2.0-alpha.1`.
+- **Feature IDs:** `P2-01` to `P2-24`.
+- **Status:** Ready for review.
+- **Completed:** Marked Phase 2 and packages `F-007`/`F-008` `Done` in
+  `docs/PROGRESS.md` with a completion entry, opened the `v0.2.0-alpha.1`
+  candidate in `docs/RELEASE_PROGRESS.md` as `Preparing` with its checklist
+  and verification evidence, and added the `docs/releases/v0.2.0-alpha.1.md`
+  release-note draft following the mandatory format.
+- **Verification:** Reused the post-merge verification recorded in the prior
+  checkpoint (`composer ci:check` with 180 tests/763 assertions, Composer and
+  npm audits, Playwright 2/2, migration and seed rehearsal against `main`
+  `6c2ee24`). `bash scripts/check-governance.sh` passed on this branch.
+- **Decisions:** Target commit is recorded as `6c2ee24` pending confirmation
+  that this release-preparation PR's merge commit becomes the new `main` tip,
+  per `docs/RELEASE_PROCESS.md` step 9.
+- **Blockers:** Tag creation and GitHub prerelease publication remain pending
+  explicit user approval, as required by `docs/RELEASE_PROCESS.md` and
+  `docs/STRICT_RULES.md`.
+- **Uncommitted:** None after this checkpoint; documentation changes are ready
+  to commit and push for review.
+- **Next:** Commit and push `docs/release-v0.2.0-alpha.1`, open a pull
+  request to `main`, verify CI, then request explicit approval for the
+  annotated tag and GitHub prerelease once the release-preparation PR is
+  merged and confirmed as the latest `main` commit.
+
+### 2026-06-12 14:30 WIB - Post-Merge Phase 2 Verification On `main`
+
+- **Branch:** `main` (verification only; checked out from
+  `feat/p2-core-income-expense`).
+- **Feature IDs:** `P2-01` to `P2-24`.
+- **Status:** Verified, ready for `v0.2.0-alpha.1` candidate decision.
+- **Completed:** Confirmed PR #10 (`feat(phase-2): add ledger and core
+  transaction flows`) merged to `main` at `6c2ee24` with passing CI. Re-ran the
+  full local quality gate against the merged `main` commit and reviewed the
+  ledger, posting, reversal, replacement, balance, audit, and core transaction
+  domain code plus the income/expense/transfer entry UI against
+  `docs/STRICT_RULES.md` and `docs/MASTER_PLAN.md` Phase 2 exit gate.
+- **Verification:** `bash scripts/check-governance.sh` passed.
+  `composer ci:check` passed (Pint, PHPStan/Larastan, Pest 180 tests / 763
+  assertions, frontend lint/format/types, Vitest, production build).
+  `composer audit` and `npm audit --audit-level=high` found no advisories.
+  `npx playwright test` passed 2/2 against an isolated PHP 8.5 server with a
+  temporary SQLite database (WebKit browser binary was missing locally and was
+  installed via `npx playwright install webkit`). `php artisan migrate:fresh
+  --seed` rehearsed cleanly on a temporary SQLite database.
+- **Decisions:** No defects found that block release; Phase 2 (`P2-01` to
+  `P2-24`) meets its master-plan exit gate (balanced posting, immutable posted
+  entries, reversal/replacement, audit log, idempotency, draft/duplicate
+  flows, workspace isolation, archived-reference rejection all covered by
+  tests).
+- **Blockers:** None. `docs/PROGRESS.md` package rows for `F-007`/`F-008` and
+  Phase 2 phase status still read `In Review`; updating them to `Done` and
+  preparing the `v0.2.0-alpha.1` milestone candidate per
+  `docs/RELEASE_PROCESS.md` requires explicit user direction before edits.
+- **Uncommitted:** This checkpoint only; no code changes made during this
+  review.
+- **Next:** On user instruction, update `docs/PROGRESS.md` (Phase 2 to `Done`,
+  `F-007`/`F-008` rows to `Done` with completion entries) and
+  `docs/RELEASE_PROGRESS.md` (`v0.2.0-alpha.1` candidate to `Preparing`) before
+  any tag or release publication, per the approval-gated release workflow.
+
 ### 2026-06-12 13:50 WIB - Phase 2 Review Findings Addressed
 
 - **Branch:** `feat/p2-core-income-expense`.

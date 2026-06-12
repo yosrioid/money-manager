@@ -28,7 +28,7 @@ phase is complete.
 
 - **Phase:** Phase 2 - Ledger And Core Transactions
 - **Milestone:** Core transaction flows through `P2-24`
-- **Status:** In Review
+- **Status:** Done
 - **Updated:** 2026-06-12
 
 ## Phase Status
@@ -37,7 +37,7 @@ phase is complete.
 | ------- | --------------------------------------------- | --------- | ------------------------------------- |
 | Phase 0 | Engineering Foundation                        | Done      | Foundation and governance established |
 | Phase 1 | Identity, Workspace, And Financial Setup      | Done      | Secure financial structure ready      |
-| Phase 2 | Ledger And Core Transactions                  | In Review | Balanced transaction engine ready     |
+| Phase 2 | Ledger And Core Transactions                  | Done      | Balanced transaction engine ready     |
 | Phase 3 | Daily Use And Transaction Productivity        | Planned   | Daily tracking experience ready       |
 | Phase 4 | Budgets, Goals, Statistics, And Data Exchange | Planned   | MVP feature scope ready               |
 | Phase 5 | Cards, Debt, Assets, And Multi-Currency       | Planned   | Advanced finance workflows ready      |
@@ -58,8 +58,8 @@ are defined by the mapped IDs in `docs/FEATURE_CATALOG.md`.
 | F-004 | Currencies and workspace preferences            | `P1-12` to `P1-18` | Done      | 2026-06-11 |
 | F-005 | Account groups and accounts                     | `P1-19` to `P1-25` | Done      | 2026-06-11 |
 | F-006 | Categories and reference data                   | `P1-26` to `P1-33` | Done      | 2026-06-11 |
-| F-007 | Double-entry ledger foundation                  | `P2-01` to `P2-10` | In Review | -          |
-| F-008 | Core transaction flows                          | `P2-11` to `P2-24` | In Review | -          |
+| F-007 | Double-entry ledger foundation                  | `P2-01` to `P2-10` | Done      | 2026-06-12 |
+| F-008 | Core transaction flows                          | `P2-11` to `P2-24` | Done      | 2026-06-12 |
 | F-009 | Transaction history and navigation              | `P3-01` to `P3-12` | Planned   | -          |
 | F-010 | Dashboard and fast-entry workflows              | `P3-13` to `P3-21` | Planned   | -          |
 | F-011 | Budgets and goals                               | `P4-01` to `P4-10` | Planned   | -          |
@@ -84,7 +84,8 @@ mapped feature ID.
 | ------------------ | -------- | ------------------------------------------------------------ |
 | `P0-01` to `P0-06` | Done     | Engineering foundation and governance baseline               |
 | `P1-01` to `P1-34` | Done     | Phase 1 exit gate passed                                     |
-| `P2-01` to `P8-10` | Planned  | See phase sequence and dependencies in `docs/MASTER_PLAN.md` |
+| `P2-01` to `P2-24` | Done     | Phase 2 exit gate passed                                     |
+| `P3-01` to `P8-10` | Planned  | See phase sequence and dependencies in `docs/MASTER_PLAN.md` |
 | `D-01` to `D-06`   | Deferred | Requires explicit scope approval                             |
 
 ## Active Feature Overrides
@@ -98,10 +99,35 @@ Keep the row through completion so partial package progress remains visible.
 | `P1-09` to `P1-11` | Done      | [#4](https://github.com/yosrioid/money-manager/pull/4)   | Personal workspace, active context, and isolation merged                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `P1-12` to `P1-33` | Done      | [#5](https://github.com/yosrioid/money-manager/pull/5)   | Financial setup, reference data, opening balances, application lock, and tests merged                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `P1-34`            | Done      | [#6](https://github.com/yosrioid/money-manager/pull/6)   | Branded public landing page merged                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `P2-01` to `P2-10` | In Review | [#10](https://github.com/yosrioid/money-manager/pull/10) | All 3 slices of `F-007` implemented: lifecycle status enum (Voided, Reversed, Replaced) with transition guard; posted-only balance calculation and balance-at-date; immutable generic `audit_logs` table, `AuditLog` model, `AuditAction` enum, and `RecordAuditLog` service; account-locking (`LockAccountsForPosting`), `ReverseTransaction`, and `ReplaceTransaction` domain actions wired to the audit log. Correction flows preserve category references and reject cross-workspace replacement references.                                                                                                        |
-| `P2-11` to `P2-24` | In Review | [#10](https://github.com/yosrioid/money-manager/pull/10) | Core income, expense, transfer, metadata, split, calculator, draft, and duplication flows are implemented. Split entries remain balanced across one account leg and multiple category legs. Safe integer arithmetic expressions are supported without float or evaluation. Incomplete drafts and duplicated transactions persist structured input without ledger entries, can be resumed and updated, and become inactive after successful posting. Posting records an audit log, rejects archived financial references, and uses a workspace-scoped idempotency key that rejects conflicting payloads; request plus domain validation protect workspace, type, amount, currency, and metadata invariants. |
+| `P2-01` to `P2-10` | Done      | [#10](https://github.com/yosrioid/money-manager/pull/10) | All 3 slices of `F-007` implemented: lifecycle status enum (Voided, Reversed, Replaced) with transition guard; posted-only balance calculation and balance-at-date; immutable generic `audit_logs` table, `AuditLog` model, `AuditAction` enum, and `RecordAuditLog` service; account-locking (`LockAccountsForPosting`), `ReverseTransaction`, and `ReplaceTransaction` domain actions wired to the audit log. Correction flows preserve category references and reject cross-workspace replacement references.                                                                                                        |
+| `P2-11` to `P2-24` | Done      | [#10](https://github.com/yosrioid/money-manager/pull/10) | Core income, expense, transfer, metadata, split, calculator, draft, and duplication flows are implemented. Split entries remain balanced across one account leg and multiple category legs. Safe integer arithmetic expressions are supported without float or evaluation. Incomplete drafts and duplicated transactions persist structured input without ledger entries, can be resumed and updated, and become inactive after successful posting. Posting records an audit log, rejects archived financial references, and uses a workspace-scoped idempotency key that rejects conflicting payloads; request plus domain validation protect workspace, type, amount, currency, and metadata invariants. |
 
 ## Completed Features
+
+### 2026-06-12 - Phase 2 Ledger And Core Transactions
+
+- **Outcome:** Completed `F-007` and `F-008` (`P2-01` to `P2-24`), delivering
+  the double-entry ledger foundation and the core income, expense, transfer,
+  metadata, split, calculator, draft, and duplication transaction flows.
+- **Key decisions:** Account balances derive only from posted ledger entries;
+  posted entries and audit log records are immutable; corrections use
+  auditable reversal and replacement transactions instead of mutating posted
+  history; ledger posting uses workspace-scoped idempotency keys with row
+  locking on affected accounts.
+- **Tests:** Merged PR #10 CI passed. Post-merge verification on `main`
+  (`6c2ee24`) ran `composer ci:check` with 180 Pest tests and 763 assertions,
+  PHPStan/Larastan, Pint, ESLint, Prettier, TypeScript checks, Vitest, and a
+  production build; Composer and npm (`--audit-level=high`) audits reported no
+  advisories; `npx playwright test` passed 2/2 on Chromium and mobile Safari
+  against an isolated PHP 8.5 server; `php artisan migrate:fresh --seed`
+  rehearsed cleanly.
+- **Documentation:** Updated `docs/PROGRESS.md`, `docs/WORKLOG.md`,
+  `docs/RELEASE_PROGRESS.md`, and added the `v0.2.0-alpha.1` release-note
+  draft.
+- **Follow-up:** Prepare and publish the Phase 2 internal alpha
+  (`v0.2.0-alpha.1`), then begin Phase 3 daily-use and transaction-productivity
+  planning.
+- **PR:** [#10](https://github.com/yosrioid/money-manager/pull/10).
 
 ### 2026-06-11 - Phase 1 Identity, Workspace, And Financial Setup
 

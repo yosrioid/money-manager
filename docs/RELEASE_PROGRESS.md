@@ -10,25 +10,44 @@ exist.
 
 ## Current Candidate
 
-- **Version:** `v0.1.0-alpha.1`
-- **Name:** Phase 1 Internal Alpha
+- **Version:** `v0.2.0-alpha.1`
+- **Name:** Phase 2 Core Ledger Alpha
 - **Type:** Milestone prerelease
-- **Status:** Published
-- **Target:** `b304c18c1cb8de3fd261bdb035711ac9bc3c99ba`
-- **Scope:** Phase 0 foundation and Phase 1 `P1-01` to `P1-34`
-- **Updated:** 2026-06-11
+- **Status:** Preparing
+- **Target:** `6c2ee242598b96d8a597f2234ed50ca9d5a2003a` (this
+  release-preparation pull request's merge commit becomes the confirmed
+  target before tagging)
+- **Scope:** Phase 2 `P2-01` to `P2-24`
+- **Updated:** 2026-06-12
 
 ## Release Roadmap
 
 | Version          | Boundary                  | Type                 | Status    | Target Or Tag                                | Published  |
 | ---------------- | ------------------------- | -------------------- | --------- | -------------------------------------------- | ---------- |
 | `v0.1.0-alpha.1` | Phase 1 internal alpha    | Milestone prerelease | Published | `b304c18`                                    | 2026-06-11 |
-| `v0.2.0-alpha.1` | Phase 2 core ledger alpha | Milestone prerelease | Planned   | Pending Phase 2                              | -          |
+| `v0.2.0-alpha.1` | Phase 2 core ledger alpha | Milestone prerelease | Preparing | `6c2ee24` (pending release-prep merge)       | -          |
 | `v0.3.0-beta.1`  | Phase 3 private beta      | Milestone prerelease | Planned   | Pending Phase 3                              | -          |
 | `v1.0.0-rc.1`    | Phase 4 MVP candidate     | Milestone prerelease | Planned   | Pending Phase 4 and applicable Phase 8 gates | -          |
 | `v1.0.0`         | MVP release               | MVP                  | Planned   | Pending MVP release gates                    | -          |
 
 ## Candidate Checklist
+
+### `v0.2.0-alpha.1` - Phase 2 Core Ledger Alpha
+
+- [x] Phase 2 implementation merged to `main`
+      ([#10](https://github.com/yosrioid/money-manager/pull/10)).
+- [x] Phase 2 implementation pull-request CI passed.
+- [x] Phase 2 feature, package, milestone, and exit-gate statuses are marked
+      `Done` in `docs/PROGRESS.md`.
+- [x] Phase 2 completion entry and current worklog checkpoint are included in
+      this release-preparation change.
+- [x] Release notes follow `docs/RELEASE_PROCESS.md`.
+- [ ] Release-preparation merge commit is confirmed as the latest `main`.
+- [x] Applicable release checks pass against the target commit (see Current
+      Verification below).
+- [ ] Explicit user approval to create and push the annotated tag is recorded.
+- [ ] Explicit user approval to publish the GitHub prerelease is recorded.
+- [ ] Annotated tag and GitHub prerelease are published.
 
 ### `v0.1.0-alpha.1` - Phase 1 Internal Alpha
 
@@ -46,6 +65,22 @@ exist.
 - [x] Annotated tag and GitHub prerelease are published.
 
 ## Current Verification
+
+### `v0.2.0-alpha.1`
+
+- **Passed:** Governance checks, `composer ci:check` (Pint, PHPStan/Larastan,
+  Pest with 180 tests and 763 assertions, ESLint, Prettier, TypeScript checks,
+  Vitest, production build), Composer audit, `npm audit --audit-level=high`,
+  and fresh `php artisan migrate:fresh --seed` rehearsal against the merged
+  `main` commit `6c2ee24`.
+- **Browser:** `npx playwright test` passed 2/2 (Chromium and mobile Safari)
+  against an isolated PHP 8.5 server with a temporary SQLite database. The
+  WebKit browser binary was missing locally and was installed via
+  `npx playwright install webkit` before this run.
+- **Code review:** Reviewed the ledger posting, reversal, replacement, balance
+  calculation, audit log, idempotency, and income/expense/transfer/draft/split
+  domain code and UI against `docs/STRICT_RULES.md` and the Phase 2 exit gate
+  in `docs/MASTER_PLAN.md`. No defects found.
 
 ### `v0.1.0-alpha.1`
 
