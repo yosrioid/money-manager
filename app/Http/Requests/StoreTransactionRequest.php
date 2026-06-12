@@ -11,6 +11,7 @@ use App\Models\Transaction;
 use App\Models\Workspace;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
@@ -32,6 +33,7 @@ class StoreTransactionRequest extends FormRequest
 
         return [
             'type' => ['required', Rule::in([TransactionType::Income->value, TransactionType::Expense->value, TransactionType::Transfer->value])],
+            'idempotency_key' => ['required', 'uuid'],
             'account_id' => ['required', 'integer', Rule::exists('accounts', 'id')->where('workspace_id', $workspace->id)],
             'category_id' => ['nullable', 'prohibited_if:type,transfer', 'integer', Rule::exists('categories', 'id')->where('workspace_id', $workspace->id)],
             'destination_account_id' => ['required_if:type,transfer', 'prohibited_unless:type,transfer', 'integer', Rule::exists('accounts', 'id')->where('workspace_id', $workspace->id)],
@@ -49,6 +51,13 @@ class StoreTransactionRequest extends FormRequest
             'splits.*.category_id' => ['required', 'integer', 'distinct', Rule::exists('categories', 'id')->where('workspace_id', $workspace->id)],
             'splits.*.amount' => ['required'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if (! filled($this->input('idempotency_key'))) {
+            $this->merge(['idempotency_key' => (string) Str::uuid()]);
+        }
     }
 
     /**

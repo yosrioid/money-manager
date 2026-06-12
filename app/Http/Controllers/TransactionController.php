@@ -15,6 +15,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -34,6 +35,7 @@ class TransactionController extends Controller
             'merchants' => $workspace->merchants()->active()->orderBy('name')->get(['id', 'name']),
             'tags' => $workspace->tags()->active()->orderBy('name')->get(['id', 'name', 'color']),
             'timezone' => $workspace->timezone,
+            'idempotencyKey' => (string) Str::uuid(),
         ]);
     }
 
@@ -72,6 +74,7 @@ class TransactionController extends Controller
                 $user,
                 $validated['memo'] ?? null,
                 $tags,
+                $validated['idempotency_key'],
             );
         } else {
             if (isset($validated['splits']) && is_array($validated['splits'])) {
@@ -100,6 +103,7 @@ class TransactionController extends Controller
                 $merchant,
                 $validated['memo'] ?? null,
                 $tags,
+                $validated['idempotency_key'],
             );
         }
 

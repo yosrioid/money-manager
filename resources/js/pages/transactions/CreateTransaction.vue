@@ -11,6 +11,7 @@ defineProps<{
     merchants: { id: number; name: string }[];
     tags: { id: number; name: string; color: string | null }[];
     timezone: string;
+    idempotencyKey: string;
 }>();
 
 defineOptions({
@@ -35,6 +36,7 @@ defineOptions({
             :merchants="merchants"
             :tags="tags"
             :timezone="timezone"
+            :idempotency-key="idempotencyKey"
         />
     </div>
 </template>

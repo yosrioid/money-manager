@@ -15,6 +15,7 @@ use LogicException;
 #[Fillable([
     'workspace_id',
     'created_by',
+    'idempotency_key',
     'merchant_id',
     'type',
     'status',

@@ -50,6 +50,57 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 13:28 WIB - Phase 2 Branch Ready For Pull Request
+
+- **Branch:** `feat/p2-core-income-expense`.
+- **Feature IDs:** `P2-01` to `P2-24`.
+- **Status:** Ready for review.
+- **Completed:** Completed the Phase 2 full review, duplicate-submission
+  protection, atomic rollback coverage, and correction-flow category/workspace
+  integrity hardening. Confirmed the branch is current with `origin/main`.
+- **Verification:** Final `composer ci:check` passed with 173 Pest tests and 716
+  assertions plus PHPStan, Pint, frontend lint, Prettier, type checks, Vitest,
+  and production build. Governance, `git diff --check`, Composer audit, npm
+  high-severity audit, and Playwright on Chromium and mobile Safari passed.
+- **Decisions:** Keep Phase 2 and its feature packages `In Progress` until a
+  pull request is created, reviewed, and merged.
+- **Blockers:** None.
+- **Uncommitted:** Final hardening and this checkpoint are ready to commit and
+  push.
+- **Next:** Commit and push the final hardening checkpoint. The branch will
+  then be ready for pull request creation.
+
+### 2026-06-12 13:20 WIB - Phase 2 Full Review Hardening
+
+- **Branch:** `feat/p2-core-income-expense`.
+- **Feature IDs:** `P2-01` to `P2-24`.
+- **Status:** In progress.
+- **Completed:** Audited the full Phase 2 branch against the master-plan exit
+  gate. Added a workspace-scoped transaction idempotency key, stable
+  create-form key propagation, and replay protection after affected account
+  locks are acquired. Added regression coverage proving replayed submissions
+  post only once and failures during audit recording roll back all financial
+  writes. Fixed correction flows so reversal preserves category references and
+  replacement validates and preserves workspace-scoped account/category
+  references.
+- **Verification:** Sequential full test coverage passes with 173 tests and 716
+  assertions. PHPStan debug analysis, Pint, frontend lint, Prettier, type
+  checking, Vitest, production build, governance, and `git diff --check`
+  passed. Composer and npm security audits found no advisories, and Playwright
+  passed on Chromium and mobile Safari. Final `composer ci:check` passed. The
+  Composer PHPStan wrapper had intermittently stopped without diagnostics while
+  direct PHPStan passed. One parallel verification attempt caused a transient
+  missing Vite manifest; sequential build and tests passed.
+- **Decisions:** Idempotency keys are unique per workspace and nullable for
+  non-HTTP ledger operations. Replayed HTTP submissions return the already
+  posted transaction without adding entries or audit records.
+- **Blockers:** No pull request exists for this branch. Creating or modifying a
+  PR requires explicit user approval.
+- **Uncommitted:** Idempotency hardening, regression tests, migration, and this
+  checkpoint are uncommitted and unpushed.
+- **Next:** Review the final diff, then commit and push only after explicit user
+  approval.
+
 ### 2026-06-12 11:15 WIB - Final Core Transaction Slice Implemented
 
 - **Branch:** `feat/p2-core-income-expense`.

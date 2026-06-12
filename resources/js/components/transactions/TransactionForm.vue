@@ -39,6 +39,7 @@ const props = defineProps<{
     merchants: Merchant[];
     tags: Tag[];
     timezone: string;
+    idempotencyKey: string;
 }>();
 
 const type = ref('expense');
@@ -88,6 +89,7 @@ const saveDraft = (event: MouseEvent) => {
 
 <template>
     <Form v-bind="form" class="space-y-6" v-slot="{ errors, processing }">
+        <input type="hidden" name="idempotency_key" :value="idempotencyKey" />
         <div class="grid gap-6 md:grid-cols-2">
             <div class="grid gap-2">
                 <Label for="type">Type</Label>

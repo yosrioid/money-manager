@@ -3,11 +3,15 @@
 use App\Domain\Accounts\CreateAccountWithOpeningBalance;
 use App\Domain\Ledger\CalculateAccountBalance;
 use App\Domain\Ledger\ReverseTransaction;
+use App\Domain\Transactions\RecordIncomeExpense;
 use App\Domain\Workspaces\CreatePersonalWorkspace;
 use App\Enums\AccountType;
 use App\Enums\AuditAction;
 use App\Enums\TransactionStatus;
+use App\Enums\TransactionType;
+use App\Models\Account;
 use App\Models\AuditLog;
+use App\Models\Category;
 use App\Models\User;
 use Database\Seeders\CurrencySeeder;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -41,6 +45,24 @@ test('reversing a posted transaction creates a balanced reversal and marks the o
         $reversedEntry = $reversal->entries()->where('account_id', $entry->account_id)->sole();
         expect($reversedEntry->amount)->toBe(-$entry->amount);
     }
+});
+
+test('reversing an expense preserves the category reference', function () {
+    $account = Account::factory()->for($this->workspace)->create();
+    $category = Category::factory()->for($this->workspace)->expense()->create();
+    $expense = app(RecordIncomeExpense::class)->record(
+        $account,
+        $category,
+        TransactionType::Expense,
+        2500,
+        'Categorized expense',
+        now(),
+        $this->user,
+    );
+
+    $reversal = app(ReverseTransaction::class)->reverse($expense, $this->user);
+
+    expect($reversal->entries()->where('category_id', $category->id)->sole()->amount)->toBe(-2500);
 });
 
 test('reversing a non posted transaction throws', function () {

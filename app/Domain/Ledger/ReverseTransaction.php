@@ -51,6 +51,7 @@ class ReverseTransaction
                 $transaction->entries->map(fn (TransactionEntry $entry): array => [
                     'workspace_id' => $entry->workspace_id,
                     'account_id' => $entry->account_id,
+                    'category_id' => $entry->category_id,
                     'type' => $entry->type,
                     'currency_code' => $entry->currency_code,
                     'amount' => -$entry->amount,

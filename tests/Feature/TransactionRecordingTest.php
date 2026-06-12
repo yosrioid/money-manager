@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Audit\RecordAuditLog;
 use App\Domain\Ledger\CalculateAccountBalance;
 use App\Domain\Ledger\PostTransaction;
 use App\Domain\Transactions\RecordIncomeExpense;
@@ -11,7 +12,10 @@ use App\Models\Account;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
+
+use function Pest\Laravel\mock;
 
 function createTransactionWorkspace(): array
 {
@@ -71,6 +75,54 @@ test('user can record an expense transaction', function () {
 
     expect($transaction->entries()->sum('amount'))->toBe(0);
     expect(app(CalculateAccountBalance::class)->calculate($account->fresh()))->toBe(-15000);
+});
+
+test('replayed transaction submission posts only once', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+    $idempotencyKey = (string) Str::uuid();
+    $payload = [
+        'idempotency_key' => $idempotencyKey,
+        'type' => 'expense',
+        'account_id' => $account->id,
+        'category_id' => $category->id,
+        'amount' => 15000,
+        'description' => 'Replayed expense',
+        'occurred_at' => now()->toDateTimeString(),
+    ];
+
+    $this->actingAs($user)->post(route('transactions.store'), $payload)->assertRedirect(route('accounts.index'));
+    $this->actingAs($user)->post(route('transactions.store'), $payload)->assertRedirect(route('accounts.index'));
+
+    expect(Transaction::query()->count())->toBe(1)
+        ->and(Transaction::query()->sole()->idempotency_key)->toBe($idempotencyKey)
+        ->and(app(CalculateAccountBalance::class)->calculate($account->fresh()))->toBe(-15000);
+});
+
+test('posting rolls back all financial writes when audit recording fails', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+
+    mock(RecordAuditLog::class)
+        ->shouldReceive('record')
+        ->once()
+        ->andThrow(new RuntimeException('Audit storage unavailable.'));
+
+    $this->withoutExceptionHandling();
+
+    expect(fn () => $this->actingAs($user)->post(route('transactions.store'), [
+        'type' => 'expense',
+        'account_id' => $account->id,
+        'category_id' => $category->id,
+        'amount' => 15000,
+        'description' => 'Atomic expense',
+        'occurred_at' => now()->toDateTimeString(),
+    ]))->toThrow(RuntimeException::class, 'Audit storage unavailable.');
+
+    expect(Transaction::query()->count())->toBe(0)
+        ->and(app(CalculateAccountBalance::class)->calculate($account->fresh()))->toBe(0);
 });
 
 test('category type must match transaction type', function () {
@@ -262,6 +314,7 @@ test('transaction create page renders accounts and categories', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('transactions/CreateTransaction')
             ->has('accounts', 1)
-            ->has('categories', 2),
+            ->has('categories', 2)
+            ->where('idempotencyKey', fn (string $value): bool => Str::isUuid($value)),
         );
 });

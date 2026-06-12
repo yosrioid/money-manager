@@ -23,7 +23,7 @@ class RecordTransfer
     /**
      * @param  array<int, Tag>  $tags
      */
-    public function record(Account $sourceAccount, Account $destinationAccount, int $amount, int $feeAmount, ?Category $feeCategory, string $description, CarbonInterface $occurredAt, User $actor, ?string $memo = null, array $tags = []): Transaction
+    public function record(Account $sourceAccount, Account $destinationAccount, int $amount, int $feeAmount, ?Category $feeCategory, string $description, CarbonInterface $occurredAt, User $actor, ?string $memo = null, array $tags = [], ?string $idempotencyKey = null): Transaction
     {
         if ($amount < 1 || $feeAmount < 0) {
             throw new LogicException('Transfer amounts must be valid positive minor-unit values.');
@@ -65,6 +65,7 @@ class RecordTransfer
             null,
             $memo,
             $tags,
+            $idempotencyKey,
         );
     }
 }

@@ -24,16 +24,16 @@ class RecordIncomeExpense
     /**
      * @param  array<int, Tag>  $tags
      */
-    public function record(Account $account, Category $category, TransactionType $type, int $amount, string $description, CarbonInterface $occurredAt, User $actor, ?Merchant $merchant = null, ?string $memo = null, array $tags = []): Transaction
+    public function record(Account $account, Category $category, TransactionType $type, int $amount, string $description, CarbonInterface $occurredAt, User $actor, ?Merchant $merchant = null, ?string $memo = null, array $tags = [], ?string $idempotencyKey = null): Transaction
     {
-        return $this->recordSplit($account, [['category' => $category, 'amount' => $amount]], $type, $description, $occurredAt, $actor, $merchant, $memo, $tags);
+        return $this->recordSplit($account, [['category' => $category, 'amount' => $amount]], $type, $description, $occurredAt, $actor, $merchant, $memo, $tags, $idempotencyKey);
     }
 
     /**
      * @param  array<int, array{category: Category, amount: int}>  $splits
      * @param  array<int, Tag>  $tags
      */
-    public function recordSplit(Account $account, array $splits, TransactionType $type, string $description, CarbonInterface $occurredAt, User $actor, ?Merchant $merchant = null, ?string $memo = null, array $tags = []): Transaction
+    public function recordSplit(Account $account, array $splits, TransactionType $type, string $description, CarbonInterface $occurredAt, User $actor, ?Merchant $merchant = null, ?string $memo = null, array $tags = [], ?string $idempotencyKey = null): Transaction
     {
         $expectedCategoryType = $type === TransactionType::Income ? CategoryType::Income : CategoryType::Expense;
 
@@ -70,6 +70,7 @@ class RecordIncomeExpense
             $merchant,
             $memo,
             $tags,
+            $idempotencyKey,
         );
     }
 }

@@ -30,7 +30,7 @@ class PostTransaction
      * @param  array<int, array{account_id: ?int, category_id: ?int, type: LedgerEntryType, amount: int}>  $entries
      * @param  array<int, Tag>  $tags
      */
-    public function post(Workspace $workspace, TransactionType $type, string $currencyCode, string $description, CarbonInterface $occurredAt, array $entries, User $actor, ?Merchant $merchant = null, ?string $memo = null, array $tags = []): Transaction
+    public function post(Workspace $workspace, TransactionType $type, string $currencyCode, string $description, CarbonInterface $occurredAt, array $entries, User $actor, ?Merchant $merchant = null, ?string $memo = null, array $tags = [], ?string $idempotencyKey = null): Transaction
     {
         if (! $workspace->memberships()->where('user_id', $actor->id)->exists()) {
             throw new AuthorizationException;
@@ -68,7 +68,7 @@ class PostTransaction
             throw new LogicException('Transaction tags must be active and belong to the transaction workspace.');
         }
 
-        return DB::transaction(function () use ($workspace, $type, $currencyCode, $description, $occurredAt, $entries, $actor, $merchant, $memo, $tags): Transaction {
+        return DB::transaction(function () use ($workspace, $type, $currencyCode, $description, $occurredAt, $entries, $actor, $merchant, $memo, $tags, $idempotencyKey): Transaction {
             $accountIds = array_values(array_unique(array_filter(array_column($entries, 'account_id'))));
             $lockedAccounts = $this->lockAccounts->lock($accountIds);
             $categoryIds = array_values(array_unique(array_filter(array_column($entries, 'category_id'))));
@@ -82,10 +82,22 @@ class PostTransaction
                 throw new LogicException('Posted categories must belong to the transaction workspace.');
             }
 
+            if ($idempotencyKey !== null) {
+                $existingTransaction = Transaction::query()
+                    ->where('workspace_id', $workspace->id)
+                    ->where('idempotency_key', $idempotencyKey)
+                    ->first();
+
+                if ($existingTransaction instanceof Transaction) {
+                    return $existingTransaction;
+                }
+            }
+
             $postedAt = now();
             $transaction = Transaction::query()->create([
                 'workspace_id' => $workspace->id,
                 'created_by' => $actor->id,
+                'idempotency_key' => $idempotencyKey,
                 'merchant_id' => $merchant?->id,
                 'type' => $type,
                 'status' => TransactionStatus::Draft,
