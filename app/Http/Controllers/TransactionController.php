@@ -13,6 +13,7 @@ use App\Enums\TransactionType;
 use App\Http\Requests\StoreTransactionDraftRequest;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Models\Transaction;
+use App\Models\TransactionEntry;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -25,6 +26,48 @@ class TransactionController extends Controller
     public function __construct(
         private readonly WorkspaceContext $workspaceContext,
     ) {}
+
+    public function index(): Response
+    {
+        $this->authorize('viewAny', Transaction::class);
+
+        $workspace = $this->workspaceContext->get();
+
+        $transactions = $workspace->transactions()
+            ->whereNotNull('posted_at')
+            ->with(['merchant', 'tags', 'entries.account', 'entries.category'])
+            ->orderByDesc('occurred_at')
+            ->orderByDesc('id')
+            ->paginate(30)
+            ->withQueryString();
+
+        $transactions->getCollection()->transform(function (Transaction $transaction) use ($workspace): array {
+            $occurredAt = Carbon::parse($transaction->getRawOriginal('occurred_at'));
+
+            return [
+                'id' => $transaction->id,
+                'type' => $transaction->type,
+                'status' => $transaction->status,
+                'description' => $transaction->description,
+                'memo' => $transaction->memo,
+                'occurred_at' => $occurredAt->toIso8601String(),
+                'local_date' => $occurredAt->setTimezone($workspace->timezone)->toDateString(),
+                'merchant' => $transaction->merchant?->only(['id', 'name']),
+                'tags' => $transaction->tags->map->only(['id', 'name', 'color'])->all(),
+                'entries' => $transaction->entries->map(fn (TransactionEntry $entry): array => [
+                    'type' => $entry->type,
+                    'amount' => $entry->amount,
+                    'currency_code' => $entry->currency_code,
+                    'account' => $entry->account?->only(['id', 'name']),
+                    'category' => $entry->category?->only(['id', 'name']),
+                ])->all(),
+            ];
+        });
+
+        return Inertia::render('transactions/Index', [
+            'transactions' => $transactions,
+        ]);
+    }
 
     public function create(): Response
     {
