@@ -50,6 +50,28 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-12 21:45 WIB - `P3-04` Monthly View
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-04`.
+- **Status:** In progress.
+- **Completed:** Added `SummarizeTransactionPeriod::forYear()`, which calls
+  the existing `summarize()` for the full workspace-local year and re-buckets
+  the per-day results into per-month income/expense/net/count totals. Added
+  `transactions.monthly` (`TransactionController::monthly()`) rendering
+  `transactions/Monthly`, a 12-month grid for a workspace-local year
+  (`?year=YYYY`, defaults to the current workspace-local year) with
+  previous/next year navigation; each month cell links to its
+  `transactions.calendar` view. Added "Monthly" to `TransactionViewNav`.
+- **Verification:** Added `tests/Feature/TransactionMonthlyTest.php` (3
+  tests, 50 assertions). Full suite: 195 Pest tests / 995 assertions,
+  PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript checks
+  (`vue-tsc`), and a production build all passed.
+- **Decisions:** None beyond reusing the existing per-currency
+  income/expense/net/count aggregation shape from `SummarizeTransactionPeriod`.
+- **Blockers:** None.
+- **Next:** Continue Phase 3 with `P3-05` (summary view).
+
 ### 2026-06-12 21:15 WIB - `P3-03` Weekly View
 
 - **Branch:** `feat/phase-3`.

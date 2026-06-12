@@ -37,6 +37,45 @@ class SummarizeTransactionPeriod
     }
 
     /**
+     * Summarize posted income and expense activity per workspace-local month
+     * within the given workspace-local year.
+     *
+     * @return array<string, array{income: array<string, int>, expense: array<string, int>, net: array<string, int>, count: int}>
+     */
+    public function forYear(Workspace $workspace, CarbonInterface $year): array
+    {
+        $start = Carbon::parse($year->toDateString(), $workspace->timezone)->startOfYear()->startOfDay();
+
+        $days = $this->summarize($workspace, $start, $start->copy()->addYear());
+
+        $months = [];
+
+        foreach ($days as $date => $day) {
+            $month = substr($date, 0, 7);
+            $months[$month] ??= $this->emptyDaySummary();
+            $months[$month]['count'] += $day['count'];
+
+            foreach (['income', 'expense'] as $key) {
+                foreach ($day[$key] as $currency => $amount) {
+                    $months[$month][$key][$currency] = ($months[$month][$key][$currency] ?? 0) + $amount;
+                }
+            }
+        }
+
+        foreach ($months as $month => $data) {
+            $currencies = array_unique([...array_keys($data['income']), ...array_keys($data['expense'])]);
+
+            foreach ($currencies as $currency) {
+                $months[$month]['net'][$currency] = ($data['income'][$currency] ?? 0) - ($data['expense'][$currency] ?? 0);
+            }
+        }
+
+        ksort($months);
+
+        return $months;
+    }
+
+    /**
      * @return array<string, array{income: array<string, int>, expense: array<string, int>, net: array<string, int>, count: int}>
      */
     private function summarize(Workspace $workspace, CarbonInterface $start, CarbonInterface $end): array

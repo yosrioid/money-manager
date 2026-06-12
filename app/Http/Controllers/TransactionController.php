@@ -106,6 +106,29 @@ class TransactionController extends Controller
         ]);
     }
 
+    public function monthly(Request $request, SummarizeTransactionPeriod $summarizeTransactionPeriod): Response
+    {
+        $this->authorize('viewAny', Transaction::class);
+
+        $workspace = $this->workspaceContext->get();
+
+        $year = $request->query('year');
+        $year = is_string($year) && preg_match('/^\d{4}$/', $year)
+            ? Carbon::createFromDate((int) $year, 1, 1, $workspace->timezone)
+            : Carbon::now($workspace->timezone);
+
+        $year = $year->startOfYear();
+
+        $months = $summarizeTransactionPeriod->forYear($workspace, $year);
+
+        return Inertia::render('transactions/Monthly', [
+            'year' => $year->format('Y'),
+            'months' => $months,
+            'previousYear' => $year->copy()->subYear()->format('Y'),
+            'nextYear' => $year->copy()->addYear()->format('Y'),
+        ]);
+    }
+
     public function day(Request $request): Response
     {
         $this->authorize('viewAny', Transaction::class);

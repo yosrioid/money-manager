@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
-import { calendar, index, weekly } from '@/routes/transactions';
+import { calendar, index, monthly, weekly } from '@/routes/transactions';
 
 defineProps<{
-    current: 'daily' | 'calendar' | 'weekly';
+    current: 'daily' | 'calendar' | 'weekly' | 'monthly';
 }>();
 </script>
 
@@ -23,6 +23,13 @@ defineProps<{
             as-child
         >
             <Link :href="weekly()">Weekly</Link>
+        </Button>
+        <Button
+            :variant="current === 'monthly' ? 'default' : 'outline'"
+            size="sm"
+            as-child
+        >
+            <Link :href="monthly()">Monthly</Link>
         </Button>
         <Button
             :variant="current === 'calendar' ? 'default' : 'outline'"
