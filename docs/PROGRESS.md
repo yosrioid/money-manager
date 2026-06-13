@@ -27,9 +27,9 @@ phase is complete.
 ## Current Milestone
 
 - **Phase:** Phase 3 - Daily Use And Transaction Productivity
-- **Milestone:** History and navigation through `P3-06`
+- **Milestone:** Complete Phase 3 implementation through `P3-21`
 - **Status:** In Progress
-- **Updated:** 2026-06-12
+- **Updated:** 2026-06-13
 
 ## Phase Status
 
@@ -61,7 +61,7 @@ are defined by the mapped IDs in `docs/FEATURE_CATALOG.md`.
 | F-007 | Double-entry ledger foundation                  | `P2-01` to `P2-10` | Done      | 2026-06-12 |
 | F-008 | Core transaction flows                          | `P2-11` to `P2-24` | Done      | 2026-06-12 |
 | F-009 | Transaction history and navigation              | `P3-01` to `P3-12` | In Progress | -        |
-| F-010 | Dashboard and fast-entry workflows              | `P3-13` to `P3-21` | Planned   | -          |
+| F-010 | Dashboard and fast-entry workflows              | `P3-13` to `P3-21` | In Progress | -        |
 | F-011 | Budgets and goals                               | `P4-01` to `P4-10` | Planned   | -          |
 | F-012 | Statistics, reports, import, and export         | `P4-11` to `P4-25` | Planned   | -          |
 | F-013 | Cards, debt, and installments                   | `P5-01` to `P5-09` | Planned   | -          |
@@ -85,8 +85,8 @@ mapped feature ID.
 | `P0-01` to `P0-06` | Done     | Engineering foundation and governance baseline               |
 | `P1-01` to `P1-34` | Done     | Phase 1 exit gate passed                                     |
 | `P2-01` to `P2-24` | Done     | Phase 2 exit gate passed                                     |
-| `P3-01` to `P3-13` | In Progress | Daily transaction history, calendar, weekly, monthly, summary, daily memo notes, search, advanced filters, explicit sort options, infinite-scroll pagination, transaction detail, bulk duplicate-as-draft, and transaction bookmarks implemented on `feat/phase-3` |
-| `P3-14` to `P8-10` | Planned  | See phase sequence and dependencies in `docs/MASTER_PLAN.md` |
+| `P3-01` to `P3-21` | In Progress | All Phase 3 features are implemented on `feat/phase-3`; `P3-14` is satisfied by the `P3-13` bookmark mechanism; review and Phase 3 exit-gate completion remain |
+| `P4-01` to `P8-10` | Planned  | See phase sequence and dependencies in `docs/MASTER_PLAN.md` |
 | `D-01` to `D-06`   | Deferred | Requires explicit scope approval                             |
 
 ## Active Feature Overrides
@@ -121,6 +121,8 @@ Keep the row through completion so partial package progress remains visible.
 | `P3-17`            | In Progress | `feat/phase-3`                                        | Added a workspace-scoped `entry_form_fields` JSON column (`Workspace::entryFormFields()`, defaulting to `['merchant', 'memo', 'tags']` when unset) controlling which of the three optional transaction entry fields (merchant/recipient, memo, tags) are shown and in what order. Editable on `settings/Workspace.vue` via a list of checkboxes with up/down reorder controls, submitted as an ordered `entry_form_fields[]` array (hiding all fields stores `[]`). `TransactionController::formProps()` exposes `entryFormFields`, and `TransactionForm.vue` renders the merchant/memo/tags sections via a `v-for` over the configured, filtered field order. Implemented on the Phase 3 branch; a pull request will be opened once Phase 3 is complete.                                                                                                                              |
 | `P3-18`            | In Progress | `feat/phase-3`                                        | The transaction entry form (`TransactionForm.vue`) now auto-focuses the Amount field on load and submits the form when Ctrl+Enter (or Cmd+Enter on macOS) is pressed anywhere in the form, including inside the Description/Memo textareas where a plain Enter would otherwise insert a newline. A visible hint near the submit buttons documents the shortcut. The shortcut-matching logic lives in `resources/js/lib/keyboard-shortcuts.ts` (`isSubmitShortcut`), covered by a new Vitest unit test. Implemented on the Phase 3 branch; a pull request will be opened once Phase 3 is complete.                                                                                                                              |
 | `P3-19`            | In Progress | `feat/phase-3`                                        | Reviewed `TransactionForm.vue` and the surrounding entry-form layout against narrow (mobile) viewports: the type/account/category/amount grid already collapses to a single column below the `md` breakpoint, and the app shell already clips horizontal overflow (`AppContent` `overflow-x-hidden`) with a mobile drawer sidebar. Fixed the one overflow risk — the bottom action row (Save transaction / Save draft / Cancel / keyboard-shortcut hint) — by making it wrap (`flex-wrap`) and hiding the desktop-only shortcut hint below the `sm` breakpoint. Full desktop and mobile browser acceptance testing (including this form) is covered by `P8-04` (Browser and responsive acceptance); this slice addresses the catalog's "core entry works on supported mobile viewport sizes" requirement at the layout level. Implemented on the Phase 3 branch; a pull request will be opened once Phase 3 is complete.                                                                                                                              |
+| `P3-20`            | In Progress | `feat/phase-3`                                        | Added a workspace-level `navigation_shortcuts_enabled` preference, enabled by default and configurable from workspace settings. When enabled, horizontal swipes and Left/Right arrow keys navigate to the previous or next period on calendar, weekly, monthly, summary, and day transaction views; arrow keys originating from form controls and predominantly vertical touch gestures are ignored. Direction resolution is covered by Vitest, while workspace persistence and supported Inertia page props are covered by focused Pest tests. Implemented on the Phase 3 branch; a pull request will be opened once Phase 3 is complete.                                                                                                                              |
+| `P3-21`            | In Progress | `feat/phase-3`                                        | Added an audited `include_in_statistics` metadata preference to posted transactions, enabled by default and editable from transaction detail. Excluded transactions remain visible in history/detail and continue affecting immutable ledger-derived account balances, but are omitted from calendar, weekly, monthly, and summary period statistics. The update is workspace-authorized, validated, row-locked, and limited by the transaction immutability guard to this single non-ledger metadata field. Implemented on the Phase 3 branch; review and the Phase 3 exit gate remain.                                                                                                                              |
 
 ## Completed Features
 

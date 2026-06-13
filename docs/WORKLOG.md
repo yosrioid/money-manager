@@ -50,6 +50,135 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 10:26 WIB - Phase 3 Ready For Review
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-01` to `P3-21`.
+- **Status:** Ready for review.
+- **Completed:** Completed final Phase 3 audit and committed the remaining
+  focused slices: `P3-20` navigation preferences (`d85c591`), `P3-21`
+  statistics inclusion (`c6138b2`), and the isolated loopback browser-test
+  server (`45c16bf`). All approved Phase 3 features are implemented on the
+  phase branch.
+- **Verification:** `composer ci:check` passed with 257 Pest tests / 1768
+  assertions, 13 Vitest tests, PHPStan 0 errors, Pint, ESLint, Prettier,
+  TypeScript, Wayfinder generation, and production build. `npm run test:e2e`
+  passed 2/2 on Chromium and mobile Safari using `127.0.0.1:8011`. Composer
+  and npm security audits reported no vulnerabilities; governance and
+  `git diff --check` passed.
+- **Decisions:** Phase 3 remains `In Progress` in `docs/PROGRESS.md` until its
+  pull request is open; it becomes `In Review` only after the PR exists.
+- **Blockers:** None.
+- **Uncommitted:** This review-ready documentation checkpoint only.
+- **Next:** Commit this checkpoint, push `feat/phase-3`, open the Phase 3 pull
+  request, then record the PR and `In Review` status.
+
+### 2026-06-13 10:21 WIB - Playwright Uses Isolated Loopback Server
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** Engineering only, supporting the Phase 3 browser gate.
+- **Status:** Completed.
+- **Completed:** Changed Playwright's default target from the environment-
+  dependent `money-manager.test` hostname to `http://127.0.0.1:8011`.
+  Playwright now automatically starts an isolated `php artisan serve` process
+  when `APP_URL` is not explicitly provided; callers can still override the
+  target through `APP_URL`.
+- **Verification:** `npm run test:e2e` passed 2/2 on Chromium and mobile Safari.
+  `npm run types:check`, `npm run lint:check`, Prettier config check, and
+  `git diff --check` passed.
+- **Decisions:** Keep browser tests self-contained by default instead of
+  depending on Laravel Herd DNS or a manually running development server.
+- **Blockers:** None.
+- **Uncommitted:** The Playwright configuration change and all pending Phase 3
+  work remain uncommitted on `feat/phase-3`.
+- **Next:** Run final governance checks and prepare the Phase 3 branch for
+  review when requested.
+
+### 2026-06-13 10:14 WIB - `P3-21` Statistics Inclusion Implemented
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-21`.
+- **Status:** Completed.
+- **Completed:** Added an `include_in_statistics` boolean to transactions,
+  enabled by default; a validated, workspace-scoped PATCH endpoint; an atomic
+  row-locked domain action; audit logging; and a transaction-detail control.
+  Excluded transactions remain in history/detail and ledger-derived account
+  balances, while period statistics omit them. Updated progress to record that
+  all Phase 3 features are implemented on the branch.
+- **Verification:** `composer ci:check` passed with PHPStan reporting 0 errors,
+  257 Pest tests / 1768 assertions, 13 Vitest tests, Pint, ESLint, Prettier,
+  TypeScript, Wayfinder generation, and production build. Focused `P3-21`,
+  lifecycle, summary, calendar, and detail suites passed (22 tests / 254
+  assertions); final focused inclusion/lifecycle regression passed (12 tests /
+  67 assertions). Composer and npm security audits reported no vulnerabilities;
+  governance and `git diff --check` passed.
+- **Decisions:** Statistics inclusion is mutable non-ledger metadata and the
+  only new mutation allowed on posted/terminal transaction records. Account
+  movements remain ledger-derived and intentionally ignore this preference.
+- **Blockers:** Browser verification remains blocked because the in-app browser
+  is unavailable and the existing Playwright target `money-manager.test`
+  cannot resolve in this environment.
+- **Uncommitted:** Complete `P3-20` and `P3-21` implementations, tests,
+  migrations, progress, and worklog updates remain uncommitted on
+  `feat/phase-3`.
+- **Next:** Review and commit the focused `P3-20` and `P3-21` slices only when
+  requested, then prepare the Phase 3 branch for review.
+
+### 2026-06-13 10:06 WIB - `P3-20` Navigation Preferences Completed
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-20`.
+- **Status:** Completed.
+- **Completed:** Finished the interrupted navigation-preference slice. Added a
+  hidden `0` fallback so an unchecked workspace-settings checkbox reliably
+  disables shortcuts, and extended swipe/Left/Right period navigation to the
+  Summary view alongside calendar, weekly, monthly, and day views. Updated
+  focused endpoint coverage and `docs/PROGRESS.md`.
+- **Verification:** `composer ci:check` passed with PHPStan reporting 0 errors,
+  253 Pest tests / 1712 assertions, 13 Vitest tests, Pint, ESLint, Prettier,
+  TypeScript checks, Wayfinder generation, and production build. Focused
+  navigation/preferences tests passed with 16 tests / 123 assertions;
+  governance and `git diff --check` passed.
+- **Decisions:** Shortcut direction handling remains a reusable frontend
+  composable; the persisted workspace preference is the single enable/disable
+  control for every supported period view.
+- **Blockers:** In-app browser was unavailable. Playwright could launch outside
+  the sandbox, but both existing welcome smoke tests could not resolve
+  `http://money-manager.test/`; direct browser verification remains blocked by
+  the local target/DNS environment.
+- **Uncommitted:** Complete `P3-20` implementation, tests, progress update, and
+  worklog checkpoints are uncommitted on `feat/phase-3`.
+- **Next:** Review and commit the focused `P3-20` slice when requested, then
+  continue with `P3-21` (include or exclude transaction from statistics).
+
+### 2026-06-13 10:01 WIB - `P3-20` Interrupted Work Audit
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-20`.
+- **Status:** In progress.
+- **Completed:** Audited the interrupted local work. The uncommitted slice adds
+  a workspace preference, period-navigation composable, swipe/arrow direction
+  helpers, and integration for calendar, weekly, monthly, and day views.
+- **Verification:** Focused Pest tests passed (16 tests / 115 assertions);
+  full Pest suite passed (253 tests / 1704 assertions); focused Vitest passed
+  (8 tests); `npm run types:check`, `npm run lint:check`,
+  `npm run format:check`, `npm run build`, and `git diff --check` passed.
+  `composer analyse` / direct PHPStan exited with code 1 without diagnostic
+  output.
+- **Decisions:** Treat `P3-20` as incomplete until the disabled-checkbox
+  browser submission path is corrected and the Summary period view is either
+  integrated or explicitly excluded with rationale.
+- **Blockers:** The unchecked navigation preference is omitted by native form
+  submission while backend validation requires the field, so the current UI
+  cannot reliably disable shortcuts. Summary has previous/next period controls
+  but does not receive or use the preference/composable.
+- **Uncommitted:** All local `P3-20` implementation files and this audit
+  checkpoint are uncommitted. No implementation files were changed during the
+  audit.
+- **Next:** Fix and test disabled preference submission, add Summary period
+  navigation coverage, investigate the silent PHPStan failure, then rerun
+  applicable quality gates and update `docs/PROGRESS.md`.
+
 ### 2026-06-13 09:55 WIB - `P3-19` Responsive Mobile Entry
 
 - **Branch:** `feat/phase-3`.
