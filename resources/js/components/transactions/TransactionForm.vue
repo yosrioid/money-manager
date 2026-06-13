@@ -6,6 +6,7 @@ import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { isSubmitShortcut } from '@/lib/keyboard-shortcuts';
 import { index } from '@/routes/accounts';
 import * as transactionBookmarks from '@/routes/transaction-bookmarks';
 import { create } from '@/routes/transactions';
@@ -189,10 +190,22 @@ const moveBookmark = (bookmark: BookmarkRow, direction: 'up' | 'down') => {
 const deleteBookmark = (bookmark: BookmarkRow) => {
     router.delete(transactionBookmarks.destroy(bookmark.id).url);
 };
+
+const submitOnShortcut = (event: KeyboardEvent) => {
+    if (isSubmitShortcut(event)) {
+        event.preventDefault();
+        (event.currentTarget as HTMLFormElement).requestSubmit();
+    }
+};
 </script>
 
 <template>
-    <Form v-bind="form" class="space-y-6" v-slot="{ errors, processing }">
+    <Form
+        v-bind="form"
+        class="space-y-6"
+        v-slot="{ errors, processing }"
+        @keydown="submitOnShortcut"
+    >
         <input type="hidden" name="idempotency_key" :value="idempotencyKey" />
         <input v-if="draftId" type="hidden" name="draft_id" :value="draftId" />
         <div class="grid gap-6 md:grid-cols-2">
@@ -290,6 +303,7 @@ const deleteBookmark = (bookmark: BookmarkRow) => {
                     inputmode="numeric"
                     placeholder="10000 + 5000"
                     required
+                    autofocus
                     :value="initialData?.amount ?? ''"
                 />
                 <InputError :message="errors.amount" />
@@ -606,6 +620,10 @@ const deleteBookmark = (bookmark: BookmarkRow) => {
             <Button variant="outline" as-child>
                 <Link :href="index()">Cancel</Link>
             </Button>
+            <span class="text-sm text-muted-foreground">
+                Tip: press Ctrl+Enter (Cmd+Enter on macOS) to save from anywhere
+                in the form.
+            </span>
         </div>
     </Form>
 </template>

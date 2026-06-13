@@ -50,6 +50,37 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 09:35 WIB - `P3-18` Keyboard-First Desktop Entry
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-18`.
+- **Status:** Completed.
+- **Completed:** `TransactionForm.vue` now auto-focuses the Amount input on
+  load (the first value most users type) and listens for a Ctrl+Enter /
+  Cmd+Enter keydown anywhere within the `<Form>` to call
+  `requestSubmit()` on the form element — this lets users submit from inside
+  the multi-line Description and Memo textareas, where a plain Enter inserts
+  a newline instead. The shortcut predicate (`isSubmitShortcut`) was extracted
+  to `resources/js/lib/keyboard-shortcuts.ts` so it can be unit tested
+  independently of mounting the form. A short text hint near the
+  save/draft/cancel buttons documents the shortcut for desktop users.
+- **Verification:** New `resources/js/lib/keyboard-shortcuts.test.ts`
+  (4 tests) via `npm run test:unit` (5 tests total, all passing),
+  `npm run lint:check`, `npm run format:check`, `npm run types:check`,
+  `npm run build`, and the full `php artisan test --compact`
+  (250 tests / 1659 assertions, unaffected) all passed.
+- **Decisions:** Scoped to the two highest-value, low-risk keyboard
+  improvements (initial focus + submit shortcut) rather than introducing a
+  broader hotkey scheme, since the catalog acceptance is "core transaction
+  entry works efficiently from keyboard" and native tab order through the
+  form's fields was already sequential and logical.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-18` changes are uncommitted on `feat/phase-3`,
+  pending the standard P3-18 commit.
+- **Next:** Commit as `feat(transactions): add keyboard shortcuts for
+  transaction entry (P3-18)`, then continue with `P3-19` (Responsive mobile
+  entry).
+
 ### 2026-06-13 09:10 WIB - `P3-17` Entry-Form Field Configuration
 
 - **Branch:** `feat/phase-3`.
