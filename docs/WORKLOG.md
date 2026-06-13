@@ -50,6 +50,54 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 03:20 WIB - `P3-11` Transaction Detail
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-11`.
+- **Status:** Completed.
+- **Completed:** Added a `transactions/{transaction}` GET route
+  (`->whereNumber('transaction')`, named `transactions.show`), registered
+  after all static-segment transaction routes so it cannot shadow
+  `transactions/create`, `/calendar`, `/weekly`, `/monthly`, `/summary`,
+  `/day`, and `/day-notes/{date}`. `TransactionController::show()` authorizes
+  via `TransactionPolicy::view`, loads the transaction with its creator,
+  merchant, tags, entries (with account/category), and
+  reversal/replacement relations, and renders `transactions/Show` with the
+  full transaction detail plus its immutable audit log entries (ordered
+  newest first, with actor and metadata). New `transactions/Show.vue` page
+  shows description, memo, currency, occurred/posted timestamps, recorder,
+  tags, all ledger entries, reversal/replacement cross-links
+  (`reverses`/`reversal`/`replaces`/`replacement` as links to the related
+  transaction's detail page), and an audit history card. Each transaction
+  card on `transactions/Index.vue` now links its title to
+  `transactions.show`. Regenerated Wayfinder routes
+  (`resources/js/routes/transactions/index.ts`) to add the `show` helper.
+- **Verification:** New `tests/Feature/TransactionDetailTest.php` (5 tests,
+  108 assertions) covers: full detail rendering with entries, creator,
+  currency, and a `transaction.posted` audit log entry; reversal cross-links
+  and the `transaction.reversed` audit log on the original transaction (none
+  on the reversal); replacement cross-links and the `transaction.replaced`
+  audit log on the original transaction (none on the replacement);
+  cross-workspace access returns 404; and `transactions/create` still
+  resolves to `transactions/CreateTransaction` (no route collision with
+  `transactions.show`). Full suite: 229 Pest tests / 1495 assertions, PHPStan
+  / Larastan (0 errors), Pint, ESLint, Prettier, TypeScript checks
+  (`vue-tsc`), and a production build all passed.
+- **Decisions:** `posted_at` is read via `getRawOriginal()` + `Carbon::parse()`
+  (matching the existing `occurred_at` pattern in
+  `transformTransaction()`), since Larastan infers `string` for
+  `immutable_datetime`-cast attributes accessed directly in some contexts.
+  `Show.vue`'s `defineOptions({ layout: { breadcrumbs: [...] } })` only
+  includes the static "Transactions" breadcrumb — a dynamic per-transaction
+  breadcrumb referencing `props.transaction.id` is not possible because
+  `defineOptions()` content is hoisted out of `setup()` and cannot reference
+  setup-scope bindings (build error: "`defineOptions()` ... cannot reference
+  locally declared variables").
+- **Blockers:** None.
+- **Uncommitted:** All `P3-11` changes are ready to commit on `feat/phase-3`.
+- **Next:** Commit `P3-11`, then continue Phase 3 with `P3-12` (bulk
+  selection).
+
 ### 2026-06-13 02:45 WIB - `P3-10` Pagination And Infinite Navigation
 
 - **Branch:** `feat/phase-3`.

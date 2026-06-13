@@ -8,7 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { create as createTransaction, index } from '@/routes/transactions';
+import {
+    create as createTransaction,
+    index,
+    show,
+} from '@/routes/transactions';
 
 interface Tag {
     id: number;
@@ -400,9 +404,13 @@ const formatDate = (date: string): string =>
                         <CardHeader>
                             <div class="flex items-start justify-between gap-3">
                                 <div class="space-y-1">
-                                    <CardTitle>{{
-                                        transaction.description
-                                    }}</CardTitle>
+                                    <CardTitle>
+                                        <Link
+                                            :href="show(transaction.id)"
+                                            class="hover:underline"
+                                            >{{ transaction.description }}</Link
+                                        >
+                                    </CardTitle>
                                     <p
                                         v-if="transaction.merchant"
                                         class="text-sm text-muted-foreground"

@@ -47,6 +47,7 @@ Route::middleware(['auth', 'verified', 'workspace', 'workspace.lock'])->group(fu
     Route::get('transaction-drafts/{transaction}/edit', [TransactionController::class, 'editDraft'])->name('transactions.drafts.edit');
     Route::patch('transaction-drafts/{transaction}', [TransactionController::class, 'updateDraft'])->name('transactions.drafts.update');
     Route::post('transactions/{transaction}/duplicate', [TransactionController::class, 'duplicate'])->name('transactions.duplicate');
+    Route::get('transactions/{transaction}', [TransactionController::class, 'show'])->whereNumber('transaction')->name('transactions.show');
 
     // Categories
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');

@@ -16,6 +16,7 @@ use App\Enums\TransactionType;
 use App\Http\Requests\StoreTransactionDraftRequest;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Models\Account;
+use App\Models\AuditLog;
 use App\Models\Transaction;
 use App\Models\TransactionEntry;
 use App\Models\User;
@@ -441,6 +442,64 @@ class TransactionController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Transaction duplicated as a draft.')]);
 
         return to_route('transactions.drafts.edit', $draft);
+    }
+
+    public function show(Transaction $transaction): Response
+    {
+        abort_unless($transaction->workspace_id === $this->workspaceContext->get()->id, 404);
+        $this->authorize('view', $transaction);
+
+        $workspace = $this->workspaceContext->get();
+
+        $transaction->load([
+            'creator',
+            'merchant',
+            'tags',
+            'entries.account',
+            'entries.category',
+            'reverses',
+            'reversal',
+            'replaces',
+            'replacement',
+        ]);
+
+        $auditLogs = AuditLog::query()
+            ->where('subject_type', Transaction::class)
+            ->where('subject_id', $transaction->id)
+            ->with('actor')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get();
+
+        $postedAt = $transaction->getRawOriginal('posted_at');
+
+        return Inertia::render('transactions/Show', [
+            'transaction' => [
+                ...$this->transformTransaction($transaction, $workspace),
+                'currency_code' => $transaction->currency_code,
+                'posted_at' => $postedAt !== null ? Carbon::parse($postedAt)->toIso8601String() : null,
+                'creator' => $transaction->creator?->only(['id', 'name']),
+                'entries' => $transaction->entries->map(fn (TransactionEntry $entry): array => [
+                    'id' => $entry->id,
+                    'type' => $entry->type,
+                    'amount' => $entry->amount,
+                    'currency_code' => $entry->currency_code,
+                    'account' => $entry->account?->only(['id', 'name']),
+                    'category' => $entry->category?->only(['id', 'name']),
+                ])->all(),
+                'reverses' => $transaction->reverses?->only(['id', 'description']),
+                'reversal' => $transaction->reversal?->only(['id', 'description']),
+                'replaces' => $transaction->replaces?->only(['id', 'description']),
+                'replacement' => $transaction->replacement?->only(['id', 'description']),
+            ],
+            'auditLogs' => $auditLogs->map(fn (AuditLog $log): array => [
+                'id' => $log->id,
+                'action' => $log->action,
+                'actor' => $log->actor?->only(['id', 'name']),
+                'created_at' => $log->created_at->toIso8601String(),
+                'metadata' => $log->metadata,
+            ])->all(),
+        ]);
     }
 
     /**
