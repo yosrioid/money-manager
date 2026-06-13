@@ -17,6 +17,7 @@ interface Category {
     color: string | null;
     icon: string | null;
     is_visible: boolean;
+    is_favorite: boolean;
     subcategories: Category[];
 }
 
@@ -138,7 +139,7 @@ const allParents = (): Category[] => [
                 <template v-for="category in section.items" :key="category.id">
                     <Form
                         v-bind="CategoryController.update.form(category.id)"
-                        class="grid gap-3 rounded-lg border p-4 md:grid-cols-2 xl:grid-cols-[1fr_10rem_auto_auto_auto]"
+                        class="grid gap-3 rounded-lg border p-4 md:grid-cols-2 xl:grid-cols-[1fr_10rem_auto_auto_auto_auto]"
                         v-slot="{ errors, processing }"
                     >
                         <Input
@@ -173,6 +174,17 @@ const allParents = (): Category[] => [
                                 class="size-4 rounded border-input"
                             />
                             Visible
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="hidden" name="is_favorite" value="0" />
+                            <input
+                                name="is_favorite"
+                                type="checkbox"
+                                value="1"
+                                :checked="category.is_favorite"
+                                class="size-4 rounded border-input"
+                            />
+                            Favorite
                         </label>
                         <div class="flex gap-2">
                             <Button
@@ -231,7 +243,7 @@ const allParents = (): Category[] => [
                         </div>
                         <InputError
                             :message="errors.name"
-                            class="md:col-span-2 xl:col-span-5"
+                            class="md:col-span-2 xl:col-span-6"
                         />
                     </Form>
 
@@ -274,6 +286,17 @@ const allParents = (): Category[] => [
                                 class="size-4 rounded border-input"
                             />
                             Visible
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="hidden" name="is_favorite" value="0" />
+                            <input
+                                name="is_favorite"
+                                type="checkbox"
+                                value="1"
+                                :checked="child.is_favorite"
+                                class="size-4 rounded border-input"
+                            />
+                            Favorite
                         </label>
                         <div class="flex gap-2">
                             <Button

@@ -24,6 +24,7 @@ class AccountFactory extends Factory
             'description' => null,
             'position' => fake()->numberBetween(0, 100),
             'is_visible' => true,
+            'is_favorite' => false,
             'include_in_total' => true,
             'archived_at' => null,
         ];
@@ -37,5 +38,10 @@ class AccountFactory extends Factory
     public function archived(): static
     {
         return $this->state(['archived_at' => now()]);
+    }
+
+    public function favorite(): static
+    {
+        return $this->state(['is_favorite' => true]);
     }
 }

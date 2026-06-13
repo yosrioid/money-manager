@@ -15,12 +15,14 @@ interface Account {
     id: number;
     name: string;
     currency_code: string;
+    is_favorite: boolean;
 }
 
 interface Category {
     id: number;
     name: string;
     type: string;
+    is_favorite: boolean;
 }
 
 interface Merchant {
@@ -220,7 +222,8 @@ const deleteBookmark = (bookmark: BookmarkRow) => {
                         :key="account.id"
                         :value="account.id"
                     >
-                        {{ account.name }} ({{ account.currency_code }})
+                        {{ account.is_favorite ? '★ ' : ''
+                        }}{{ account.name }} ({{ account.currency_code }})
                     </option>
                 </select>
                 <InputError :message="errors.account_id" />
@@ -240,7 +243,8 @@ const deleteBookmark = (bookmark: BookmarkRow) => {
                         :key="category.id"
                         :value="category.id"
                     >
-                        {{ category.name }}
+                        {{ category.is_favorite ? '★ ' : ''
+                        }}{{ category.name }}
                     </option>
                 </select>
                 <InputError :message="errors.category_id" />
@@ -263,7 +267,8 @@ const deleteBookmark = (bookmark: BookmarkRow) => {
                         :key="account.id"
                         :value="account.id"
                     >
-                        {{ account.name }} ({{ account.currency_code }})
+                        {{ account.is_favorite ? '★ ' : ''
+                        }}{{ account.name }} ({{ account.currency_code }})
                     </option>
                 </select>
                 <InputError :message="errors.destination_account_id" />
@@ -310,7 +315,8 @@ const deleteBookmark = (bookmark: BookmarkRow) => {
                         :key="category.id"
                         :value="category.id"
                     >
-                        {{ category.name }}
+                        {{ category.is_favorite ? '★ ' : ''
+                        }}{{ category.name }}
                     </option>
                 </select>
                 <InputError :message="errors.fee_category_id" />
@@ -395,7 +401,8 @@ const deleteBookmark = (bookmark: BookmarkRow) => {
                             :key="category.id"
                             :value="category.id"
                         >
-                            {{ category.name }}
+                            {{ category.is_favorite ? '★ ' : ''
+                            }}{{ category.name }}
                         </option>
                     </select>
                     <Input

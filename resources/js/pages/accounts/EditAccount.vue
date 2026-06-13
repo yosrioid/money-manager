@@ -14,6 +14,7 @@ interface Account {
     account_group_id: number | null;
     description: string | null;
     is_visible: boolean;
+    is_favorite: boolean;
     include_in_total: boolean;
 }
 

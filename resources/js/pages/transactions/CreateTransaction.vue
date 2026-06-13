@@ -28,8 +28,18 @@ interface BookmarkRow {
 }
 
 const props = defineProps<{
-    accounts: { id: number; name: string; currency_code: string }[];
-    categories: { id: number; name: string; type: string }[];
+    accounts: {
+        id: number;
+        name: string;
+        currency_code: string;
+        is_favorite: boolean;
+    }[];
+    categories: {
+        id: number;
+        name: string;
+        type: string;
+        is_favorite: boolean;
+    }[];
     merchants: { id: number; name: string }[];
     tags: { id: number; name: string; color: string | null }[];
     timezone: string;

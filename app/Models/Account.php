@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'description',
     'position',
     'is_visible',
+    'is_favorite',
     'include_in_total',
     'archived_at',
 ])]
@@ -37,6 +38,7 @@ class Account extends Model
         return [
             'type' => AccountType::class,
             'is_visible' => 'boolean',
+            'is_favorite' => 'boolean',
             'include_in_total' => 'boolean',
             'archived_at' => 'datetime',
         ];

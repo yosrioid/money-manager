@@ -23,6 +23,7 @@ class CategoryFactory extends Factory
             'icon' => null,
             'position' => fake()->numberBetween(0, 100),
             'is_visible' => true,
+            'is_favorite' => false,
             'archived_at' => null,
         ];
     }
@@ -49,5 +50,10 @@ class CategoryFactory extends Factory
     public function archived(): static
     {
         return $this->state(['archived_at' => now()]);
+    }
+
+    public function favorite(): static
+    {
+        return $this->state(['is_favorite' => true]);
     }
 }

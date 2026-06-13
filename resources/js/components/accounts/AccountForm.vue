@@ -15,6 +15,7 @@ interface AccountData {
     account_group_id: number | null;
     description: string | null;
     is_visible: boolean;
+    is_favorite: boolean;
     include_in_total: boolean;
 }
 
@@ -186,6 +187,17 @@ defineProps<{
                     class="size-4 rounded border-input"
                 />
                 Include in summary totals
+            </label>
+            <label class="flex items-center gap-3 text-sm">
+                <input type="hidden" name="is_favorite" value="0" />
+                <input
+                    name="is_favorite"
+                    type="checkbox"
+                    value="1"
+                    :checked="account?.is_favorite ?? false"
+                    class="size-4 rounded border-input"
+                />
+                Favorite (shown first when entering transactions)
             </label>
         </div>
 

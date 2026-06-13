@@ -50,6 +50,42 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 07:05 WIB - `P3-16` Favorite Accounts And Categories
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-16`.
+- **Status:** Completed.
+- **Completed:** Added a migration giving `accounts` and `categories` an
+  `is_favorite` boolean (default `false`, after `is_visible`), added it to
+  both models' `Fillable`/`casts()`, and to `UpdateAccountRequest` /
+  `UpdateCategoryRequest` validation (`sometimes|boolean`). `AccountForm.vue`
+  gained a "Favorite" checkbox; `categories/Index.vue` gained the same
+  checkbox on both top-level category rows and subcategory rows.
+  `accounts/Index.vue` shows a star icon next to favorite account names.
+  `TransactionController::formProps()` now orders `accounts` and `categories`
+  with `orderByDesc('is_favorite')->orderBy('name')` and includes
+  `is_favorite` in the selected columns; `TransactionForm.vue` prefixes
+  favorite options with "★" across all account/category selects (source,
+  destination, category, split categories, transfer fee category). Added
+  `favorite()` states to `AccountFactory`/`CategoryFactory`.
+- **Verification:** `composer analyse` (0 errors), `vendor/bin/pint --dirty
+  --format agent`, new `tests/Feature/FavoriteAccountsAndCategoriesTest.php`
+  (3 tests, 33 assertions), full suite `php artisan test --compact`
+  (245 tests / 1621 assertions), `npm run lint:check`,
+  `npm run format:check` (after `npx prettier --write` on
+  `TransactionForm.vue`), `npm run types:check`, and `npm run build` all
+  passed.
+- **Decisions:** Favorite ordering only affects the transaction entry form's
+  account/category selection lists (catalog: "Favorites appear first without
+  changing financial meaning") — `position`-based ordering used everywhere
+  else (account/category management pages, reports, balances) is untouched.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-16` backend, frontend, test, and documentation
+  changes are complete and verified but not yet committed.
+- **Next:** Commit as `feat(accounts,categories): add favorite accounts and
+  categories (P3-16)`, mark task #15 completed, then begin `P3-17`
+  (Entry-form field configuration).
+
 ### 2026-06-13 06:10 WIB - `P3-15` Recent Value Suggestions
 
 - **Branch:** `feat/phase-3`.

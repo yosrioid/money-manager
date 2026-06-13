@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { Archive, ArrowDown, ArrowUp, EyeOff, Pencil, Plus } from '@lucide/vue';
+import {
+    Archive,
+    ArrowDown,
+    ArrowUp,
+    EyeOff,
+    Pencil,
+    Plus,
+    Star,
+} from '@lucide/vue';
 import AccountController from '@/actions/App/Http/Controllers/AccountController';
 import AccountGroupController from '@/actions/App/Http/Controllers/AccountGroupController';
 import Heading from '@/components/Heading.vue';
@@ -33,6 +41,7 @@ interface Account {
     currency_code: string;
     balance: number;
     is_visible: boolean;
+    is_favorite: boolean;
     include_in_total: boolean;
     account_group: { id: number; name: string } | null;
 }
@@ -216,7 +225,14 @@ const typeLabel = (value: string): string =>
                     <CardHeader>
                         <div class="flex items-start justify-between gap-3">
                             <div class="space-y-1">
-                                <CardTitle>{{ account.name }}</CardTitle>
+                                <CardTitle class="flex items-center gap-2">
+                                    {{ account.name }}
+                                    <Star
+                                        v-if="account.is_favorite"
+                                        class="size-4 fill-current text-amber-500"
+                                        aria-label="Favorite account"
+                                    />
+                                </CardTitle>
                                 <CardDescription>
                                     {{
                                         account.account_group?.name ??

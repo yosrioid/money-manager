@@ -598,8 +598,8 @@ class TransactionController extends Controller
             ->values();
 
         return [
-            'accounts' => $workspace->accounts()->active()->orderBy('name')->get(['id', 'name', 'currency_code']),
-            'categories' => $workspace->categories()->active()->orderBy('name')->get(['id', 'name', 'type']),
+            'accounts' => $workspace->accounts()->active()->orderByDesc('is_favorite')->orderBy('name')->get(['id', 'name', 'currency_code', 'is_favorite']),
+            'categories' => $workspace->categories()->active()->orderByDesc('is_favorite')->orderBy('name')->get(['id', 'name', 'type', 'is_favorite']),
             'merchants' => $workspace->merchants()->active()->orderBy('name')->get(['id', 'name']),
             'tags' => $workspace->tags()->active()->orderBy('name')->get(['id', 'name', 'color']),
             'timezone' => $workspace->timezone,
