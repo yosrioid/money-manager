@@ -40,6 +40,31 @@ class TransactionController extends Controller
 
         $search = trim((string) $request->query('q', ''));
 
+        $type = $request->query('type');
+        $type = is_string($type) && TransactionType::tryFrom($type) !== null ? $type : null;
+
+        $status = $request->query('status');
+        $status = is_string($status) && TransactionStatus::tryFrom($status) !== null ? $status : null;
+
+        $categoryId = $request->query('category_id');
+        $categoryId = is_numeric($categoryId) ? (int) $categoryId : null;
+
+        $accountId = $request->query('account_id');
+        $accountId = is_numeric($accountId) ? (int) $accountId : null;
+
+        $tagId = $request->query('tag_id');
+        $tagId = is_numeric($tagId) ? (int) $tagId : null;
+
+        $from = $request->query('from');
+        $from = is_string($from) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)
+            ? Carbon::parse($from, $workspace->timezone)->startOfDay()
+            : null;
+
+        $to = $request->query('to');
+        $to = is_string($to) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)
+            ? Carbon::parse($to, $workspace->timezone)->startOfDay()
+            : null;
+
         $transactions = $workspace->transactions()
             ->whereNotNull('posted_at')
             ->when($search !== '', function ($query) use ($search): void {
@@ -56,6 +81,13 @@ class TransactionController extends Controller
                     }
                 });
             })
+            ->when($type !== null, fn ($query) => $query->where('type', $type))
+            ->when($status !== null, fn ($query) => $query->where('status', $status))
+            ->when($categoryId !== null, fn ($query) => $query->whereHas('entries', fn ($q) => $q->where('category_id', $categoryId)))
+            ->when($accountId !== null, fn ($query) => $query->whereHas('entries', fn ($q) => $q->where('account_id', $accountId)))
+            ->when($tagId !== null, fn ($query) => $query->whereHas('tags', fn ($q) => $q->where('tags.id', $tagId)))
+            ->when($from !== null, fn ($query) => $query->where('occurred_at', '>=', $from->copy()->utc()))
+            ->when($to !== null, fn ($query) => $query->where('occurred_at', '<', $to->copy()->addDay()->utc()))
             ->with(['merchant', 'tags', 'entries.account', 'entries.category'])
             ->orderByDesc('occurred_at')
             ->orderByDesc('id')
@@ -69,6 +101,22 @@ class TransactionController extends Controller
         return Inertia::render('transactions/Index', [
             'transactions' => $transactions,
             'search' => $search,
+            'filters' => [
+                'type' => $type,
+                'status' => $status,
+                'category_id' => $categoryId,
+                'account_id' => $accountId,
+                'tag_id' => $tagId,
+                'from' => $from?->toDateString(),
+                'to' => $to?->toDateString(),
+            ],
+            'filterOptions' => [
+                'types' => array_map(fn (TransactionType $type): string => $type->value, TransactionType::cases()),
+                'statuses' => [TransactionStatus::Posted->value, TransactionStatus::Reversed->value, TransactionStatus::Replaced->value],
+                'categories' => $workspace->categories()->active()->orderBy('name')->get(['id', 'name']),
+                'accounts' => $workspace->accounts()->active()->orderBy('name')->get(['id', 'name']),
+                'tags' => $workspace->tags()->active()->orderBy('name')->get(['id', 'name', 'color']),
+            ],
         ]);
     }
 

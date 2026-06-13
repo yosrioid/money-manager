@@ -50,6 +50,41 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 01:20 WIB - `P3-08` Advanced Filters
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-08`.
+- **Status:** Completed.
+- **Completed:** Added `type`, `status`, `category_id`, `account_id`,
+  `tag_id`, `from`, and `to` query-string filters to
+  `TransactionController::index()`, alongside the existing `q` search. `type`
+  and `status` are validated against `TransactionType::tryFrom()` /
+  `TransactionStatus::tryFrom()`; `category_id`/`account_id`/`tag_id` must be
+  numeric; `from`/`to` must match `YYYY-MM-DD` and are parsed in the
+  workspace timezone, then converted to UTC for the `occurred_at` comparison
+  (`to` is inclusive of the whole day). Invalid values are silently ignored
+  (`null`) rather than erroring. Category/account/tag filters use
+  `whereHas('entries', ...)` / `whereHas('tags', ...)`, and all filters
+  combine with AND alongside the search's grouped OR clause. The response now
+  includes `filters` (the resolved current values) and `filterOptions`
+  (`types`, `statuses` — limited to `posted`/`reversed`/`replaced` since
+  `draft`/`voided` transactions never have `posted_at` — plus the workspace's
+  active `categories`, `accounts`, and `tags`). `transactions/Index.vue` now
+  renders selects for type/status/category/account/tag and a from/to date
+  range, all submitted together via `router.get(..., { preserveState: true,
+  replace: true })`, with a combined "Clear" action and an updated empty-state
+  message.
+- **Verification:** Added `tests/Feature/TransactionFilterTest.php` (8 tests,
+  105 assertions) covering type, category, account, tag, status (combined
+  with type for a transfer), date range, filters combined with search, and an
+  invalid filter value being ignored. Full suite: 217 Pest tests / 1281
+  assertions, PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript
+  checks (`vue-tsc`), and a production build all passed.
+- **Decisions:** None.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-08` changes are ready to commit on `feat/phase-3`.
+- **Next:** Commit `P3-08`, then continue Phase 3 with `P3-09` (sorting).
+
 ### 2026-06-13 00:30 WIB - `P3-07` Search
 
 - **Branch:** `feat/phase-3`.

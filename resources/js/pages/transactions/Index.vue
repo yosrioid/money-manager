@@ -43,12 +43,38 @@ interface PaginationLink {
     active: boolean;
 }
 
+interface NamedOption {
+    id: number;
+    name: string;
+    color?: string | null;
+}
+
+interface Filters {
+    type: string | null;
+    status: string | null;
+    category_id: number | null;
+    account_id: number | null;
+    tag_id: number | null;
+    from: string | null;
+    to: string | null;
+}
+
+interface FilterOptions {
+    types: string[];
+    statuses: string[];
+    categories: NamedOption[];
+    accounts: NamedOption[];
+    tags: NamedOption[];
+}
+
 const props = defineProps<{
     transactions: {
         data: TransactionRow[];
         links: PaginationLink[];
     };
     search: string;
+    filters: Filters;
+    filterOptions: FilterOptions;
 }>();
 
 defineOptions({
@@ -58,26 +84,83 @@ defineOptions({
 });
 
 const search = ref(props.search);
+const type = ref(props.filters.type ?? '');
+const status = ref(props.filters.status ?? '');
+const categoryId = ref(props.filters.category_id?.toString() ?? '');
+const accountId = ref(props.filters.account_id?.toString() ?? '');
+const tagId = ref(props.filters.tag_id?.toString() ?? '');
+const from = ref(props.filters.from ?? '');
+const to = ref(props.filters.to ?? '');
 
-const submitSearch = (): void => {
-    router.get(index().url, search.value ? { q: search.value } : {}, {
-        preserveState: true,
-        replace: true,
-    });
+const hasActiveFilters = computed(
+    () =>
+        !!search.value ||
+        !!type.value ||
+        !!status.value ||
+        !!categoryId.value ||
+        !!accountId.value ||
+        !!tagId.value ||
+        !!from.value ||
+        !!to.value,
+);
+
+const applyFilters = (): void => {
+    const query: Record<string, string> = {};
+
+    if (search.value) {
+        query.q = search.value;
+    }
+
+    if (type.value) {
+        query.type = type.value;
+    }
+
+    if (status.value) {
+        query.status = status.value;
+    }
+
+    if (categoryId.value) {
+        query.category_id = categoryId.value;
+    }
+
+    if (accountId.value) {
+        query.account_id = accountId.value;
+    }
+
+    if (tagId.value) {
+        query.tag_id = tagId.value;
+    }
+
+    if (from.value) {
+        query.from = from.value;
+    }
+
+    if (to.value) {
+        query.to = to.value;
+    }
+
+    router.get(index().url, query, { preserveState: true, replace: true });
 };
 
-const clearSearch = (): void => {
+const clearFilters = (): void => {
     search.value = '';
-    submitSearch();
+    type.value = '';
+    status.value = '';
+    categoryId.value = '';
+    accountId.value = '';
+    tagId.value = '';
+    from.value = '';
+    to.value = '';
+    applyFilters();
 };
-
-const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'full' });
 
 const typeLabel = (value: string): string =>
     value
         .split('_')
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join(' ');
+
+const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'full' });
 
 const groupedTransactions = computed(() => {
     const groups: { date: string; items: TransactionRow[] }[] = [];
@@ -117,11 +200,8 @@ const formatDate = (date: string): string =>
 
         <TransactionViewNav current="daily" />
 
-        <form
-            class="flex max-w-md items-center gap-2"
-            @submit.prevent="submitSearch"
-        >
-            <div class="relative flex-1">
+        <form class="flex flex-col gap-3" @submit.prevent="applyFilters">
+            <div class="relative max-w-md">
                 <Search
                     class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
                 />
@@ -132,16 +212,124 @@ const formatDate = (date: string): string =>
                     class="pl-8"
                 />
             </div>
-            <Button type="submit" variant="outline" size="sm">Search</Button>
-            <Button
-                v-if="search"
-                type="button"
-                variant="ghost"
-                size="sm"
-                @click="clearSearch"
-            >
-                <X /> Clear
-            </Button>
+
+            <div class="flex flex-wrap items-end gap-2">
+                <label class="grid gap-1 text-sm">
+                    <span class="text-muted-foreground">Type</span>
+                    <select
+                        v-model="type"
+                        class="h-9 rounded-md border border-input bg-transparent px-2 text-sm shadow-xs"
+                    >
+                        <option value="">All types</option>
+                        <option
+                            v-for="option in filterOptions.types"
+                            :key="option"
+                            :value="option"
+                        >
+                            {{ typeLabel(option) }}
+                        </option>
+                    </select>
+                </label>
+
+                <label class="grid gap-1 text-sm">
+                    <span class="text-muted-foreground">Status</span>
+                    <select
+                        v-model="status"
+                        class="h-9 rounded-md border border-input bg-transparent px-2 text-sm shadow-xs"
+                    >
+                        <option value="">All statuses</option>
+                        <option
+                            v-for="option in filterOptions.statuses"
+                            :key="option"
+                            :value="option"
+                        >
+                            {{ typeLabel(option) }}
+                        </option>
+                    </select>
+                </label>
+
+                <label class="grid gap-1 text-sm">
+                    <span class="text-muted-foreground">Category</span>
+                    <select
+                        v-model="categoryId"
+                        class="h-9 rounded-md border border-input bg-transparent px-2 text-sm shadow-xs"
+                    >
+                        <option value="">All categories</option>
+                        <option
+                            v-for="category in filterOptions.categories"
+                            :key="category.id"
+                            :value="category.id.toString()"
+                        >
+                            {{ category.name }}
+                        </option>
+                    </select>
+                </label>
+
+                <label class="grid gap-1 text-sm">
+                    <span class="text-muted-foreground">Account</span>
+                    <select
+                        v-model="accountId"
+                        class="h-9 rounded-md border border-input bg-transparent px-2 text-sm shadow-xs"
+                    >
+                        <option value="">All accounts</option>
+                        <option
+                            v-for="account in filterOptions.accounts"
+                            :key="account.id"
+                            :value="account.id.toString()"
+                        >
+                            {{ account.name }}
+                        </option>
+                    </select>
+                </label>
+
+                <label class="grid gap-1 text-sm">
+                    <span class="text-muted-foreground">Tag</span>
+                    <select
+                        v-model="tagId"
+                        class="h-9 rounded-md border border-input bg-transparent px-2 text-sm shadow-xs"
+                    >
+                        <option value="">All tags</option>
+                        <option
+                            v-for="tag in filterOptions.tags"
+                            :key="tag.id"
+                            :value="tag.id.toString()"
+                        >
+                            {{ tag.name }}
+                        </option>
+                    </select>
+                </label>
+
+                <label class="grid gap-1 text-sm">
+                    <span class="text-muted-foreground">From</span>
+                    <input
+                        v-model="from"
+                        type="date"
+                        class="h-9 rounded-md border border-input bg-transparent px-2 text-sm shadow-xs"
+                    />
+                </label>
+
+                <label class="grid gap-1 text-sm">
+                    <span class="text-muted-foreground">To</span>
+                    <input
+                        v-model="to"
+                        type="date"
+                        class="h-9 rounded-md border border-input bg-transparent px-2 text-sm shadow-xs"
+                    />
+                </label>
+
+                <Button type="submit" variant="outline" size="sm"
+                    >Apply filters</Button
+                >
+                <Button
+                    v-if="hasActiveFilters"
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    @click="clearFilters"
+                >
+                    <X /> Clear
+                </Button>
+            </div>
         </form>
 
         <div v-if="groupedTransactions.length" class="space-y-8">
@@ -234,8 +422,8 @@ const formatDate = (date: string): string =>
             <CardContent class="py-8 text-center">
                 <p class="text-sm text-muted-foreground">
                     {{
-                        search
-                            ? 'No transactions match your search.'
+                        hasActiveFilters
+                            ? 'No transactions match your search or filters.'
                             : 'No transactions yet. Add the first transaction for this workspace.'
                     }}
                 </p>
