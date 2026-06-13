@@ -611,6 +611,7 @@ class TransactionController extends Controller
                 ->get(['id', 'name', 'payload']),
             'recentDescriptions' => $recentDescriptions,
             'recentMerchants' => $recentMerchants,
+            'entryFormFields' => $workspace->entryFormFields(),
         ];
     }
 

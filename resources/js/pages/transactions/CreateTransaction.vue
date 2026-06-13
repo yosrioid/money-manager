@@ -49,6 +49,7 @@ const props = defineProps<{
     bookmarks: BookmarkRow[];
     recentDescriptions: string[];
     recentMerchants: { id: number; name: string }[];
+    entryFormFields: string[];
 }>();
 
 defineOptions({
@@ -92,6 +93,7 @@ defineOptions({
             :bookmarks="props.bookmarks"
             :recent-descriptions="props.recentDescriptions"
             :recent-merchants="props.recentMerchants"
+            :entry-form-fields="props.entryFormFields"
         />
     </div>
 </template>

@@ -28,6 +28,8 @@ class WorkspacePreferencesRequest extends FormRequest
             'month_start_day' => ['required', 'integer', 'min:1', 'max:28'],
             'adjust_month_for_weekend' => ['required', 'boolean'],
             'application_lock_minutes' => ['required', 'integer', Rule::in([0, 5, 15, 30, 60])],
+            'entry_form_fields' => ['sometimes', 'array'],
+            'entry_form_fields.*' => ['string', Rule::in(['merchant', 'memo', 'tags']), 'distinct'],
         ];
     }
 }

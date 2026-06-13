@@ -78,7 +78,14 @@ const props = defineProps<{
     bookmarks: BookmarkRow[];
     recentDescriptions: string[];
     recentMerchants: Merchant[];
+    entryFormFields: string[];
 }>();
+
+const visibleOptionalFields = computed(() =>
+    props.entryFormFields.filter((field) =>
+        ['merchant', 'memo', 'tags'].includes(field),
+    ),
+);
 
 const type = ref(props.initialData?.type ?? 'expense');
 const sourceAccountId = ref(props.initialData?.account_id?.toString() ?? '');
@@ -322,42 +329,6 @@ const deleteBookmark = (bookmark: BookmarkRow) => {
                 <InputError :message="errors.fee_category_id" />
             </div>
 
-            <div v-if="type !== 'transfer'" class="grid gap-2">
-                <Label for="merchant_id">Merchant or recipient</Label>
-                <select
-                    id="merchant_id"
-                    name="merchant_id"
-                    v-model="merchantId"
-                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
-                >
-                    <option value="">None</option>
-                    <option
-                        v-for="merchant in merchants"
-                        :key="merchant.id"
-                        :value="merchant.id"
-                    >
-                        {{ merchant.name }}
-                    </option>
-                </select>
-                <div
-                    v-if="recentMerchants.length"
-                    class="flex flex-wrap items-center gap-2"
-                >
-                    <span class="text-xs text-muted-foreground">Recent:</span>
-                    <Button
-                        v-for="merchant in recentMerchants"
-                        :key="merchant.id"
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        @click="merchantId = merchant.id.toString()"
-                    >
-                        {{ merchant.name }}
-                    </Button>
-                </div>
-                <InputError :message="errors.merchant_id" />
-            </div>
-
             <div class="grid gap-2">
                 <Label for="occurred_at">
                     Date and time ({{ timezone }})
@@ -459,45 +430,89 @@ const deleteBookmark = (bookmark: BookmarkRow) => {
             <InputError :message="errors.description" />
         </div>
 
-        <div class="grid gap-2">
-            <Label for="memo">Memo and notes</Label>
-            <textarea
-                id="memo"
-                name="memo"
-                rows="4"
-                maxlength="2000"
-                class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
-                placeholder="Optional details about this transaction"
-                :value="initialData?.memo ?? ''"
-            />
-            <InputError :message="errors.memo" />
-        </div>
-
-        <fieldset v-if="tags.length" class="grid gap-3">
-            <legend class="text-sm font-medium">Tags</legend>
-            <div class="flex flex-wrap gap-3">
-                <label
-                    v-for="tag in tags"
-                    :key="tag.id"
-                    class="flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
+        <template v-for="field in visibleOptionalFields" :key="field">
+            <div
+                v-if="field === 'merchant' && type !== 'transfer'"
+                class="grid gap-2"
+            >
+                <Label for="merchant_id">Merchant or recipient</Label>
+                <select
+                    id="merchant_id"
+                    name="merchant_id"
+                    v-model="merchantId"
+                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 >
-                    <input
-                        type="checkbox"
-                        name="tag_ids[]"
-                        :value="tag.id"
-                        :checked="initialData?.tag_ids?.includes(tag.id)"
-                        class="size-4 rounded border-input"
-                    />
-                    <span
-                        v-if="tag.color"
-                        class="size-2.5 rounded-full"
-                        :style="{ backgroundColor: tag.color }"
-                    />
-                    {{ tag.name }}
-                </label>
+                    <option value="">None</option>
+                    <option
+                        v-for="merchant in merchants"
+                        :key="merchant.id"
+                        :value="merchant.id"
+                    >
+                        {{ merchant.name }}
+                    </option>
+                </select>
+                <div
+                    v-if="recentMerchants.length"
+                    class="flex flex-wrap items-center gap-2"
+                >
+                    <span class="text-xs text-muted-foreground">Recent:</span>
+                    <Button
+                        v-for="merchant in recentMerchants"
+                        :key="merchant.id"
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        @click="merchantId = merchant.id.toString()"
+                    >
+                        {{ merchant.name }}
+                    </Button>
+                </div>
+                <InputError :message="errors.merchant_id" />
             </div>
-            <InputError :message="errors.tag_ids" />
-        </fieldset>
+
+            <div v-else-if="field === 'memo'" class="grid gap-2">
+                <Label for="memo">Memo and notes</Label>
+                <textarea
+                    id="memo"
+                    name="memo"
+                    rows="4"
+                    maxlength="2000"
+                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                    placeholder="Optional details about this transaction"
+                    :value="initialData?.memo ?? ''"
+                />
+                <InputError :message="errors.memo" />
+            </div>
+
+            <fieldset
+                v-else-if="field === 'tags' && tags.length"
+                class="grid gap-3"
+            >
+                <legend class="text-sm font-medium">Tags</legend>
+                <div class="flex flex-wrap gap-3">
+                    <label
+                        v-for="tag in tags"
+                        :key="tag.id"
+                        class="flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
+                    >
+                        <input
+                            type="checkbox"
+                            name="tag_ids[]"
+                            :value="tag.id"
+                            :checked="initialData?.tag_ids?.includes(tag.id)"
+                            class="size-4 rounded border-input"
+                        />
+                        <span
+                            v-if="tag.color"
+                            class="size-2.5 rounded-full"
+                            :style="{ backgroundColor: tag.color }"
+                        />
+                        {{ tag.name }}
+                    </label>
+                </div>
+                <InputError :message="errors.tag_ids" />
+            </fieldset>
+        </template>
 
         <fieldset class="grid gap-3 rounded-md border p-4">
             <legend class="text-sm font-medium">Bookmarks</legend>

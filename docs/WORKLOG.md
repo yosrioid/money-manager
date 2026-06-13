@@ -50,6 +50,48 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 09:10 WIB - `P3-17` Entry-Form Field Configuration
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-17`.
+- **Status:** Completed.
+- **Completed:** Added a workspace-scoped `entry_form_fields` nullable JSON
+  column (after `application_lock_minutes`), with `Workspace::entryFormFields()`
+  falling back to `Workspace::defaultEntryFormFields()`
+  (`['merchant', 'memo', 'tags']`) when unset. `WorkspacePreferencesRequest`
+  validates `entry_form_fields` as `sometimes|array` with each entry
+  restricted to `merchant`/`memo`/`tags` and `distinct`;
+  `WorkspaceController::update()` defaults a missing key to `[]` so unchecking
+  all fields stores an empty configuration rather than leaving stale data.
+  `WorkspaceController::edit()` and `TransactionController::formProps()` both
+  expose `entryFormFields`. `settings/Workspace.vue` gained a "Transaction
+  entry form fields" section: a checkbox per field (bound to a reactive
+  `entryFormFieldRows` ref initialized/sorted from the workspace config) plus
+  up/down reorder buttons, submitting the visible fields in order as hidden
+  `entry_form_fields[]` inputs. `TransactionForm.vue` was restructured so the
+  merchant/recipient, memo, and tags sections render via a single
+  `<template v-for="field in visibleOptionalFields">` driven by the
+  workspace's `entryFormFields` order (description and occurred_at remain
+  fixed/required).
+- **Verification:** `composer analyse` (0 errors), `vendor/bin/pint --dirty
+  --format agent`, new `tests/Feature/EntryFormFieldConfigurationTest.php`
+  (5 tests, 38 assertions), full suite `php artisan test --compact`
+  (250 tests / 1659 assertions), `npm run lint:check`,
+  `npm run format:check` (after `npx prettier --write` on
+  `settings/Workspace.vue` and `TransactionForm.vue`), `npm run types:check`,
+  and `npm run build` all passed.
+- **Decisions:** Exactly the three catalog-listed optional fields
+  (merchant/recipient, memo, tags) are configurable; description and
+  occurred_at stay mandatory. An empty `entry_form_fields` array means "hide
+  all three optional fields", distinct from `null`/absent which means
+  "use the default order".
+- **Blockers:** None.
+- **Uncommitted:** All `P3-17` changes are uncommitted on `feat/phase-3`,
+  pending the standard P3-17 commit.
+- **Next:** Commit as `feat(workspaces,transactions): add entry-form field
+  configuration (P3-17)`, then continue with `P3-18` (Keyboard-first desktop
+  entry).
+
 ### 2026-06-13 07:05 WIB - `P3-16` Favorite Accounts And Categories
 
 - **Branch:** `feat/phase-3`.

@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'month_start_day',
     'adjust_month_for_weekend',
     'application_lock_minutes',
+    'entry_form_fields',
 ])]
 class Workspace extends Model
 {
@@ -63,7 +64,24 @@ class Workspace extends Model
             'month_start_day' => 'integer',
             'adjust_month_for_weekend' => 'boolean',
             'application_lock_minutes' => 'integer',
+            'entry_form_fields' => 'array',
         ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function entryFormFields(): array
+    {
+        return $this->entry_form_fields ?? self::defaultEntryFormFields();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public static function defaultEntryFormFields(): array
+    {
+        return ['merchant', 'memo', 'tags'];
     }
 
     /**
