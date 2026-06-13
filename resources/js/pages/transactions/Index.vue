@@ -73,6 +73,8 @@ const props = defineProps<{
         links: PaginationLink[];
     };
     search: string;
+    sort: string;
+    sortOptions: string[];
     filters: Filters;
     filterOptions: FilterOptions;
 }>();
@@ -91,6 +93,7 @@ const accountId = ref(props.filters.account_id?.toString() ?? '');
 const tagId = ref(props.filters.tag_id?.toString() ?? '');
 const from = ref(props.filters.from ?? '');
 const to = ref(props.filters.to ?? '');
+const sort = ref(props.sort);
 
 const hasActiveFilters = computed(
     () =>
@@ -139,6 +142,10 @@ const applyFilters = (): void => {
         query.to = to.value;
     }
 
+    if (sort.value && sort.value !== 'date_desc') {
+        query.sort = sort.value;
+    }
+
     router.get(index().url, query, { preserveState: true, replace: true });
 };
 
@@ -151,6 +158,7 @@ const clearFilters = (): void => {
     tagId.value = '';
     from.value = '';
     to.value = '';
+    sort.value = 'date_desc';
     applyFilters();
 };
 
@@ -160,10 +168,31 @@ const typeLabel = (value: string): string =>
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join(' ');
 
+const sortLabels: Record<string, string> = {
+    date_desc: 'Date (newest first)',
+    date_asc: 'Date (oldest first)',
+    amount_desc: 'Amount (highest first)',
+    amount_asc: 'Amount (lowest first)',
+    description_asc: 'Description (A-Z)',
+    description_desc: 'Description (Z-A)',
+};
+
 const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'full' });
+
+const isDateSorted = computed(
+    () => sort.value === 'date_desc' || sort.value === 'date_asc',
+);
 
 const groupedTransactions = computed(() => {
     const groups: { date: string; items: TransactionRow[] }[] = [];
+
+    if (!isDateSorted.value) {
+        if (props.transactions.data.length) {
+            groups.push({ date: '', items: props.transactions.data });
+        }
+
+        return groups;
+    }
 
     for (const transaction of props.transactions.data) {
         const lastGroup = groups[groups.length - 1];
@@ -300,6 +329,22 @@ const formatDate = (date: string): string =>
                 </label>
 
                 <label class="grid gap-1 text-sm">
+                    <span class="text-muted-foreground">Sort by</span>
+                    <select
+                        v-model="sort"
+                        class="h-9 rounded-md border border-input bg-transparent px-2 text-sm shadow-xs"
+                    >
+                        <option
+                            v-for="option in sortOptions"
+                            :key="option"
+                            :value="option"
+                        >
+                            {{ sortLabels[option] ?? typeLabel(option) }}
+                        </option>
+                    </select>
+                </label>
+
+                <label class="grid gap-1 text-sm">
                     <span class="text-muted-foreground">From</span>
                     <input
                         v-model="from"
@@ -338,7 +383,11 @@ const formatDate = (date: string): string =>
                 :key="group.date"
                 class="space-y-4"
             >
-                <Heading variant="small" :title="formatDate(group.date)" />
+                <Heading
+                    v-if="isDateSorted"
+                    variant="small"
+                    :title="formatDate(group.date)"
+                />
                 <div class="grid gap-4">
                     <Card
                         v-for="transaction in group.items"
@@ -357,7 +406,15 @@ const formatDate = (date: string): string =>
                                         {{ transaction.merchant.name }}
                                     </p>
                                 </div>
-                                <div class="flex flex-wrap justify-end gap-2">
+                                <div
+                                    class="flex flex-wrap items-center justify-end gap-2"
+                                >
+                                    <span
+                                        v-if="!isDateSorted"
+                                        class="text-sm text-muted-foreground"
+                                    >
+                                        {{ formatDate(transaction.local_date) }}
+                                    </span>
                                     <Badge variant="secondary">
                                         {{ typeLabel(transaction.type) }}
                                     </Badge>

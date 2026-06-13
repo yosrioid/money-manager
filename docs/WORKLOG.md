@@ -50,6 +50,38 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 02:10 WIB - `P3-09` Sorting
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-09`.
+- **Status:** Completed.
+- **Completed:** Added a `sort` query-string parameter to
+  `TransactionController::index()` with an explicit whitelist: `date_desc`
+  (default), `date_asc`, `amount_desc`, `amount_asc`, `description_asc`, and
+  `description_desc`. Any other value falls back to `date_desc`. Date sorting
+  orders by `occurred_at` (with `id` as a stable tiebreaker); description
+  sorting orders by `description`. Amount sorting adds a correlated subquery
+  selecting `MAX(ABS(amount))` from `transaction_entries` where
+  `type = 'account'` for the transaction, and orders by that value — this
+  represents the account-affecting leg even for split transactions and
+  transfers. The response now includes `sort` (resolved value) and
+  `sortOptions` (the whitelist) for the frontend. `transactions/Index.vue`
+  gained a "Sort by" select wired into the existing filter form
+  (`applyFilters`/`clearFilters`); when a non-date sort is active, the
+  date-grouped section headings are replaced with a flat list showing each
+  transaction's local date inline on its card.
+- **Verification:** Added `tests/Feature/TransactionSortTest.php` (7 tests,
+  106 assertions) covering the default order, `date_asc`, `amount_desc`,
+  `amount_asc`, `description_asc`, `description_desc`, and an invalid sort
+  value falling back to `date_desc`. Full suite: 224 Pest tests / 1387
+  assertions, PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript
+  checks (`vue-tsc`), and a production build all passed.
+- **Decisions:** None.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-09` changes are ready to commit on `feat/phase-3`.
+- **Next:** Commit `P3-09`, then continue Phase 3 with `P3-10` (pagination and
+  infinite navigation).
+
 ### 2026-06-13 01:20 WIB - `P3-08` Advanced Filters
 
 - **Branch:** `feat/phase-3`.

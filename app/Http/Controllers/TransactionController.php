@@ -10,6 +10,7 @@ use App\Domain\Transactions\RecordTransfer;
 use App\Domain\Transactions\SaveTransactionDraft;
 use App\Domain\Transactions\SummarizeTransactionPeriod;
 use App\Domain\Workspaces\WorkspaceContext;
+use App\Enums\LedgerEntryType;
 use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
 use App\Http\Requests\StoreTransactionDraftRequest;
@@ -65,6 +66,10 @@ class TransactionController extends Controller
             ? Carbon::parse($to, $workspace->timezone)->startOfDay()
             : null;
 
+        $sortOptions = ['date_desc', 'date_asc', 'amount_desc', 'amount_asc', 'description_asc', 'description_desc'];
+        $sort = $request->query('sort');
+        $sort = is_string($sort) && in_array($sort, $sortOptions, true) ? $sort : 'date_desc';
+
         $transactions = $workspace->transactions()
             ->whereNotNull('posted_at')
             ->when($search !== '', function ($query) use ($search): void {
@@ -89,7 +94,17 @@ class TransactionController extends Controller
             ->when($from !== null, fn ($query) => $query->where('occurred_at', '>=', $from->copy()->utc()))
             ->when($to !== null, fn ($query) => $query->where('occurred_at', '<', $to->copy()->addDay()->utc()))
             ->with(['merchant', 'tags', 'entries.account', 'entries.category'])
-            ->orderByDesc('occurred_at')
+            ->when(in_array($sort, ['amount_desc', 'amount_asc'], true), function ($query) use ($sort): void {
+                $query->addSelect([
+                    'account_amount' => TransactionEntry::query()
+                        ->selectRaw('max(abs(amount))')
+                        ->whereColumn('transaction_id', 'transactions.id')
+                        ->where('type', LedgerEntryType::Account),
+                ])->orderBy('account_amount', $sort === 'amount_desc' ? 'desc' : 'asc');
+            })
+            ->when($sort === 'description_asc', fn ($query) => $query->orderBy('description'))
+            ->when($sort === 'description_desc', fn ($query) => $query->orderByDesc('description'))
+            ->orderBy('occurred_at', $sort === 'date_asc' ? 'asc' : 'desc')
             ->orderByDesc('id')
             ->paginate(30)
             ->withQueryString();
@@ -101,6 +116,8 @@ class TransactionController extends Controller
         return Inertia::render('transactions/Index', [
             'transactions' => $transactions,
             'search' => $search,
+            'sort' => $sort,
+            'sortOptions' => $sortOptions,
             'filters' => [
                 'type' => $type,
                 'status' => $status,
