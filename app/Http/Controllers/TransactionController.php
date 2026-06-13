@@ -114,7 +114,7 @@ class TransactionController extends Controller
         );
 
         return Inertia::render('transactions/Index', [
-            'transactions' => $transactions,
+            'transactions' => Inertia::scroll($transactions),
             'search' => $search,
             'sort' => $sort,
             'sortOptions' => $sortOptions,

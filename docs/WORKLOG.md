@@ -50,6 +50,33 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 02:45 WIB - `P3-10` Pagination And Infinite Navigation
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-10`.
+- **Status:** Completed.
+- **Completed:** `TransactionController::index()` now wraps the existing
+  `paginate(30)->withQueryString()` result in `Inertia::scroll($transactions)`
+  before rendering, which configures merge behavior and normalizes pagination
+  metadata for the frontend infinite-scroll component without changing the
+  `data`/`links`/`meta` shape used by existing tests. `transactions/Index.vue`
+  now renders the grouped transaction list inside `<InfiniteScroll
+  data="transactions">` (from `@inertiajs/vue3`), which automatically loads
+  and appends subsequent pages as the user scrolls near the end of the list,
+  with a "Loading more transactions…" indicator via the `loading` slot. The
+  previous manual page-number `<nav>` was removed since infinite scroll
+  supersedes it; ordering remains deterministic (existing sort plus an `id`
+  tiebreaker), so merged pages stay stable as history grows.
+- **Verification:** Full suite: 224 Pest tests / 1387 assertions (existing
+  `TransactionHistoryTest` pagination coverage still passes unchanged),
+  PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript checks
+  (`vue-tsc`), and a production build all passed.
+- **Decisions:** None.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-10` changes are ready to commit on `feat/phase-3`.
+- **Next:** Commit `P3-10`, then continue Phase 3 with `P3-11` (transaction
+  detail).
+
 ### 2026-06-13 02:10 WIB - `P3-09` Sorting
 
 - **Branch:** `feat/phase-3`.

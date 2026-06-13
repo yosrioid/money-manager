@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, InfiniteScroll, Link, router } from '@inertiajs/vue3';
 import { Plus, Search, X } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
@@ -377,7 +377,11 @@ const formatDate = (date: string): string =>
             </div>
         </form>
 
-        <div v-if="groupedTransactions.length" class="space-y-8">
+        <InfiniteScroll
+            v-if="groupedTransactions.length"
+            data="transactions"
+            class="space-y-8"
+        >
             <section
                 v-for="group in groupedTransactions"
                 :key="group.date"
@@ -474,7 +478,13 @@ const formatDate = (date: string): string =>
                     </Card>
                 </div>
             </section>
-        </div>
+
+            <template #loading>
+                <p class="text-center text-sm text-muted-foreground">
+                    Loading more transactions…
+                </p>
+            </template>
+        </InfiniteScroll>
         <Card v-else>
             <CardContent class="py-8 text-center">
                 <p class="text-sm text-muted-foreground">
@@ -486,26 +496,5 @@ const formatDate = (date: string): string =>
                 </p>
             </CardContent>
         </Card>
-
-        <nav
-            v-if="transactions.links.length > 3"
-            class="flex flex-wrap gap-2"
-            aria-label="Pagination"
-        >
-            <Button
-                v-for="(link, linkIndex) in transactions.links"
-                :key="linkIndex"
-                variant="outline"
-                size="sm"
-                :disabled="!link.url"
-                :class="{ 'border-primary': link.active }"
-                as-child
-            >
-                <Link v-if="link.url" :href="link.url"
-                    ><span v-html="link.label"
-                /></Link>
-                <span v-else v-html="link.label" />
-            </Button>
-        </nav>
     </div>
 </template>
