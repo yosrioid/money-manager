@@ -148,7 +148,7 @@ being implemented silently.
 | P3-02 | Calendar view                      | Parity | Calendar shows daily income, expense, balance, and records            |
 | P3-03 | Weekly view                        | Parity | Weekly summaries and drill-down are available                         |
 | P3-04 | Monthly view                       | Parity | Monthly income and expense comparison is available                    |
-| P3-05 | Summary view                       | Parity | Period summary combines budget and account movement                   |
+| P3-05 | Summary view                       | Parity | Period summary shows account movement; budget comparison is deferred to P4-06 |
 | P3-06 | Daily memo                         | Parity | User can add a note to a calendar date                                |
 | P3-07 | Search                             | MVP    | User can search by memo, merchant, category, account, and amount      |
 | P3-08 | Advanced filters                   | MVP    | Date, type, category, account, tag, and status filters combine safely |
@@ -182,7 +182,7 @@ being implemented silently.
 | P4-03 | Weekly budget             | Parity   | Budget can be viewed and evaluated weekly                    |
 | P4-04 | Annual budget             | Parity   | Budget can be viewed and evaluated annually                  |
 | P4-05 | Income budget             | Parity   | Planned income can be configured separately                  |
-| P4-06 | Total budget summary      | MVP      | User can compare total actual spending with total budget     |
+| P4-06 | Total budget summary      | MVP      | User can compare total actual spending with total budget (includes the budget-comparison portion of P3-05's summary view, deferred from Phase 3) |
 | P4-07 | Recommended spending pace | Parity   | Budget shows expected spend-to-date for the period           |
 | P4-08 | Budget trend              | MVP      | Historical actual-versus-budget trend is available           |
 | P4-09 | Asset target              | Parity   | User can define and monitor a target net asset amount        |

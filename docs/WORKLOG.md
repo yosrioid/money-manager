@@ -50,6 +50,45 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 14:05 WIB - PR #14 Review Findings Resolved
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-02`, `P3-03`, `P3-04`, `P3-05`, `P3-07`, `P3-08`,
+  `P1-16`, `P1-17`, `P1-18`.
+- **Status:** In review.
+- **Completed:** Addressed all 5 findings from `yosrioid`'s review of PR #14:
+  (1) `SummarizeTransactionPeriod::forRange()` now excludes `Replaced`
+  transactions and buckets income/expense by the account entry's sign so
+  reversal/replacement pairs net to zero instead of double-counting, with new
+  regression tests covering calendar, weekly, monthly, and summary views plus
+  `forRange()` itself; (2) calendar, weekly, monthly, and summary views now
+  honor the workspace's `first_day_of_week` (`P1-16`), `month_start_day`
+  (`P1-17`), and `adjust_month_for_weekend` (`P1-18`) preferences via new
+  `SummarizeTransactionPeriod::weekStart()` and `billingMonthStart()` helpers
+  (weekend-adjusted start days shift to the preceding Friday, per user
+  decision); (3) formally split `P3-05`'s acceptance summary in
+  `docs/FEATURE_CATALOG.md` so the budget-comparison portion is reassigned to
+  `P4-06`, per the documented scope-change process, with `docs/PROGRESS.md`
+  updated accordingly (user-approved); (4) `from`/`to`/`month` query
+  parameters are now strictly validated with `checkdate()` and rejected
+  instead of silently normalizing or risking a 500; (5) numeric transaction
+  search now parses input as an integer instead of `float`, avoiding
+  precision loss above 2^53.
+- **Verification:** `composer ci:check` (272 Pest tests / 1933 assertions, 13
+  Vitest tests, PHPStan 0 errors, Pint, ESLint, Prettier, TypeScript,
+  production build), `npm run test:e2e` (2/2), `composer audit` and
+  `npm audit --audit-level=high` (0 vulnerabilities), and
+  `bash scripts/check-governance.sh` all passed.
+- **Decisions:** Reversal/replacement nets are shown as gross income and
+  expense activity that sums to zero net, matching
+  `CalculateAccountBalance::calculateAsOf()`'s exclusion of `Replaced`
+  transactions. Weekend-adjusted `month_start_day` boundaries always shift to
+  the preceding Friday (single consistent direction).
+- **Blockers:** None.
+- **Uncommitted:** All review-fix changes are uncommitted on `feat/phase-3`.
+- **Next:** Review the diff with the user, then commit and push to PR #14 only
+  after explicit approval.
+
 ### 2026-06-13 10:28 WIB - Phase 3 Pull Request Opened
 
 - **Branch:** `feat/phase-3`.
