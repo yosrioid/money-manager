@@ -9,12 +9,14 @@ use App\Domain\Transactions\RecordIncomeExpense;
 use App\Domain\Transactions\RecordTransfer;
 use App\Domain\Transactions\SaveTransactionDraft;
 use App\Domain\Transactions\SummarizeTransactionPeriod;
+use App\Domain\Transactions\UpdateTransactionStatisticsInclusion;
 use App\Domain\Workspaces\WorkspaceContext;
 use App\Enums\LedgerEntryType;
 use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
 use App\Http\Requests\StoreTransactionDraftRequest;
 use App\Http\Requests\StoreTransactionRequest;
+use App\Http\Requests\UpdateTransactionStatisticsInclusionRequest;
 use App\Models\Account;
 use App\Models\AuditLog;
 use App\Models\Merchant;
@@ -450,6 +452,30 @@ class TransactionController extends Controller
         return to_route('transactions.drafts.edit', $draft);
     }
 
+    public function updateStatisticsInclusion(
+        UpdateTransactionStatisticsInclusionRequest $request,
+        Transaction $transaction,
+        UpdateTransactionStatisticsInclusion $updateTransactionStatisticsInclusion,
+    ): RedirectResponse {
+        abort_unless($transaction->workspace_id === $this->workspaceContext->get()->id, 404);
+        abort_unless($transaction->posted_at !== null, 404);
+        $this->authorize('update', $transaction);
+
+        $user = $request->user();
+
+        abort_unless($user instanceof User, 401);
+
+        $updateTransactionStatisticsInclusion->update(
+            $transaction,
+            $request->boolean('include_in_statistics'),
+            $user,
+        );
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Transaction statistics preference updated.')]);
+
+        return to_route('transactions.show', $transaction);
+    }
+
     public function bulkDuplicate(Request $request, DuplicateTransaction $duplicateTransaction): RedirectResponse
     {
         $workspace = $this->workspaceContext->get();
@@ -642,6 +668,7 @@ class TransactionController extends Controller
             'status' => $transaction->status,
             'description' => $transaction->description,
             'memo' => $transaction->memo,
+            'include_in_statistics' => $transaction->include_in_statistics,
             'occurred_at' => $occurredAt->toIso8601String(),
             'local_date' => $occurredAt->setTimezone($workspace->timezone)->toDateString(),
             'merchant' => $transaction->merchant?->only(['id', 'name']),

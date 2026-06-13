@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft } from '@lucide/vue';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { index, show } from '@/routes/transactions';
+import { update as updateStatisticsInclusion } from '@/routes/transactions/statistics-inclusion';
 
 interface Tag {
     id: number;
@@ -33,6 +34,7 @@ interface TransactionDetail {
     status: string;
     description: string;
     memo: string | null;
+    include_in_statistics: boolean;
     currency_code: string;
     occurred_at: string;
     posted_at: string | null;
@@ -146,6 +148,46 @@ const formatDateTime = (value: string): string =>
                         <dd>{{ transaction.currency_code }}</dd>
                     </div>
                 </dl>
+
+                <div
+                    v-if="transaction.posted_at"
+                    class="flex flex-wrap items-center justify-between gap-3 rounded-md border p-3"
+                >
+                    <div class="space-y-1">
+                        <p class="text-sm font-medium">Statistics inclusion</p>
+                        <p class="text-sm text-muted-foreground">
+                            {{
+                                transaction.include_in_statistics
+                                    ? 'Included in period statistics and summaries.'
+                                    : 'Excluded from period statistics and summaries. Ledger balances are unchanged.'
+                            }}
+                        </p>
+                    </div>
+                    <Form
+                        v-bind="updateStatisticsInclusion.form(transaction.id)"
+                        v-slot="{ processing }"
+                    >
+                        <input
+                            type="hidden"
+                            name="include_in_statistics"
+                            :value="
+                                transaction.include_in_statistics ? '0' : '1'
+                            "
+                        />
+                        <Button
+                            type="submit"
+                            variant="outline"
+                            size="sm"
+                            :disabled="processing"
+                        >
+                            {{
+                                transaction.include_in_statistics
+                                    ? 'Exclude from statistics'
+                                    : 'Include in statistics'
+                            }}
+                        </Button>
+                    </Form>
+                </div>
 
                 <div
                     v-if="transaction.tags.length"

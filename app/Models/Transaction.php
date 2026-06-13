@@ -25,6 +25,7 @@ use LogicException;
     'occurred_at',
     'posted_at',
     'draft_data',
+    'include_in_statistics',
     'reverses_transaction_id',
     'replaces_transaction_id',
 ])]
@@ -41,6 +42,7 @@ class Transaction extends Model
             'occurred_at' => 'immutable_datetime',
             'posted_at' => 'immutable_datetime',
             'draft_data' => 'array',
+            'include_in_statistics' => 'boolean',
         ];
     }
 
@@ -125,19 +127,21 @@ class Transaction extends Model
             $originalStatus = $this->getRawOriginal('status');
             $newStatus = $this->getAttributes()['status'] ?? null;
             $dirty = array_keys($this->getDirty());
+            $onlyStatisticsInclusionChanged = $dirty === ['include_in_statistics']
+                && $this->getRawOriginal('posted_at') !== null;
 
             if (in_array($originalStatus, [
                 TransactionStatus::Voided->value,
                 TransactionStatus::Reversed->value,
                 TransactionStatus::Replaced->value,
-            ], true)) {
+            ], true) && ! $onlyStatisticsInclusionChanged) {
                 throw new LogicException('Transactions in a terminal state are immutable.');
             }
 
             if ($originalStatus === TransactionStatus::Posted->value) {
                 $allowedStatuses = [TransactionStatus::Reversed->value, TransactionStatus::Replaced->value];
 
-                if ($dirty !== ['status'] || ! in_array($newStatus, $allowedStatuses, true)) {
+                if (! $onlyStatisticsInclusionChanged && ($dirty !== ['status'] || ! in_array($newStatus, $allowedStatuses, true))) {
                     throw new LogicException('Posted transactions are immutable.');
                 }
             }

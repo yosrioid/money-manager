@@ -82,6 +82,7 @@ class SummarizeTransactionPeriod
     {
         $transactions = $workspace->transactions()
             ->whereNotNull('posted_at')
+            ->where('include_in_statistics', true)
             ->where('occurred_at', '>=', $start->copy()->utc())
             ->where('occurred_at', '<', $end->copy()->utc())
             ->with('entries')
