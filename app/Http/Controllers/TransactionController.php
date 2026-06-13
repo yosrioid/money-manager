@@ -32,14 +32,30 @@ class TransactionController extends Controller
         private readonly WorkspaceContext $workspaceContext,
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $this->authorize('viewAny', Transaction::class);
 
         $workspace = $this->workspaceContext->get();
 
+        $search = trim((string) $request->query('q', ''));
+
         $transactions = $workspace->transactions()
             ->whereNotNull('posted_at')
+            ->when($search !== '', function ($query) use ($search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query->where('description', 'like', "%{$search}%")
+                        ->orWhere('memo', 'like', "%{$search}%")
+                        ->orWhereHas('merchant', fn ($q) => $q->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('entries.account', fn ($q) => $q->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('entries.category', fn ($q) => $q->where('name', 'like', "%{$search}%"));
+
+                    if (is_numeric($search)) {
+                        $amount = (int) round(abs((float) $search));
+                        $query->orWhereHas('entries', fn ($q) => $q->whereRaw('abs(amount) = ?', [$amount]));
+                    }
+                });
+            })
             ->with(['merchant', 'tags', 'entries.account', 'entries.category'])
             ->orderByDesc('occurred_at')
             ->orderByDesc('id')
@@ -52,6 +68,7 @@ class TransactionController extends Controller
 
         return Inertia::render('transactions/Index', [
             'transactions' => $transactions,
+            'search' => $search,
         ]);
     }
 

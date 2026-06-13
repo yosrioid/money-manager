@@ -50,6 +50,36 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 00:30 WIB - `P3-07` Search
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-07`.
+- **Status:** Completed.
+- **Completed:** Added a `q` query-string search to
+  `TransactionController::index()`. When non-empty, it filters posted
+  transactions where the description or memo contains the term (a
+  case-insensitive `like "%{$term}%"`), or a related merchant, account, or
+  category name contains the term (`orWhereHas` on `merchant`,
+  `entries.account`, and `entries.category`), or — when the term is numeric —
+  any entry's absolute `amount` exactly equals it. The search is grouped so
+  it combines correctly
+  with the existing `whereNotNull('posted_at')` scope, and `withQueryString()`
+  preserves `q` across pagination. `transactions/Index.vue` now renders a
+  search box (with a clear button) bound to `?q=`, navigated via
+  `router.get(..., { preserveState: true, replace: true })`, and shows a
+  distinct "No transactions match your search." message when a search yields
+  no results.
+- **Verification:** Added `tests/Feature/TransactionSearchTest.php` (7 tests,
+  82 assertions) covering search by description, memo, merchant, category,
+  account, amount, and a no-match case. Full suite: 209 Pest tests / 1176
+  assertions, PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript
+  checks (`vue-tsc`), and a production build all passed.
+- **Decisions:** None.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-07` changes are ready to commit on `feat/phase-3`.
+- **Next:** Commit `P3-07`, then continue Phase 3 with `P3-08` (advanced
+  filters).
+
 ### 2026-06-12 23:40 WIB - `P3-06` Daily Memo
 
 - **Branch:** `feat/phase-3`.

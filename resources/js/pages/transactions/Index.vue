@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { Plus } from '@lucide/vue';
-import { computed } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { Plus, Search, X } from '@lucide/vue';
+import { computed, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import TransactionViewNav from '@/components/TransactionViewNav.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { create as createTransaction, index } from '@/routes/transactions';
 
 interface Tag {
@@ -47,6 +48,7 @@ const props = defineProps<{
         data: TransactionRow[];
         links: PaginationLink[];
     };
+    search: string;
 }>();
 
 defineOptions({
@@ -54,6 +56,20 @@ defineOptions({
         breadcrumbs: [{ title: 'Transactions', href: index() }],
     },
 });
+
+const search = ref(props.search);
+
+const submitSearch = (): void => {
+    router.get(index().url, search.value ? { q: search.value } : {}, {
+        preserveState: true,
+        replace: true,
+    });
+};
+
+const clearSearch = (): void => {
+    search.value = '';
+    submitSearch();
+};
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'full' });
 
@@ -100,6 +116,33 @@ const formatDate = (date: string): string =>
         </div>
 
         <TransactionViewNav current="daily" />
+
+        <form
+            class="flex max-w-md items-center gap-2"
+            @submit.prevent="submitSearch"
+        >
+            <div class="relative flex-1">
+                <Search
+                    class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                    v-model="search"
+                    name="q"
+                    placeholder="Search memo, merchant, category, account, or amount"
+                    class="pl-8"
+                />
+            </div>
+            <Button type="submit" variant="outline" size="sm">Search</Button>
+            <Button
+                v-if="search"
+                type="button"
+                variant="ghost"
+                size="sm"
+                @click="clearSearch"
+            >
+                <X /> Clear
+            </Button>
+        </form>
 
         <div v-if="groupedTransactions.length" class="space-y-8">
             <section
@@ -190,8 +233,11 @@ const formatDate = (date: string): string =>
         <Card v-else>
             <CardContent class="py-8 text-center">
                 <p class="text-sm text-muted-foreground">
-                    No transactions yet. Add the first transaction for this
-                    workspace.
+                    {{
+                        search
+                            ? 'No transactions match your search.'
+                            : 'No transactions yet. Add the first transaction for this workspace.'
+                    }}
                 </p>
             </CardContent>
         </Card>
