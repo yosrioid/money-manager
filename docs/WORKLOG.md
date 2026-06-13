@@ -50,6 +50,27 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 10:28 WIB - Phase 3 Pull Request Opened
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-01` to `P3-21`.
+- **Status:** In review.
+- **Completed:** Pushed the complete Phase 3 branch and opened
+  [PR #14](https://github.com/yosrioid/money-manager/pull/14) against `main`.
+  Updated `docs/PROGRESS.md` so the current milestone, delivery packages,
+  catalog range, and individual Phase 3 features accurately show `In Review`.
+- **Verification:** Pre-push final gates passed: `composer ci:check` (257 Pest
+  tests / 1768 assertions, 13 Vitest tests, PHPStan 0 errors, Pint, ESLint,
+  Prettier, TypeScript, Wayfinder generation, and production build),
+  `npm run test:e2e` (2/2 Chromium and mobile Safari), Composer/npm security
+  audits, governance, and `git diff --check`.
+- **Decisions:** Phase 3 remains not `Done` until PR #14 is reviewed, CI passes,
+  the exit gate is confirmed, and the branch is merged.
+- **Blockers:** None.
+- **Uncommitted:** This PR-status documentation update only.
+- **Next:** Commit and push the PR-status documentation, then verify PR #14 CI
+  and review state without merging.
+
 ### 2026-06-13 10:26 WIB - Phase 3 Ready For Review
 
 - **Branch:** `feat/phase-3`.
