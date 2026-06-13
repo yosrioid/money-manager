@@ -74,6 +74,8 @@ const props = defineProps<{
     draftId: number | null;
     initialData: TransactionDraftData | null;
     bookmarks: BookmarkRow[];
+    recentDescriptions: string[];
+    recentMerchants: Merchant[];
 }>();
 
 const type = ref(props.initialData?.type ?? 'expense');
@@ -81,6 +83,8 @@ const sourceAccountId = ref(props.initialData?.account_id?.toString() ?? '');
 const destinationAccountId = ref(
     props.initialData?.destination_account_id?.toString() ?? '',
 );
+const merchantId = ref(props.initialData?.merchant_id?.toString() ?? '');
+const description = ref(props.initialData?.description ?? '');
 const splitEnabled = ref(Boolean(props.initialData?.splits?.length));
 const splitRows = ref<SplitRow[]>(
     props.initialData?.splits?.length
@@ -317,8 +321,8 @@ const deleteBookmark = (bookmark: BookmarkRow) => {
                 <select
                     id="merchant_id"
                     name="merchant_id"
+                    v-model="merchantId"
                     class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
-                    :value="initialData?.merchant_id ?? ''"
                 >
                     <option value="">None</option>
                     <option
@@ -329,6 +333,22 @@ const deleteBookmark = (bookmark: BookmarkRow) => {
                         {{ merchant.name }}
                     </option>
                 </select>
+                <div
+                    v-if="recentMerchants.length"
+                    class="flex flex-wrap items-center gap-2"
+                >
+                    <span class="text-xs text-muted-foreground">Recent:</span>
+                    <Button
+                        v-for="merchant in recentMerchants"
+                        :key="merchant.id"
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        @click="merchantId = merchant.id.toString()"
+                    >
+                        {{ merchant.name }}
+                    </Button>
+                </div>
                 <InputError :message="errors.merchant_id" />
             </div>
 
@@ -407,12 +427,28 @@ const deleteBookmark = (bookmark: BookmarkRow) => {
             <textarea
                 id="description"
                 name="description"
+                v-model="description"
                 rows="3"
                 class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 placeholder="What was this transaction for?"
                 required
-                :value="initialData?.description ?? ''"
             />
+            <div
+                v-if="recentDescriptions.length"
+                class="flex flex-wrap items-center gap-2"
+            >
+                <span class="text-xs text-muted-foreground">Recent:</span>
+                <Button
+                    v-for="recentDescription in recentDescriptions"
+                    :key="recentDescription"
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    @click="description = recentDescription"
+                >
+                    {{ recentDescription }}
+                </Button>
+            </div>
             <InputError :message="errors.description" />
         </div>
 

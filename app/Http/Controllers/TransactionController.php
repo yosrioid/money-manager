@@ -17,6 +17,7 @@ use App\Http\Requests\StoreTransactionDraftRequest;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Models\Account;
 use App\Models\AuditLog;
+use App\Models\Merchant;
 use App\Models\Transaction;
 use App\Models\TransactionEntry;
 use App\Models\User;
@@ -571,6 +572,31 @@ class TransactionController extends Controller
             ? $workspace->transactionBookmarks()->find((int) $bookmarkId)
             : null;
 
+        $recentTransactions = $workspace->transactions()
+            ->whereNotNull('posted_at')
+            ->orderByDesc('occurred_at')
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get(['description', 'merchant_id']);
+
+        $recentDescriptions = $recentTransactions->pluck('description')
+            ->filter(fn (?string $description): bool => filled($description))
+            ->unique()
+            ->take(8)
+            ->values();
+
+        $recentMerchantIds = $recentTransactions->pluck('merchant_id')
+            ->filter()
+            ->unique()
+            ->take(8)
+            ->values();
+
+        $recentMerchants = $workspace->merchants()
+            ->whereIn('id', $recentMerchantIds)
+            ->get(['id', 'name'])
+            ->sortBy(fn (Merchant $merchant): int => $recentMerchantIds->search($merchant->id))
+            ->values();
+
         return [
             'accounts' => $workspace->accounts()->active()->orderBy('name')->get(['id', 'name', 'currency_code']),
             'categories' => $workspace->categories()->active()->orderBy('name')->get(['id', 'name', 'type']),
@@ -583,6 +609,8 @@ class TransactionController extends Controller
             'bookmarks' => $workspace->transactionBookmarks()
                 ->orderBy('position')
                 ->get(['id', 'name', 'payload']),
+            'recentDescriptions' => $recentDescriptions,
+            'recentMerchants' => $recentMerchants,
         ];
     }
 

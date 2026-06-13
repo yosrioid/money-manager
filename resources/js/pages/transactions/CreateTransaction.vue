@@ -37,6 +37,8 @@ const props = defineProps<{
     draftId: number | null;
     initialData: TransactionDraftData | null;
     bookmarks: BookmarkRow[];
+    recentDescriptions: string[];
+    recentMerchants: { id: number; name: string }[];
 }>();
 
 defineOptions({
@@ -78,6 +80,8 @@ defineOptions({
             :draft-id="props.draftId"
             :initial-data="props.initialData"
             :bookmarks="props.bookmarks"
+            :recent-descriptions="props.recentDescriptions"
+            :recent-merchants="props.recentMerchants"
         />
     </div>
 </template>

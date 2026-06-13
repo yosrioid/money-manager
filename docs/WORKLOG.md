@@ -50,6 +50,41 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 06:10 WIB - `P3-15` Recent Value Suggestions
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-15`.
+- **Status:** Completed.
+- **Completed:** `TransactionController::formProps()` now queries the
+  workspace's 50 most recently posted transactions
+  (`whereNotNull('posted_at')`, ordered by `occurred_at`/`id` desc) and derives
+  `recentDescriptions` (up to 8 distinct, non-empty descriptions,
+  most-recent-first) and `recentMerchants` (up to 8 distinct merchants,
+  ordered by recency of first occurrence). Both are returned alongside the
+  existing `bookmarks` prop, available on `transactions.create` and the draft
+  resume page. `CreateTransaction.vue` passes both through to
+  `TransactionForm.vue`, which renders them as clickable "Recent:" suggestion
+  chips below the Description textarea (fills `description`) and the Merchant
+  select (fills `merchantId`); both fields are now `v-model`-bound instead of
+  using `:value`.
+- **Verification:** `composer analyse` (0 errors), `vendor/bin/pint --dirty
+  --format agent`, new `tests/Feature/TransactionRecentValuesTest.php`
+  (2 tests, 26 assertions) via `php artisan test --compact
+  --filter=TransactionRecentValuesTest`, full suite `php artisan test
+  --compact` (242 tests / 1588 assertions), `npm run lint:check`,
+  `npm run format:check`, `npm run types:check`, and `npm run build` all
+  passed.
+- **Decisions:** Recent values are sourced from the same 50-transaction
+  query for both descriptions and merchants to avoid duplicate queries; the
+  8-item cap and "most recently used first" ordering match the catalog intent
+  of speeding up repeat entry without overwhelming the form.
+- **Blockers:** None.
+- **Uncommitted:** Backend, frontend, test, and documentation changes for
+  `P3-15` are complete and verified but not yet committed.
+- **Next:** Commit as `feat(transactions): add recent value suggestions
+  (P3-15)`, mark task #14 completed, then begin `P3-16` (Favorite accounts and
+  categories).
+
 ### 2026-06-13 05:05 WIB - `P3-13` Transaction Bookmarks
 
 - **Branch:** `feat/phase-3`.
