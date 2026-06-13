@@ -309,17 +309,17 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        return Inertia::render('transactions/CreateTransaction', $this->formProps());
+        return Inertia::render('transactions/CreateTransaction', $this->formProps($request));
     }
 
-    public function editDraft(Transaction $transaction): Response
+    public function editDraft(Request $request, Transaction $transaction): Response
     {
         $this->assertDraftBelongsToCurrentWorkspace($transaction);
         $this->authorize('view', $transaction);
 
-        return Inertia::render('transactions/CreateTransaction', $this->formProps($transaction));
+        return Inertia::render('transactions/CreateTransaction', $this->formProps($request, $transaction));
     }
 
     public function store(StoreTransactionRequest $request, RecordIncomeExpense $recordIncomeExpense, RecordTransfer $recordTransfer, EvaluateAmountExpression $evaluator): RedirectResponse
@@ -562,9 +562,14 @@ class TransactionController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function formProps(?Transaction $draft = null): array
+    private function formProps(Request $request, ?Transaction $draft = null): array
     {
         $workspace = $this->workspaceContext->get();
+
+        $bookmarkId = $request->query('bookmark_id');
+        $bookmark = is_numeric($bookmarkId)
+            ? $workspace->transactionBookmarks()->find((int) $bookmarkId)
+            : null;
 
         return [
             'accounts' => $workspace->accounts()->active()->orderBy('name')->get(['id', 'name', 'currency_code']),
@@ -574,7 +579,10 @@ class TransactionController extends Controller
             'timezone' => $workspace->timezone,
             'idempotencyKey' => (string) Str::uuid(),
             'draftId' => $draft?->id,
-            'initialData' => $draft?->draft_data,
+            'initialData' => $draft instanceof Transaction ? $draft->draft_data : $bookmark?->payload,
+            'bookmarks' => $workspace->transactionBookmarks()
+                ->orderBy('position')
+                ->get(['id', 'name', 'payload']),
         ];
     }
 

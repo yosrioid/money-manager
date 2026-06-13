@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DayNoteController;
 use App\Http\Controllers\MerchantController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\TransactionBookmarkController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +51,12 @@ Route::middleware(['auth', 'verified', 'workspace', 'workspace.lock'])->group(fu
     Route::patch('transaction-drafts/{transaction}', [TransactionController::class, 'updateDraft'])->name('transactions.drafts.update');
     Route::post('transactions/{transaction}/duplicate', [TransactionController::class, 'duplicate'])->name('transactions.duplicate');
     Route::get('transactions/{transaction}', [TransactionController::class, 'show'])->whereNumber('transaction')->name('transactions.show');
+
+    // Transaction bookmarks
+    Route::post('transaction-bookmarks', [TransactionBookmarkController::class, 'store'])->name('transaction-bookmarks.store');
+    Route::patch('transaction-bookmarks/{transaction_bookmark}', [TransactionBookmarkController::class, 'update'])->name('transaction-bookmarks.update');
+    Route::patch('transaction-bookmarks/{transaction_bookmark}/move', [TransactionBookmarkController::class, 'move'])->name('transaction-bookmarks.move');
+    Route::delete('transaction-bookmarks/{transaction_bookmark}', [TransactionBookmarkController::class, 'destroy'])->name('transaction-bookmarks.destroy');
 
     // Categories
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');

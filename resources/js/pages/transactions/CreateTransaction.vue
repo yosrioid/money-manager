@@ -21,6 +21,12 @@ interface TransactionDraftData {
     splits?: { category_id?: number; amount?: string }[];
 }
 
+interface BookmarkRow {
+    id: number;
+    name: string;
+    payload: TransactionDraftData;
+}
+
 const props = defineProps<{
     accounts: { id: number; name: string; currency_code: string }[];
     categories: { id: number; name: string; type: string }[];
@@ -30,6 +36,7 @@ const props = defineProps<{
     idempotencyKey: string;
     draftId: number | null;
     initialData: TransactionDraftData | null;
+    bookmarks: BookmarkRow[];
 }>();
 
 defineOptions({
@@ -70,6 +77,7 @@ defineOptions({
             :idempotency-key="idempotencyKey"
             :draft-id="props.draftId"
             :initial-data="props.initialData"
+            :bookmarks="props.bookmarks"
         />
     </div>
 </template>

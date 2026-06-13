@@ -138,6 +138,14 @@ class Workspace extends Model
         return $this->hasMany(DayNote::class);
     }
 
+    /**
+     * @return HasMany<TransactionBookmark, $this>
+     */
+    public function transactionBookmarks(): HasMany
+    {
+        return $this->hasMany(TransactionBookmark::class);
+    }
+
     public function isOwnedBy(User $user): bool
     {
         return $this->owner_id === $user->id;

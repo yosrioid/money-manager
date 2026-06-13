@@ -13,7 +13,8 @@ class MoveOrderedResourceRequest extends FormRequest
     {
         $resource = $this->route('account_group')
             ?? $this->route('account')
-            ?? $this->route('category');
+            ?? $this->route('category')
+            ?? $this->route('transaction_bookmark');
 
         return $resource instanceof Model
             && $this->user()->can('update', $resource);

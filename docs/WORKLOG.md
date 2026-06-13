@@ -50,6 +50,51 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 05:05 WIB - `P3-13` Transaction Bookmarks
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-13`.
+- **Status:** Completed.
+- **Completed:** Added a workspace-scoped, reorderable `transaction_bookmarks`
+  table (`workspace_id`, `name`, JSON `payload`, `position`, indexed on
+  `[workspace_id, position]`), `TransactionBookmark` model/policy/factory
+  following the `AccountGroup` pattern, and `Workspace::transactionBookmarks()`.
+  Added `TransactionBookmarkController` with `transaction-bookmarks.store`
+  (validated via `StoreTransactionBookmarkRequest`, which extends
+  `StoreTransactionDraftRequest` and adds `name`; the remaining validated
+  fields become the JSON `payload`, mirroring `Transaction::draft_data`),
+  `.update` (rename only), `.move` (reuses the existing
+  `MoveOrderedResource`/`MoveOrderedResourceRequest`, extended to recognize
+  the `transaction_bookmark` route parameter), and `.destroy`. The transaction
+  entry form (`transactions/CreateTransaction.vue` /
+  `TransactionForm.vue`) now lists the workspace's bookmarks with "Use"
+  (a link to `transactions.create?bookmark_id=`), a rename field/button,
+  up/down reorder buttons, and a delete button, plus a "Save as bookmark"
+  name field and button that posts the current form's `FormData` (the same
+  approach as the existing "Save draft" action). `TransactionController::create`
+  / `editDraft` / `formProps()` now accept the request, resolve
+  `?bookmark_id=` to a workspace-owned bookmark, and use its `payload` as
+  `initialData` when there is no draft (reusing the draft-resume prefill
+  mechanism), plus return the ordered `bookmarks` list.
+- **Verification:** New `tests/Feature/TransactionBookmarkTest.php` (6 tests,
+  42 assertions) covers: saving the current form as a bookmark (payload
+  excludes `name`, position starts at 0); bookmarks appearing on
+  `transactions.create` and `?bookmark_id=` prefilling `initialData`;
+  renaming; reordering via move; deletion; and that another workspace's
+  bookmark cannot be renamed, moved, or deleted (403). Full suite: 240 Pest
+  tests / 1562 assertions, PHPStan/Larastan (0 errors), Pint, ESLint,
+  Prettier, TypeScript checks (`vue-tsc`), and a production build all
+  passed.
+- **Decisions:** Scoped "edited" (from the catalog acceptance text "saved,
+  reordered, edited, and reused") to renaming only — the bookmark's payload
+  is fixed at save time and replaced by deleting and re-saving, keeping this
+  slice minimal and consistent with existing draft/duplicate infrastructure.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-13` changes are implemented but not yet committed
+  on `feat/phase-3`.
+- **Next:** Commit `P3-13` as `feat(transactions): add transaction bookmarks
+  (P3-13)`, then continue with `P3-14` (Payment profiles).
+
 ### 2026-06-13 04:10 WIB - `P3-12` Bulk Selection
 
 - **Branch:** `feat/phase-3`.
