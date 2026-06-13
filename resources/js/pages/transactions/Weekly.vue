@@ -7,6 +7,7 @@ import TransactionViewNav from '@/components/TransactionViewNav.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { usePeriodNavigation } from '@/composables/usePeriodNavigation';
 import { day, index, weekly } from '@/routes/transactions';
 
 interface DaySummary {
@@ -22,6 +23,7 @@ const props = defineProps<{
     totals: Record<string, Record<string, number>>;
     previousWeek: string;
     nextWeek: string;
+    navigationShortcutsEnabled: boolean;
 }>();
 
 defineOptions({
@@ -83,6 +85,12 @@ const weekRangeLabel = computed(() => {
 
 const currencies = (record: Record<string, number>): string[] =>
     Object.keys(record);
+
+usePeriodNavigation({
+    enabled: () => props.navigationShortcutsEnabled,
+    previousHref: () => weekly({ query: { week: props.previousWeek } }).url,
+    nextHref: () => weekly({ query: { week: props.nextWeek } }).url,
+});
 </script>
 
 <template>

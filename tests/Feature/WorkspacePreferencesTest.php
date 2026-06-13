@@ -38,6 +38,7 @@ test('workspace owner can update workspace name and preferences', function () {
             'month_start_day' => 1,
             'adjust_month_for_weekend' => false,
             'application_lock_minutes' => 15,
+            'navigation_shortcuts_enabled' => true,
         ])
         ->assertRedirect(route('workspace.edit'));
 
@@ -75,6 +76,7 @@ test('workspace update rejects invalid currency code', function () {
             'month_start_day' => 1,
             'adjust_month_for_weekend' => false,
             'application_lock_minutes' => 0,
+            'navigation_shortcuts_enabled' => true,
         ])
         ->assertSessionHasErrors('default_currency');
 });
@@ -94,6 +96,7 @@ test('workspace update rejects invalid timezone', function () {
             'month_start_day' => 1,
             'adjust_month_for_weekend' => false,
             'application_lock_minutes' => 0,
+            'navigation_shortcuts_enabled' => true,
         ])
         ->assertSessionHasErrors('timezone');
 });
@@ -118,6 +121,7 @@ test('workspace preferences are isolated between workspaces', function () {
             'month_start_day' => 1,
             'adjust_month_for_weekend' => false,
             'application_lock_minutes' => 0,
+            'navigation_shortcuts_enabled' => true,
         ]);
 
     expect($otherWorkspace->fresh()->default_currency)->toBe('EUR');
@@ -138,6 +142,7 @@ test('workspace application lock only accepts supported inactivity periods', fun
             'month_start_day' => 1,
             'adjust_month_for_weekend' => false,
             'application_lock_minutes' => 7,
+            'navigation_shortcuts_enabled' => true,
         ])
         ->assertSessionHasErrors('application_lock_minutes');
 });

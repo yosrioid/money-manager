@@ -21,6 +21,7 @@ function basePreferencesPayload(): array
         'month_start_day' => 1,
         'adjust_month_for_weekend' => false,
         'application_lock_minutes' => 0,
+        'navigation_shortcuts_enabled' => true,
     ];
 }
 

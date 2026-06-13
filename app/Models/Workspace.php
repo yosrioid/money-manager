@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'adjust_month_for_weekend',
     'application_lock_minutes',
     'entry_form_fields',
+    'navigation_shortcuts_enabled',
 ])]
 class Workspace extends Model
 {
@@ -65,6 +66,7 @@ class Workspace extends Model
             'adjust_month_for_weekend' => 'boolean',
             'application_lock_minutes' => 'integer',
             'entry_form_fields' => 'array',
+            'navigation_shortcuts_enabled' => 'boolean',
         ];
     }
 

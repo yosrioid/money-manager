@@ -32,6 +32,7 @@ class WorkspaceController extends Controller
                 'month_start_day',
                 'adjust_month_for_weekend',
                 'application_lock_minutes',
+                'navigation_shortcuts_enabled',
             ]),
             'entryFormFields' => $workspace->entryFormFields(),
             'currencies' => Currency::query()->orderBy('code')->get(['code', 'name', 'symbol']),

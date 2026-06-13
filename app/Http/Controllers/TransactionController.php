@@ -165,6 +165,7 @@ class TransactionController extends Controller
             'notes' => $notes,
             'previousMonth' => $month->copy()->subMonth()->format('Y-m'),
             'nextMonth' => $month->copy()->addMonth()->format('Y-m'),
+            'navigationShortcutsEnabled' => $workspace->navigation_shortcuts_enabled,
         ]);
     }
 
@@ -195,6 +196,7 @@ class TransactionController extends Controller
             'totals' => $totals,
             'previousWeek' => $weekStart->copy()->subDays(7)->toDateString(),
             'nextWeek' => $weekStart->copy()->addDays(7)->toDateString(),
+            'navigationShortcutsEnabled' => $workspace->navigation_shortcuts_enabled,
         ]);
     }
 
@@ -218,6 +220,7 @@ class TransactionController extends Controller
             'months' => $months,
             'previousYear' => $year->copy()->subYear()->format('Y'),
             'nextYear' => $year->copy()->addYear()->format('Y'),
+            'navigationShortcutsEnabled' => $workspace->navigation_shortcuts_enabled,
         ]);
     }
 
@@ -274,6 +277,7 @@ class TransactionController extends Controller
             'accountMovements' => $accountMovements,
             'previousMonth' => $month->copy()->subMonth()->format('Y-m'),
             'nextMonth' => $month->copy()->addMonth()->format('Y-m'),
+            'navigationShortcutsEnabled' => $workspace->navigation_shortcuts_enabled,
         ]);
     }
 
@@ -307,6 +311,7 @@ class TransactionController extends Controller
             'note' => $note?->note,
             'previousDate' => $date->copy()->subDay()->toDateString(),
             'nextDate' => $date->copy()->addDay()->toDateString(),
+            'navigationShortcutsEnabled' => $workspace->navigation_shortcuts_enabled,
         ]);
     }
 

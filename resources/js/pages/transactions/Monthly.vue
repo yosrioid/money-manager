@@ -7,6 +7,7 @@ import TransactionViewNav from '@/components/TransactionViewNav.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { usePeriodNavigation } from '@/composables/usePeriodNavigation';
 import { calendar, index, monthly } from '@/routes/transactions';
 
 interface MonthSummary {
@@ -21,6 +22,7 @@ const props = defineProps<{
     months: Record<string, MonthSummary>;
     previousYear: string;
     nextYear: string;
+    navigationShortcutsEnabled: boolean;
 }>();
 
 defineOptions({
@@ -56,6 +58,12 @@ const cells = computed<MonthCell[]>(() => {
     }
 
     return result;
+});
+
+usePeriodNavigation({
+    enabled: () => props.navigationShortcutsEnabled,
+    previousHref: () => monthly({ query: { year: props.previousYear } }).url,
+    nextHref: () => monthly({ query: { year: props.nextYear } }).url,
 });
 
 const currencies = (record: Record<string, number>): string[] =>

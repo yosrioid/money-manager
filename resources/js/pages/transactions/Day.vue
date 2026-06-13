@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { usePeriodNavigation } from '@/composables/usePeriodNavigation';
 import { day, index } from '@/routes/transactions';
 
 interface Tag {
@@ -44,6 +45,7 @@ const props = defineProps<{
     note: string | null;
     previousDate: string;
     nextDate: string;
+    navigationShortcutsEnabled: boolean;
 }>();
 
 defineOptions({
@@ -66,6 +68,12 @@ const typeLabel = (value: string): string =>
         .split('_')
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join(' ');
+
+usePeriodNavigation({
+    enabled: () => props.navigationShortcutsEnabled,
+    previousHref: () => day({ query: { date: props.previousDate } }).url,
+    nextHref: () => day({ query: { date: props.nextDate } }).url,
+});
 </script>
 
 <template>

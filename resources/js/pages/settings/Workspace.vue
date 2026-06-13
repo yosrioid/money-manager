@@ -27,6 +27,7 @@ interface WorkspaceData {
     month_start_day: number;
     adjust_month_for_weekend: boolean;
     application_lock_minutes: number;
+    navigation_shortcuts_enabled: boolean;
 }
 
 const props = defineProps<{
@@ -352,6 +353,30 @@ const moveEntryFormField = (index: number, direction: 'up' | 'down') => {
                     :value="field"
                 />
                 <InputError class="mt-2" :message="errors.entry_form_fields" />
+            </div>
+
+            <div class="flex items-center gap-2">
+                <input
+                    type="hidden"
+                    name="navigation_shortcuts_enabled"
+                    value="0"
+                />
+                <input
+                    id="navigation_shortcuts_enabled"
+                    name="navigation_shortcuts_enabled"
+                    type="checkbox"
+                    :checked="workspace.navigation_shortcuts_enabled"
+                    value="1"
+                    class="h-4 w-4 rounded border-gray-300"
+                />
+                <Label for="navigation_shortcuts_enabled"
+                    >Enable swipe and arrow-key navigation between
+                    periods</Label
+                >
+                <InputError
+                    class="mt-2"
+                    :message="errors.navigation_shortcuts_enabled"
+                />
             </div>
 
             <div class="flex items-center gap-4">

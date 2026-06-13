@@ -7,6 +7,7 @@ import TransactionViewNav from '@/components/TransactionViewNav.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { usePeriodNavigation } from '@/composables/usePeriodNavigation';
 import { index, summary } from '@/routes/transactions';
 
 interface AccountMovement {
@@ -29,6 +30,7 @@ const props = defineProps<{
     accountMovements: AccountMovement[];
     previousMonth: string;
     nextMonth: string;
+    navigationShortcutsEnabled: boolean;
 }>();
 
 defineOptions({
@@ -51,6 +53,12 @@ const monthLabel = computed(() =>
 
 const currencies = (record: Record<string, number>): string[] =>
     Object.keys(record);
+
+usePeriodNavigation({
+    enabled: () => props.navigationShortcutsEnabled,
+    previousHref: () => summary({ query: { month: props.previousMonth } }).url,
+    nextHref: () => summary({ query: { month: props.nextMonth } }).url,
+});
 </script>
 
 <template>
