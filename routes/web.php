@@ -43,6 +43,8 @@ Route::middleware(['auth', 'verified', 'workspace', 'workspace.lock'])->group(fu
         ->name('transactions.day-notes.destroy');
     Route::get('transactions/create', [TransactionController::class, 'create'])->name('transactions.create');
     Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');
+    Route::post('transactions/bulk-duplicate', [TransactionController::class, 'bulkDuplicate'])->name('transactions.bulk-duplicate');
+    Route::get('transaction-drafts', [TransactionController::class, 'drafts'])->name('transactions.drafts.index');
     Route::post('transaction-drafts', [TransactionController::class, 'storeDraft'])->name('transactions.drafts.store');
     Route::get('transaction-drafts/{transaction}/edit', [TransactionController::class, 'editDraft'])->name('transactions.drafts.edit');
     Route::patch('transaction-drafts/{transaction}', [TransactionController::class, 'updateDraft'])->name('transactions.drafts.update');

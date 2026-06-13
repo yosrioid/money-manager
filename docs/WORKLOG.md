@@ -50,6 +50,53 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 04:10 WIB - `P3-12` Bulk Selection
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-12`.
+- **Status:** Completed.
+- **Completed:** Confirmed with the user that, since posted transaction tags
+  (`TransactionTag::guardPostedTransaction()`) and ledger entries are
+  immutable, the only "allowed... operation" that can safely apply to
+  multiple selected transactions is duplicate-as-draft. Added checkboxes to
+  each transaction card on `transactions/Index.vue` and a bulk action bar
+  (shown when one or more are selected) with "Duplicate as drafts" and
+  "Clear selection". Added `POST transactions/bulk-duplicate`
+  (`transactions.bulk-duplicate`), which validates `transaction_ids` (array,
+  min 1, integers), loads them scoped to the current workspace via
+  `$workspace->transactions()->whereIn('id', ...)` (ids outside the
+  workspace are silently dropped), authorizes `view` on each, and calls the
+  existing `DuplicateTransaction::duplicate()` once per transaction. A
+  single resulting draft redirects to `transactions.drafts.edit` (matching
+  the existing single-transaction duplicate flow); multiple drafts redirect
+  to a new `GET transaction-drafts` (`transactions.drafts.index`) page.
+  Added `TransactionController::drafts()` and a new minimal
+  `transactions/Drafts.vue` page listing the workspace's draft transactions
+  (description, type badge, last-updated time, "Resume draft" link to
+  `transactions.drafts.edit`) — this was needed so multi-select duplicates
+  are discoverable, since no drafts list previously existed.
+- **Verification:** New `tests/Feature/TransactionBulkActionsTest.php` (5
+  tests, 25 assertions) covers: single-selection duplicate redirects to the
+  new draft's edit page; multi-selection duplicate creates one draft per
+  transaction and redirects to the drafts index; the drafts index lists
+  draft transactions with the correct id/description; a transaction from
+  another workspace cannot be bulk-duplicated (redirects to
+  `transactions.index`, no draft created); and an empty `transaction_ids`
+  array is rejected by validation. Full suite: 234 Pest tests / 1520
+  assertions, PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript
+  checks (`vue-tsc`), and a production build all passed.
+- **Decisions:** New routes were ordered so `transactions/bulk-duplicate`
+  (POST) and `transaction-drafts` (GET, the new drafts index) are registered
+  before `transaction-drafts/{transaction}/edit` and
+  `transactions/{transaction}` — no collisions occur since they differ in
+  HTTP method or path segment count, but ordering keeps the route list
+  readable and consistent with the existing static-before-wildcard
+  convention.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-12` changes are ready to commit on `feat/phase-3`.
+- **Next:** Commit `P3-12`, then continue Phase 3 with `P3-13` (transaction
+  bookmarks).
+
 ### 2026-06-13 03:20 WIB - `P3-11` Transaction Detail
 
 - **Branch:** `feat/phase-3`.

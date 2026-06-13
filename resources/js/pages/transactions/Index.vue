@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { Head, InfiniteScroll, Link, router } from '@inertiajs/vue3';
-import { Plus, Search, X } from '@lucide/vue';
+import { Copy, Plus, Search, X } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import TransactionViewNav from '@/components/TransactionViewNav.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import {
+    bulkDuplicate,
     create as createTransaction,
     index,
     show,
@@ -213,6 +215,34 @@ const groupedTransactions = computed(() => {
 
 const formatDate = (date: string): string =>
     dateFormatter.format(new Date(`${date}T00:00:00`));
+
+const selectedIds = ref<Set<number>>(new Set());
+
+const isSelected = (id: number): boolean => selectedIds.value.has(id);
+
+const toggleSelected = (id: number): void => {
+    const next = new Set(selectedIds.value);
+
+    if (next.has(id)) {
+        next.delete(id);
+    } else {
+        next.add(id);
+    }
+
+    selectedIds.value = next;
+};
+
+const clearSelection = (): void => {
+    selectedIds.value = new Set();
+};
+
+const duplicateSelected = (): void => {
+    router.post(
+        bulkDuplicate().url,
+        { transaction_ids: Array.from(selectedIds.value) },
+        { onSuccess: clearSelection },
+    );
+};
 </script>
 
 <template>
@@ -381,6 +411,23 @@ const formatDate = (date: string): string =>
             </div>
         </form>
 
+        <div
+            v-if="selectedIds.size > 0"
+            class="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/50 px-3 py-2"
+        >
+            <p class="text-sm text-muted-foreground">
+                {{ selectedIds.size }} selected
+            </p>
+            <div class="flex flex-wrap gap-2">
+                <Button size="sm" @click="duplicateSelected">
+                    <Copy /> Duplicate as drafts
+                </Button>
+                <Button variant="ghost" size="sm" @click="clearSelection">
+                    <X /> Clear selection
+                </Button>
+            </div>
+        </div>
+
         <InfiniteScroll
             v-if="groupedTransactions.length"
             data="transactions"
@@ -403,20 +450,34 @@ const formatDate = (date: string): string =>
                     >
                         <CardHeader>
                             <div class="flex items-start justify-between gap-3">
-                                <div class="space-y-1">
-                                    <CardTitle>
-                                        <Link
-                                            :href="show(transaction.id)"
-                                            class="hover:underline"
-                                            >{{ transaction.description }}</Link
+                                <div class="flex items-start gap-3">
+                                    <Checkbox
+                                        :model-value="
+                                            isSelected(transaction.id)
+                                        "
+                                        class="mt-1"
+                                        :aria-label="`Select ${transaction.description}`"
+                                        @update:model-value="
+                                            toggleSelected(transaction.id)
+                                        "
+                                    />
+                                    <div class="space-y-1">
+                                        <CardTitle>
+                                            <Link
+                                                :href="show(transaction.id)"
+                                                class="hover:underline"
+                                                >{{
+                                                    transaction.description
+                                                }}</Link
+                                            >
+                                        </CardTitle>
+                                        <p
+                                            v-if="transaction.merchant"
+                                            class="text-sm text-muted-foreground"
                                         >
-                                    </CardTitle>
-                                    <p
-                                        v-if="transaction.merchant"
-                                        class="text-sm text-muted-foreground"
-                                    >
-                                        {{ transaction.merchant.name }}
-                                    </p>
+                                            {{ transaction.merchant.name }}
+                                        </p>
+                                    </div>
                                 </div>
                                 <div
                                     class="flex flex-wrap items-center justify-end gap-2"

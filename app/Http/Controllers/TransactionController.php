@@ -444,6 +444,63 @@ class TransactionController extends Controller
         return to_route('transactions.drafts.edit', $draft);
     }
 
+    public function bulkDuplicate(Request $request, DuplicateTransaction $duplicateTransaction): RedirectResponse
+    {
+        $workspace = $this->workspaceContext->get();
+        $user = $request->user();
+
+        abort_unless($user instanceof User, 401);
+
+        $validated = $request->validate([
+            'transaction_ids' => ['required', 'array', 'min:1'],
+            'transaction_ids.*' => ['integer'],
+        ]);
+
+        $transactions = $workspace->transactions()->whereIn('id', $validated['transaction_ids'])->get();
+
+        foreach ($transactions as $transaction) {
+            $this->authorize('view', $transaction);
+        }
+
+        if ($transactions->isEmpty()) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('No transactions were selected.')]);
+
+            return to_route('transactions.index');
+        }
+
+        $drafts = $transactions->map(fn (Transaction $transaction): Transaction => $duplicateTransaction->duplicate($transaction, $user));
+
+        if ($drafts->count() === 1) {
+            Inertia::flash('toast', ['type' => 'success', 'message' => __('Transaction duplicated as a draft.')]);
+
+            return to_route('transactions.drafts.edit', $drafts->first());
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __(':count transactions duplicated as drafts.', ['count' => $drafts->count()])]);
+
+        return to_route('transactions.drafts.index');
+    }
+
+    public function drafts(): Response
+    {
+        $workspace = $this->workspaceContext->get();
+
+        $drafts = $workspace->transactions()
+            ->where('status', TransactionStatus::Draft)
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->get();
+
+        return Inertia::render('transactions/Drafts', [
+            'drafts' => $drafts->map(fn (Transaction $draft): array => [
+                'id' => $draft->id,
+                'type' => $draft->type,
+                'description' => $draft->description,
+                'updated_at' => $draft->updated_at?->toIso8601String(),
+            ])->all(),
+        ]);
+    }
+
     public function show(Transaction $transaction): Response
     {
         abort_unless($transaction->workspace_id === $this->workspaceContext->get()->id, 404);
