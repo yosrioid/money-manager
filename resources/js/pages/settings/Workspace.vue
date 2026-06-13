@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
+import { ArrowDown, ArrowUp } from '@lucide/vue';
+import { ref } from 'vue';
 import WorkspaceController from '@/actions/App/Http/Controllers/Settings/WorkspaceController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -25,11 +27,13 @@ interface WorkspaceData {
     month_start_day: number;
     adjust_month_for_weekend: boolean;
     application_lock_minutes: number;
+    navigation_shortcuts_enabled: boolean;
 }
 
-defineProps<{
+const props = defineProps<{
     workspace: WorkspaceData;
     currencies: Currency[];
+    entryFormFields: string[];
 }>();
 
 defineOptions({
@@ -66,6 +70,55 @@ const applicationLockOptions = [
     { value: 30, label: 'After 30 minutes' },
     { value: 60, label: 'After 1 hour' },
 ];
+
+const entryFormFieldLabels: Record<string, string> = {
+    merchant: 'Merchant or recipient',
+    memo: 'Memo and notes',
+    tags: 'Tags',
+};
+
+const allEntryFormFieldKeys = ['merchant', 'memo', 'tags'];
+
+const entryFormFieldRows = ref(
+    allEntryFormFieldKeys
+        .slice()
+        .sort((a, b) => {
+            const indexA = props.entryFormFields.indexOf(a);
+            const indexB = props.entryFormFields.indexOf(b);
+
+            if (indexA === -1 && indexB === -1) {
+                return 0;
+            }
+
+            if (indexA === -1) {
+                return 1;
+            }
+
+            if (indexB === -1) {
+                return -1;
+            }
+
+            return indexA - indexB;
+        })
+        .map((key) => ({
+            key,
+            visible: props.entryFormFields.includes(key),
+        })),
+);
+
+const visibleEntryFormFields = () =>
+    entryFormFieldRows.value.filter((row) => row.visible).map((row) => row.key);
+
+const moveEntryFormField = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+    if (targetIndex < 0 || targetIndex >= entryFormFieldRows.value.length) {
+        return;
+    }
+
+    const rows = entryFormFieldRows.value;
+    [rows[index], rows[targetIndex]] = [rows[targetIndex], rows[index]];
+};
 </script>
 
 <template>
@@ -247,6 +300,82 @@ const applicationLockOptions = [
                 <InputError
                     class="mt-2"
                     :message="errors.application_lock_minutes"
+                />
+            </div>
+
+            <div class="grid gap-3">
+                <Label>Transaction entry form fields</Label>
+                <p class="text-sm text-muted-foreground">
+                    Choose which optional fields appear on the transaction entry
+                    form and in what order.
+                </p>
+                <div class="grid gap-2">
+                    <div
+                        v-for="(row, index) in entryFormFieldRows"
+                        :key="row.key"
+                        class="flex items-center gap-3 rounded-md border p-3"
+                    >
+                        <label class="flex flex-1 items-center gap-2 text-sm">
+                            <input
+                                v-model="row.visible"
+                                type="checkbox"
+                                class="size-4 rounded border-input"
+                            />
+                            {{ entryFormFieldLabels[row.key] }}
+                        </label>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            title="Move up"
+                            :disabled="index === 0"
+                            @click="moveEntryFormField(index, 'up')"
+                        >
+                            <ArrowUp />
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            title="Move down"
+                            :disabled="index === entryFormFieldRows.length - 1"
+                            @click="moveEntryFormField(index, 'down')"
+                        >
+                            <ArrowDown />
+                        </Button>
+                    </div>
+                </div>
+                <input
+                    v-for="field in visibleEntryFormFields()"
+                    :key="field"
+                    type="hidden"
+                    name="entry_form_fields[]"
+                    :value="field"
+                />
+                <InputError class="mt-2" :message="errors.entry_form_fields" />
+            </div>
+
+            <div class="flex items-center gap-2">
+                <input
+                    type="hidden"
+                    name="navigation_shortcuts_enabled"
+                    value="0"
+                />
+                <input
+                    id="navigation_shortcuts_enabled"
+                    name="navigation_shortcuts_enabled"
+                    type="checkbox"
+                    :checked="workspace.navigation_shortcuts_enabled"
+                    value="1"
+                    class="h-4 w-4 rounded border-gray-300"
+                />
+                <Label for="navigation_shortcuts_enabled"
+                    >Enable swipe and arrow-key navigation between
+                    periods</Label
+                >
+                <InputError
+                    class="mt-2"
+                    :message="errors.navigation_shortcuts_enabled"
                 />
             </div>
 

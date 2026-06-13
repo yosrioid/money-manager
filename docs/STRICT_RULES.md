@@ -35,7 +35,9 @@ approval before performing an action that violates or bypasses these rules.
   branch.
 - All changes must reach `main` through a reviewed pull request.
 - Do not merge a pull request without explicit user approval.
-- Keep branches focused on one feature, bug fix, or engineering concern.
+- Keep branches focused on one phase, bug fix, or engineering concern. A phase
+  branch accumulates the phase's feature IDs as separate commits and is merged
+  through a single pull request once the phase is complete.
 - Do not rewrite shared branch history unless the user explicitly requests it.
 - When rewriting an approved shared branch, use `--force-with-lease`; never use
   plain `--force`.

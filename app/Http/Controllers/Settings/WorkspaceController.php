@@ -32,7 +32,9 @@ class WorkspaceController extends Controller
                 'month_start_day',
                 'adjust_month_for_weekend',
                 'application_lock_minutes',
+                'navigation_shortcuts_enabled',
             ]),
+            'entryFormFields' => $workspace->entryFormFields(),
             'currencies' => Currency::query()->orderBy('code')->get(['code', 'name', 'symbol']),
         ]);
     }
@@ -43,7 +45,10 @@ class WorkspaceController extends Controller
 
         $this->authorize('update', $workspace);
 
-        $workspace->update($request->validated());
+        $validated = $request->validated();
+        $validated['entry_form_fields'] = $validated['entry_form_fields'] ?? [];
+
+        $workspace->update($validated);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Workspace settings updated.')]);
 

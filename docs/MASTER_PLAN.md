@@ -63,7 +63,8 @@ Every feature follows this lifecycle:
 
 1. `Planned`: cataloged, but no implementation branch exists.
 2. `Ready`: dependencies, acceptance criteria, and design decisions are clear.
-3. `In Progress`: active implementation exists on a feature branch.
+3. `In Progress`: active implementation exists as a commit on the phase
+   branch.
 4. `In Review`: PR is open and all required documentation is included.
 5. `Done`: merged, acceptance criteria met, tests pass, and progress updated.
 6. `Deferred`: intentionally postponed with a documented reason.
@@ -174,7 +175,7 @@ phase. Never hide quality or scope reductions inside an estimate update.
 | Multi-currency precision loss                | Incorrect balances               | Decimal rates, original/base values, reconciliation                             | Phase 5                   |
 | Unsafe backup or restore                     | Data loss or duplication         | Versioned format, preview, transactional restore, rehearsal                     | Phases 6 and 8            |
 | Offline or sync conflicts                    | Silent financial inconsistency   | Offline drafts only, optimistic concurrency, explicit conflicts                 | Phase 7                   |
-| Large PRs and hidden coupling                | Review defects and slow delivery | Vertical slices, feature IDs, phase gates, PR size discipline                   | Every PR                  |
+| Large PRs and hidden coupling                | Review defects and slow delivery | One feature per commit on the phase branch, feature IDs, phase gates, focused commit review | Every phase PR            |
 | Dependency or provider changes               | Security and schedule risk       | Explicit approval, pinned actions, audits, documented migration                 | Every dependency change   |
 
 ## Phase 0 - Engineering Foundation
@@ -582,8 +583,11 @@ Before implementation starts, add or confirm:
 
 ## Pull Request Planning Rules
 
-- Prefer one independently reviewable vertical slice per PR.
-- A PR must identify its feature IDs in the description.
+- One pull request per phase, opened once the phase's exit gate is met.
+- Implement each feature ID as one independently reviewable commit on the
+  phase branch (a vertical slice), so the phase PR remains reviewable commit
+  by commit.
+- A PR must identify all feature IDs it covers in the description.
 - Avoid combining multiple phases in one PR.
 - Foundation PRs may prepare contracts, but must not claim later feature
   completion.

@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'icon',
     'position',
     'is_visible',
+    'is_favorite',
     'archived_at',
 ])]
 class Category extends Model
@@ -35,6 +36,7 @@ class Category extends Model
         return [
             'type' => CategoryType::class,
             'is_visible' => 'boolean',
+            'is_favorite' => 'boolean',
             'archived_at' => 'datetime',
         ];
     }

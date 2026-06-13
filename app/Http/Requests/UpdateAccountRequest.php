@@ -37,6 +37,7 @@ class UpdateAccountRequest extends FormRequest
             ],
             'description' => ['nullable', 'string', 'max:500'],
             'is_visible' => ['sometimes', 'boolean'],
+            'is_favorite' => ['sometimes', 'boolean'],
             'include_in_total' => ['sometimes', 'boolean'],
         ];
     }

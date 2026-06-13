@@ -50,6 +50,833 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 14:05 WIB - PR #14 Review Findings Resolved
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-02`, `P3-03`, `P3-04`, `P3-05`, `P3-07`, `P3-08`,
+  `P1-16`, `P1-17`, `P1-18`.
+- **Status:** In review.
+- **Completed:** Addressed all 5 findings from `yosrioid`'s review of PR #14:
+  (1) `SummarizeTransactionPeriod::forRange()` now excludes `Replaced`
+  transactions and buckets income/expense by the account entry's sign so
+  reversal/replacement pairs net to zero instead of double-counting, with new
+  regression tests covering calendar, weekly, monthly, and summary views plus
+  `forRange()` itself; (2) calendar, weekly, monthly, and summary views now
+  honor the workspace's `first_day_of_week` (`P1-16`), `month_start_day`
+  (`P1-17`), and `adjust_month_for_weekend` (`P1-18`) preferences via new
+  `SummarizeTransactionPeriod::weekStart()` and `billingMonthStart()` helpers
+  (weekend-adjusted start days shift to the preceding Friday, per user
+  decision); (3) formally split `P3-05`'s acceptance summary in
+  `docs/FEATURE_CATALOG.md` so the budget-comparison portion is reassigned to
+  `P4-06`, per the documented scope-change process, with `docs/PROGRESS.md`
+  updated accordingly (user-approved); (4) `from`/`to`/`month` query
+  parameters are now strictly validated with `checkdate()` and rejected
+  instead of silently normalizing or risking a 500; (5) numeric transaction
+  search now parses input as an integer instead of `float`, avoiding
+  precision loss above 2^53.
+- **Verification:** `composer ci:check` (272 Pest tests / 1933 assertions, 13
+  Vitest tests, PHPStan 0 errors, Pint, ESLint, Prettier, TypeScript,
+  production build), `npm run test:e2e` (2/2), `composer audit` and
+  `npm audit --audit-level=high` (0 vulnerabilities), and
+  `bash scripts/check-governance.sh` all passed.
+- **Decisions:** Reversal/replacement nets are shown as gross income and
+  expense activity that sums to zero net, matching
+  `CalculateAccountBalance::calculateAsOf()`'s exclusion of `Replaced`
+  transactions. Weekend-adjusted `month_start_day` boundaries always shift to
+  the preceding Friday (single consistent direction).
+- **Blockers:** None.
+- **Uncommitted:** All review-fix changes are uncommitted on `feat/phase-3`.
+- **Next:** Review the diff with the user, then commit and push to PR #14 only
+  after explicit approval.
+
+### 2026-06-13 10:28 WIB - Phase 3 Pull Request Opened
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-01` to `P3-21`.
+- **Status:** In review.
+- **Completed:** Pushed the complete Phase 3 branch and opened
+  [PR #14](https://github.com/yosrioid/money-manager/pull/14) against `main`.
+  Updated `docs/PROGRESS.md` so the current milestone, delivery packages,
+  catalog range, and individual Phase 3 features accurately show `In Review`.
+- **Verification:** Pre-push final gates passed: `composer ci:check` (257 Pest
+  tests / 1768 assertions, 13 Vitest tests, PHPStan 0 errors, Pint, ESLint,
+  Prettier, TypeScript, Wayfinder generation, and production build),
+  `npm run test:e2e` (2/2 Chromium and mobile Safari), Composer/npm security
+  audits, governance, and `git diff --check`.
+- **Decisions:** Phase 3 remains not `Done` until PR #14 is reviewed, CI passes,
+  the exit gate is confirmed, and the branch is merged.
+- **Blockers:** None.
+- **Uncommitted:** This PR-status documentation update only.
+- **Next:** Commit and push the PR-status documentation, then verify PR #14 CI
+  and review state without merging.
+
+### 2026-06-13 10:26 WIB - Phase 3 Ready For Review
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-01` to `P3-21`.
+- **Status:** Ready for review.
+- **Completed:** Completed final Phase 3 audit and committed the remaining
+  focused slices: `P3-20` navigation preferences (`d85c591`), `P3-21`
+  statistics inclusion (`c6138b2`), and the isolated loopback browser-test
+  server (`45c16bf`). All approved Phase 3 features are implemented on the
+  phase branch.
+- **Verification:** `composer ci:check` passed with 257 Pest tests / 1768
+  assertions, 13 Vitest tests, PHPStan 0 errors, Pint, ESLint, Prettier,
+  TypeScript, Wayfinder generation, and production build. `npm run test:e2e`
+  passed 2/2 on Chromium and mobile Safari using `127.0.0.1:8011`. Composer
+  and npm security audits reported no vulnerabilities; governance and
+  `git diff --check` passed.
+- **Decisions:** Phase 3 remains `In Progress` in `docs/PROGRESS.md` until its
+  pull request is open; it becomes `In Review` only after the PR exists.
+- **Blockers:** None.
+- **Uncommitted:** This review-ready documentation checkpoint only.
+- **Next:** Commit this checkpoint, push `feat/phase-3`, open the Phase 3 pull
+  request, then record the PR and `In Review` status.
+
+### 2026-06-13 10:21 WIB - Playwright Uses Isolated Loopback Server
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** Engineering only, supporting the Phase 3 browser gate.
+- **Status:** Completed.
+- **Completed:** Changed Playwright's default target from the environment-
+  dependent `money-manager.test` hostname to `http://127.0.0.1:8011`.
+  Playwright now automatically starts an isolated `php artisan serve` process
+  when `APP_URL` is not explicitly provided; callers can still override the
+  target through `APP_URL`.
+- **Verification:** `npm run test:e2e` passed 2/2 on Chromium and mobile Safari.
+  `npm run types:check`, `npm run lint:check`, Prettier config check, and
+  `git diff --check` passed.
+- **Decisions:** Keep browser tests self-contained by default instead of
+  depending on Laravel Herd DNS or a manually running development server.
+- **Blockers:** None.
+- **Uncommitted:** The Playwright configuration change and all pending Phase 3
+  work remain uncommitted on `feat/phase-3`.
+- **Next:** Run final governance checks and prepare the Phase 3 branch for
+  review when requested.
+
+### 2026-06-13 10:14 WIB - `P3-21` Statistics Inclusion Implemented
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-21`.
+- **Status:** Completed.
+- **Completed:** Added an `include_in_statistics` boolean to transactions,
+  enabled by default; a validated, workspace-scoped PATCH endpoint; an atomic
+  row-locked domain action; audit logging; and a transaction-detail control.
+  Excluded transactions remain in history/detail and ledger-derived account
+  balances, while period statistics omit them. Updated progress to record that
+  all Phase 3 features are implemented on the branch.
+- **Verification:** `composer ci:check` passed with PHPStan reporting 0 errors,
+  257 Pest tests / 1768 assertions, 13 Vitest tests, Pint, ESLint, Prettier,
+  TypeScript, Wayfinder generation, and production build. Focused `P3-21`,
+  lifecycle, summary, calendar, and detail suites passed (22 tests / 254
+  assertions); final focused inclusion/lifecycle regression passed (12 tests /
+  67 assertions). Composer and npm security audits reported no vulnerabilities;
+  governance and `git diff --check` passed.
+- **Decisions:** Statistics inclusion is mutable non-ledger metadata and the
+  only new mutation allowed on posted/terminal transaction records. Account
+  movements remain ledger-derived and intentionally ignore this preference.
+- **Blockers:** Browser verification remains blocked because the in-app browser
+  is unavailable and the existing Playwright target `money-manager.test`
+  cannot resolve in this environment.
+- **Uncommitted:** Complete `P3-20` and `P3-21` implementations, tests,
+  migrations, progress, and worklog updates remain uncommitted on
+  `feat/phase-3`.
+- **Next:** Review and commit the focused `P3-20` and `P3-21` slices only when
+  requested, then prepare the Phase 3 branch for review.
+
+### 2026-06-13 10:06 WIB - `P3-20` Navigation Preferences Completed
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-20`.
+- **Status:** Completed.
+- **Completed:** Finished the interrupted navigation-preference slice. Added a
+  hidden `0` fallback so an unchecked workspace-settings checkbox reliably
+  disables shortcuts, and extended swipe/Left/Right period navigation to the
+  Summary view alongside calendar, weekly, monthly, and day views. Updated
+  focused endpoint coverage and `docs/PROGRESS.md`.
+- **Verification:** `composer ci:check` passed with PHPStan reporting 0 errors,
+  253 Pest tests / 1712 assertions, 13 Vitest tests, Pint, ESLint, Prettier,
+  TypeScript checks, Wayfinder generation, and production build. Focused
+  navigation/preferences tests passed with 16 tests / 123 assertions;
+  governance and `git diff --check` passed.
+- **Decisions:** Shortcut direction handling remains a reusable frontend
+  composable; the persisted workspace preference is the single enable/disable
+  control for every supported period view.
+- **Blockers:** In-app browser was unavailable. Playwright could launch outside
+  the sandbox, but both existing welcome smoke tests could not resolve
+  `http://money-manager.test/`; direct browser verification remains blocked by
+  the local target/DNS environment.
+- **Uncommitted:** Complete `P3-20` implementation, tests, progress update, and
+  worklog checkpoints are uncommitted on `feat/phase-3`.
+- **Next:** Review and commit the focused `P3-20` slice when requested, then
+  continue with `P3-21` (include or exclude transaction from statistics).
+
+### 2026-06-13 10:01 WIB - `P3-20` Interrupted Work Audit
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-20`.
+- **Status:** In progress.
+- **Completed:** Audited the interrupted local work. The uncommitted slice adds
+  a workspace preference, period-navigation composable, swipe/arrow direction
+  helpers, and integration for calendar, weekly, monthly, and day views.
+- **Verification:** Focused Pest tests passed (16 tests / 115 assertions);
+  full Pest suite passed (253 tests / 1704 assertions); focused Vitest passed
+  (8 tests); `npm run types:check`, `npm run lint:check`,
+  `npm run format:check`, `npm run build`, and `git diff --check` passed.
+  `composer analyse` / direct PHPStan exited with code 1 without diagnostic
+  output.
+- **Decisions:** Treat `P3-20` as incomplete until the disabled-checkbox
+  browser submission path is corrected and the Summary period view is either
+  integrated or explicitly excluded with rationale.
+- **Blockers:** The unchecked navigation preference is omitted by native form
+  submission while backend validation requires the field, so the current UI
+  cannot reliably disable shortcuts. Summary has previous/next period controls
+  but does not receive or use the preference/composable.
+- **Uncommitted:** All local `P3-20` implementation files and this audit
+  checkpoint are uncommitted. No implementation files were changed during the
+  audit.
+- **Next:** Fix and test disabled preference submission, add Summary period
+  navigation coverage, investigate the silent PHPStan failure, then rerun
+  applicable quality gates and update `docs/PROGRESS.md`.
+
+### 2026-06-13 09:55 WIB - `P3-19` Responsive Mobile Entry
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-19`.
+- **Status:** Completed.
+- **Completed:** Audited `TransactionForm.vue` and the shared app shell for
+  narrow-viewport issues. The main field grid already uses
+  `grid gap-6 md:grid-cols-2` (single column below `md`), split rows already
+  collapse to one column, and recent-value/bookmark chips already use
+  `flex flex-wrap`. The shadcn sidebar already renders as a mobile drawer, and
+  `AppSidebarLayout`'s `AppContent` already sets `overflow-x-hidden`. The only
+  fix needed was the bottom action row: changed
+  `flex items-center gap-3` to `flex flex-wrap items-center gap-3` so
+  "Save transaction" / "Save draft" / "Cancel" wrap instead of overflowing on
+  narrow screens, and hid the `P3-18` keyboard-shortcut hint below the `sm`
+  breakpoint (`hidden ... sm:inline`) since it isn't relevant on touch
+  devices.
+- **Verification:** `npm run lint:check`, `npm run format:check` (after
+  `npx prettier --write` on `TransactionForm.vue`), `npm run types:check`,
+  `npm run build`, and the full `php artisan test --compact`
+  (250 tests / 1659 assertions, unaffected) all passed.
+- **Decisions:** Full automated desktop/mobile browser acceptance testing of
+  this and other journeys is the dedicated scope of `P8-04` (Browser and
+  responsive acceptance); this slice satisfies the catalog's "core entry
+  works on supported mobile viewport sizes" acceptance at the responsive
+  layout level, consistent with how `P3-05` documented its own scoped
+  deferral to a later phase.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-19` changes are uncommitted on `feat/phase-3`,
+  pending the standard P3-19 commit.
+- **Next:** Commit as `feat(transactions): improve mobile layout for
+  transaction entry form (P3-19)`, then continue with `P3-20` (Swipe and
+  navigation preferences).
+
+### 2026-06-13 09:35 WIB - `P3-18` Keyboard-First Desktop Entry
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-18`.
+- **Status:** Completed.
+- **Completed:** `TransactionForm.vue` now auto-focuses the Amount input on
+  load (the first value most users type) and listens for a Ctrl+Enter /
+  Cmd+Enter keydown anywhere within the `<Form>` to call
+  `requestSubmit()` on the form element — this lets users submit from inside
+  the multi-line Description and Memo textareas, where a plain Enter inserts
+  a newline instead. The shortcut predicate (`isSubmitShortcut`) was extracted
+  to `resources/js/lib/keyboard-shortcuts.ts` so it can be unit tested
+  independently of mounting the form. A short text hint near the
+  save/draft/cancel buttons documents the shortcut for desktop users.
+- **Verification:** New `resources/js/lib/keyboard-shortcuts.test.ts`
+  (4 tests) via `npm run test:unit` (5 tests total, all passing),
+  `npm run lint:check`, `npm run format:check`, `npm run types:check`,
+  `npm run build`, and the full `php artisan test --compact`
+  (250 tests / 1659 assertions, unaffected) all passed.
+- **Decisions:** Scoped to the two highest-value, low-risk keyboard
+  improvements (initial focus + submit shortcut) rather than introducing a
+  broader hotkey scheme, since the catalog acceptance is "core transaction
+  entry works efficiently from keyboard" and native tab order through the
+  form's fields was already sequential and logical.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-18` changes are uncommitted on `feat/phase-3`,
+  pending the standard P3-18 commit.
+- **Next:** Commit as `feat(transactions): add keyboard shortcuts for
+  transaction entry (P3-18)`, then continue with `P3-19` (Responsive mobile
+  entry).
+
+### 2026-06-13 09:10 WIB - `P3-17` Entry-Form Field Configuration
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-17`.
+- **Status:** Completed.
+- **Completed:** Added a workspace-scoped `entry_form_fields` nullable JSON
+  column (after `application_lock_minutes`), with `Workspace::entryFormFields()`
+  falling back to `Workspace::defaultEntryFormFields()`
+  (`['merchant', 'memo', 'tags']`) when unset. `WorkspacePreferencesRequest`
+  validates `entry_form_fields` as `sometimes|array` with each entry
+  restricted to `merchant`/`memo`/`tags` and `distinct`;
+  `WorkspaceController::update()` defaults a missing key to `[]` so unchecking
+  all fields stores an empty configuration rather than leaving stale data.
+  `WorkspaceController::edit()` and `TransactionController::formProps()` both
+  expose `entryFormFields`. `settings/Workspace.vue` gained a "Transaction
+  entry form fields" section: a checkbox per field (bound to a reactive
+  `entryFormFieldRows` ref initialized/sorted from the workspace config) plus
+  up/down reorder buttons, submitting the visible fields in order as hidden
+  `entry_form_fields[]` inputs. `TransactionForm.vue` was restructured so the
+  merchant/recipient, memo, and tags sections render via a single
+  `<template v-for="field in visibleOptionalFields">` driven by the
+  workspace's `entryFormFields` order (description and occurred_at remain
+  fixed/required).
+- **Verification:** `composer analyse` (0 errors), `vendor/bin/pint --dirty
+  --format agent`, new `tests/Feature/EntryFormFieldConfigurationTest.php`
+  (5 tests, 38 assertions), full suite `php artisan test --compact`
+  (250 tests / 1659 assertions), `npm run lint:check`,
+  `npm run format:check` (after `npx prettier --write` on
+  `settings/Workspace.vue` and `TransactionForm.vue`), `npm run types:check`,
+  and `npm run build` all passed.
+- **Decisions:** Exactly the three catalog-listed optional fields
+  (merchant/recipient, memo, tags) are configurable; description and
+  occurred_at stay mandatory. An empty `entry_form_fields` array means "hide
+  all three optional fields", distinct from `null`/absent which means
+  "use the default order".
+- **Blockers:** None.
+- **Uncommitted:** All `P3-17` changes are uncommitted on `feat/phase-3`,
+  pending the standard P3-17 commit.
+- **Next:** Commit as `feat(workspaces,transactions): add entry-form field
+  configuration (P3-17)`, then continue with `P3-18` (Keyboard-first desktop
+  entry).
+
+### 2026-06-13 07:05 WIB - `P3-16` Favorite Accounts And Categories
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-16`.
+- **Status:** Completed.
+- **Completed:** Added a migration giving `accounts` and `categories` an
+  `is_favorite` boolean (default `false`, after `is_visible`), added it to
+  both models' `Fillable`/`casts()`, and to `UpdateAccountRequest` /
+  `UpdateCategoryRequest` validation (`sometimes|boolean`). `AccountForm.vue`
+  gained a "Favorite" checkbox; `categories/Index.vue` gained the same
+  checkbox on both top-level category rows and subcategory rows.
+  `accounts/Index.vue` shows a star icon next to favorite account names.
+  `TransactionController::formProps()` now orders `accounts` and `categories`
+  with `orderByDesc('is_favorite')->orderBy('name')` and includes
+  `is_favorite` in the selected columns; `TransactionForm.vue` prefixes
+  favorite options with "★" across all account/category selects (source,
+  destination, category, split categories, transfer fee category). Added
+  `favorite()` states to `AccountFactory`/`CategoryFactory`.
+- **Verification:** `composer analyse` (0 errors), `vendor/bin/pint --dirty
+  --format agent`, new `tests/Feature/FavoriteAccountsAndCategoriesTest.php`
+  (3 tests, 33 assertions), full suite `php artisan test --compact`
+  (245 tests / 1621 assertions), `npm run lint:check`,
+  `npm run format:check` (after `npx prettier --write` on
+  `TransactionForm.vue`), `npm run types:check`, and `npm run build` all
+  passed.
+- **Decisions:** Favorite ordering only affects the transaction entry form's
+  account/category selection lists (catalog: "Favorites appear first without
+  changing financial meaning") — `position`-based ordering used everywhere
+  else (account/category management pages, reports, balances) is untouched.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-16` backend, frontend, test, and documentation
+  changes are complete and verified but not yet committed.
+- **Next:** Commit as `feat(accounts,categories): add favorite accounts and
+  categories (P3-16)`, mark task #15 completed, then begin `P3-17`
+  (Entry-form field configuration).
+
+### 2026-06-13 06:10 WIB - `P3-15` Recent Value Suggestions
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-15`.
+- **Status:** Completed.
+- **Completed:** `TransactionController::formProps()` now queries the
+  workspace's 50 most recently posted transactions
+  (`whereNotNull('posted_at')`, ordered by `occurred_at`/`id` desc) and derives
+  `recentDescriptions` (up to 8 distinct, non-empty descriptions,
+  most-recent-first) and `recentMerchants` (up to 8 distinct merchants,
+  ordered by recency of first occurrence). Both are returned alongside the
+  existing `bookmarks` prop, available on `transactions.create` and the draft
+  resume page. `CreateTransaction.vue` passes both through to
+  `TransactionForm.vue`, which renders them as clickable "Recent:" suggestion
+  chips below the Description textarea (fills `description`) and the Merchant
+  select (fills `merchantId`); both fields are now `v-model`-bound instead of
+  using `:value`.
+- **Verification:** `composer analyse` (0 errors), `vendor/bin/pint --dirty
+  --format agent`, new `tests/Feature/TransactionRecentValuesTest.php`
+  (2 tests, 26 assertions) via `php artisan test --compact
+  --filter=TransactionRecentValuesTest`, full suite `php artisan test
+  --compact` (242 tests / 1588 assertions), `npm run lint:check`,
+  `npm run format:check`, `npm run types:check`, and `npm run build` all
+  passed.
+- **Decisions:** Recent values are sourced from the same 50-transaction
+  query for both descriptions and merchants to avoid duplicate queries; the
+  8-item cap and "most recently used first" ordering match the catalog intent
+  of speeding up repeat entry without overwhelming the form.
+- **Blockers:** None.
+- **Uncommitted:** Backend, frontend, test, and documentation changes for
+  `P3-15` are complete and verified but not yet committed.
+- **Next:** Commit as `feat(transactions): add recent value suggestions
+  (P3-15)`, mark task #14 completed, then begin `P3-16` (Favorite accounts and
+  categories).
+
+### 2026-06-13 05:05 WIB - `P3-13` Transaction Bookmarks
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-13`.
+- **Status:** Completed.
+- **Completed:** Added a workspace-scoped, reorderable `transaction_bookmarks`
+  table (`workspace_id`, `name`, JSON `payload`, `position`, indexed on
+  `[workspace_id, position]`), `TransactionBookmark` model/policy/factory
+  following the `AccountGroup` pattern, and `Workspace::transactionBookmarks()`.
+  Added `TransactionBookmarkController` with `transaction-bookmarks.store`
+  (validated via `StoreTransactionBookmarkRequest`, which extends
+  `StoreTransactionDraftRequest` and adds `name`; the remaining validated
+  fields become the JSON `payload`, mirroring `Transaction::draft_data`),
+  `.update` (rename only), `.move` (reuses the existing
+  `MoveOrderedResource`/`MoveOrderedResourceRequest`, extended to recognize
+  the `transaction_bookmark` route parameter), and `.destroy`. The transaction
+  entry form (`transactions/CreateTransaction.vue` /
+  `TransactionForm.vue`) now lists the workspace's bookmarks with "Use"
+  (a link to `transactions.create?bookmark_id=`), a rename field/button,
+  up/down reorder buttons, and a delete button, plus a "Save as bookmark"
+  name field and button that posts the current form's `FormData` (the same
+  approach as the existing "Save draft" action). `TransactionController::create`
+  / `editDraft` / `formProps()` now accept the request, resolve
+  `?bookmark_id=` to a workspace-owned bookmark, and use its `payload` as
+  `initialData` when there is no draft (reusing the draft-resume prefill
+  mechanism), plus return the ordered `bookmarks` list.
+- **Verification:** New `tests/Feature/TransactionBookmarkTest.php` (6 tests,
+  42 assertions) covers: saving the current form as a bookmark (payload
+  excludes `name`, position starts at 0); bookmarks appearing on
+  `transactions.create` and `?bookmark_id=` prefilling `initialData`;
+  renaming; reordering via move; deletion; and that another workspace's
+  bookmark cannot be renamed, moved, or deleted (403). Full suite: 240 Pest
+  tests / 1562 assertions, PHPStan/Larastan (0 errors), Pint, ESLint,
+  Prettier, TypeScript checks (`vue-tsc`), and a production build all
+  passed.
+- **Decisions:** Scoped "edited" (from the catalog acceptance text "saved,
+  reordered, edited, and reused") to renaming only — the bookmark's payload
+  is fixed at save time and replaced by deleting and re-saving, keeping this
+  slice minimal and consistent with existing draft/duplicate infrastructure.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-13` changes are implemented but not yet committed
+  on `feat/phase-3`.
+- **Next:** Commit `P3-13` as `feat(transactions): add transaction bookmarks
+  (P3-13)`, then continue with `P3-14` (Payment profiles).
+
+### 2026-06-13 04:10 WIB - `P3-12` Bulk Selection
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-12`.
+- **Status:** Completed.
+- **Completed:** Confirmed with the user that, since posted transaction tags
+  (`TransactionTag::guardPostedTransaction()`) and ledger entries are
+  immutable, the only "allowed... operation" that can safely apply to
+  multiple selected transactions is duplicate-as-draft. Added checkboxes to
+  each transaction card on `transactions/Index.vue` and a bulk action bar
+  (shown when one or more are selected) with "Duplicate as drafts" and
+  "Clear selection". Added `POST transactions/bulk-duplicate`
+  (`transactions.bulk-duplicate`), which validates `transaction_ids` (array,
+  min 1, integers), loads them scoped to the current workspace via
+  `$workspace->transactions()->whereIn('id', ...)` (ids outside the
+  workspace are silently dropped), authorizes `view` on each, and calls the
+  existing `DuplicateTransaction::duplicate()` once per transaction. A
+  single resulting draft redirects to `transactions.drafts.edit` (matching
+  the existing single-transaction duplicate flow); multiple drafts redirect
+  to a new `GET transaction-drafts` (`transactions.drafts.index`) page.
+  Added `TransactionController::drafts()` and a new minimal
+  `transactions/Drafts.vue` page listing the workspace's draft transactions
+  (description, type badge, last-updated time, "Resume draft" link to
+  `transactions.drafts.edit`) — this was needed so multi-select duplicates
+  are discoverable, since no drafts list previously existed.
+- **Verification:** New `tests/Feature/TransactionBulkActionsTest.php` (5
+  tests, 25 assertions) covers: single-selection duplicate redirects to the
+  new draft's edit page; multi-selection duplicate creates one draft per
+  transaction and redirects to the drafts index; the drafts index lists
+  draft transactions with the correct id/description; a transaction from
+  another workspace cannot be bulk-duplicated (redirects to
+  `transactions.index`, no draft created); and an empty `transaction_ids`
+  array is rejected by validation. Full suite: 234 Pest tests / 1520
+  assertions, PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript
+  checks (`vue-tsc`), and a production build all passed.
+- **Decisions:** New routes were ordered so `transactions/bulk-duplicate`
+  (POST) and `transaction-drafts` (GET, the new drafts index) are registered
+  before `transaction-drafts/{transaction}/edit` and
+  `transactions/{transaction}` — no collisions occur since they differ in
+  HTTP method or path segment count, but ordering keeps the route list
+  readable and consistent with the existing static-before-wildcard
+  convention.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-12` changes are ready to commit on `feat/phase-3`.
+- **Next:** Commit `P3-12`, then continue Phase 3 with `P3-13` (transaction
+  bookmarks).
+
+### 2026-06-13 03:20 WIB - `P3-11` Transaction Detail
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-11`.
+- **Status:** Completed.
+- **Completed:** Added a `transactions/{transaction}` GET route
+  (`->whereNumber('transaction')`, named `transactions.show`), registered
+  after all static-segment transaction routes so it cannot shadow
+  `transactions/create`, `/calendar`, `/weekly`, `/monthly`, `/summary`,
+  `/day`, and `/day-notes/{date}`. `TransactionController::show()` authorizes
+  via `TransactionPolicy::view`, loads the transaction with its creator,
+  merchant, tags, entries (with account/category), and
+  reversal/replacement relations, and renders `transactions/Show` with the
+  full transaction detail plus its immutable audit log entries (ordered
+  newest first, with actor and metadata). New `transactions/Show.vue` page
+  shows description, memo, currency, occurred/posted timestamps, recorder,
+  tags, all ledger entries, reversal/replacement cross-links
+  (`reverses`/`reversal`/`replaces`/`replacement` as links to the related
+  transaction's detail page), and an audit history card. Each transaction
+  card on `transactions/Index.vue` now links its title to
+  `transactions.show`. Regenerated Wayfinder routes
+  (`resources/js/routes/transactions/index.ts`) to add the `show` helper.
+- **Verification:** New `tests/Feature/TransactionDetailTest.php` (5 tests,
+  108 assertions) covers: full detail rendering with entries, creator,
+  currency, and a `transaction.posted` audit log entry; reversal cross-links
+  and the `transaction.reversed` audit log on the original transaction (none
+  on the reversal); replacement cross-links and the `transaction.replaced`
+  audit log on the original transaction (none on the replacement);
+  cross-workspace access returns 404; and `transactions/create` still
+  resolves to `transactions/CreateTransaction` (no route collision with
+  `transactions.show`). Full suite: 229 Pest tests / 1495 assertions, PHPStan
+  / Larastan (0 errors), Pint, ESLint, Prettier, TypeScript checks
+  (`vue-tsc`), and a production build all passed.
+- **Decisions:** `posted_at` is read via `getRawOriginal()` + `Carbon::parse()`
+  (matching the existing `occurred_at` pattern in
+  `transformTransaction()`), since Larastan infers `string` for
+  `immutable_datetime`-cast attributes accessed directly in some contexts.
+  `Show.vue`'s `defineOptions({ layout: { breadcrumbs: [...] } })` only
+  includes the static "Transactions" breadcrumb — a dynamic per-transaction
+  breadcrumb referencing `props.transaction.id` is not possible because
+  `defineOptions()` content is hoisted out of `setup()` and cannot reference
+  setup-scope bindings (build error: "`defineOptions()` ... cannot reference
+  locally declared variables").
+- **Blockers:** None.
+- **Uncommitted:** All `P3-11` changes are ready to commit on `feat/phase-3`.
+- **Next:** Commit `P3-11`, then continue Phase 3 with `P3-12` (bulk
+  selection).
+
+### 2026-06-13 02:45 WIB - `P3-10` Pagination And Infinite Navigation
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-10`.
+- **Status:** Completed.
+- **Completed:** `TransactionController::index()` now wraps the existing
+  `paginate(30)->withQueryString()` result in `Inertia::scroll($transactions)`
+  before rendering, which configures merge behavior and normalizes pagination
+  metadata for the frontend infinite-scroll component without changing the
+  `data`/`links`/`meta` shape used by existing tests. `transactions/Index.vue`
+  now renders the grouped transaction list inside `<InfiniteScroll
+  data="transactions">` (from `@inertiajs/vue3`), which automatically loads
+  and appends subsequent pages as the user scrolls near the end of the list,
+  with a "Loading more transactions…" indicator via the `loading` slot. The
+  previous manual page-number `<nav>` was removed since infinite scroll
+  supersedes it; ordering remains deterministic (existing sort plus an `id`
+  tiebreaker), so merged pages stay stable as history grows.
+- **Verification:** Full suite: 224 Pest tests / 1387 assertions (existing
+  `TransactionHistoryTest` pagination coverage still passes unchanged),
+  PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript checks
+  (`vue-tsc`), and a production build all passed.
+- **Decisions:** None.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-10` changes are ready to commit on `feat/phase-3`.
+- **Next:** Commit `P3-10`, then continue Phase 3 with `P3-11` (transaction
+  detail).
+
+### 2026-06-13 02:10 WIB - `P3-09` Sorting
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-09`.
+- **Status:** Completed.
+- **Completed:** Added a `sort` query-string parameter to
+  `TransactionController::index()` with an explicit whitelist: `date_desc`
+  (default), `date_asc`, `amount_desc`, `amount_asc`, `description_asc`, and
+  `description_desc`. Any other value falls back to `date_desc`. Date sorting
+  orders by `occurred_at` (with `id` as a stable tiebreaker); description
+  sorting orders by `description`. Amount sorting adds a correlated subquery
+  selecting `MAX(ABS(amount))` from `transaction_entries` where
+  `type = 'account'` for the transaction, and orders by that value — this
+  represents the account-affecting leg even for split transactions and
+  transfers. The response now includes `sort` (resolved value) and
+  `sortOptions` (the whitelist) for the frontend. `transactions/Index.vue`
+  gained a "Sort by" select wired into the existing filter form
+  (`applyFilters`/`clearFilters`); when a non-date sort is active, the
+  date-grouped section headings are replaced with a flat list showing each
+  transaction's local date inline on its card.
+- **Verification:** Added `tests/Feature/TransactionSortTest.php` (7 tests,
+  106 assertions) covering the default order, `date_asc`, `amount_desc`,
+  `amount_asc`, `description_asc`, `description_desc`, and an invalid sort
+  value falling back to `date_desc`. Full suite: 224 Pest tests / 1387
+  assertions, PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript
+  checks (`vue-tsc`), and a production build all passed.
+- **Decisions:** None.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-09` changes are ready to commit on `feat/phase-3`.
+- **Next:** Commit `P3-09`, then continue Phase 3 with `P3-10` (pagination and
+  infinite navigation).
+
+### 2026-06-13 01:20 WIB - `P3-08` Advanced Filters
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-08`.
+- **Status:** Completed.
+- **Completed:** Added `type`, `status`, `category_id`, `account_id`,
+  `tag_id`, `from`, and `to` query-string filters to
+  `TransactionController::index()`, alongside the existing `q` search. `type`
+  and `status` are validated against `TransactionType::tryFrom()` /
+  `TransactionStatus::tryFrom()`; `category_id`/`account_id`/`tag_id` must be
+  numeric; `from`/`to` must match `YYYY-MM-DD` and are parsed in the
+  workspace timezone, then converted to UTC for the `occurred_at` comparison
+  (`to` is inclusive of the whole day). Invalid values are silently ignored
+  (`null`) rather than erroring. Category/account/tag filters use
+  `whereHas('entries', ...)` / `whereHas('tags', ...)`, and all filters
+  combine with AND alongside the search's grouped OR clause. The response now
+  includes `filters` (the resolved current values) and `filterOptions`
+  (`types`, `statuses` — limited to `posted`/`reversed`/`replaced` since
+  `draft`/`voided` transactions never have `posted_at` — plus the workspace's
+  active `categories`, `accounts`, and `tags`). `transactions/Index.vue` now
+  renders selects for type/status/category/account/tag and a from/to date
+  range, all submitted together via `router.get(..., { preserveState: true,
+  replace: true })`, with a combined "Clear" action and an updated empty-state
+  message.
+- **Verification:** Added `tests/Feature/TransactionFilterTest.php` (8 tests,
+  105 assertions) covering type, category, account, tag, status (combined
+  with type for a transfer), date range, filters combined with search, and an
+  invalid filter value being ignored. Full suite: 217 Pest tests / 1281
+  assertions, PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript
+  checks (`vue-tsc`), and a production build all passed.
+- **Decisions:** None.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-08` changes are ready to commit on `feat/phase-3`.
+- **Next:** Commit `P3-08`, then continue Phase 3 with `P3-09` (sorting).
+
+### 2026-06-13 00:30 WIB - `P3-07` Search
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-07`.
+- **Status:** Completed.
+- **Completed:** Added a `q` query-string search to
+  `TransactionController::index()`. When non-empty, it filters posted
+  transactions where the description or memo contains the term (a
+  case-insensitive `like "%{$term}%"`), or a related merchant, account, or
+  category name contains the term (`orWhereHas` on `merchant`,
+  `entries.account`, and `entries.category`), or — when the term is numeric —
+  any entry's absolute `amount` exactly equals it. The search is grouped so
+  it combines correctly
+  with the existing `whereNotNull('posted_at')` scope, and `withQueryString()`
+  preserves `q` across pagination. `transactions/Index.vue` now renders a
+  search box (with a clear button) bound to `?q=`, navigated via
+  `router.get(..., { preserveState: true, replace: true })`, and shows a
+  distinct "No transactions match your search." message when a search yields
+  no results.
+- **Verification:** Added `tests/Feature/TransactionSearchTest.php` (7 tests,
+  82 assertions) covering search by description, memo, merchant, category,
+  account, amount, and a no-match case. Full suite: 209 Pest tests / 1176
+  assertions, PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript
+  checks (`vue-tsc`), and a production build all passed.
+- **Decisions:** None.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-07` changes are ready to commit on `feat/phase-3`.
+- **Next:** Commit `P3-07`, then continue Phase 3 with `P3-08` (advanced
+  filters).
+
+### 2026-06-12 23:40 WIB - `P3-06` Daily Memo
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-06`.
+- **Status:** Completed.
+- **Completed:** Added a workspace-scoped `day_notes` table (unique on
+  `workspace_id` + `date`, plain `note` text), `DayNote` model with
+  `Workspace::dayNotes(): HasMany`, `DayNoteFactory`, `DayNotePolicy`
+  (mirrors `TagPolicy`/`MerchantPolicy`), `SaveDayNoteRequest`, and
+  `DayNoteController::update`/`destroy` exposed as
+  `transactions.day-notes.update` (PUT) and `transactions.day-notes.destroy`
+  (DELETE), both keyed by a regex-constrained `{date}` route parameter
+  (`\d{4}-\d{2}-\d{2}`) to avoid Eloquent route-model-binding on a
+  composite-keyed model. `TransactionController::day()` now passes a
+  `note: string | null` prop and `calendar()` passes a `notes: Record<string,
+  string>` map for the month. Added a new shadcn-vue `Textarea` component
+  (`resources/js/components/ui/textarea`). `transactions/Day.vue` now has a
+  "Daily memo" card with a save form (`DayNoteController.update.form()`) and a
+  "Remove" action (`DayNoteController.destroy()` via `Link
+  method="delete"`). `transactions/Calendar.vue` cells are now links to
+  `transactions.day` for that date and show a `StickyNote` icon (with the
+  note text as a title/tooltip) when a note exists.
+- **Verification:** Added `tests/Feature/TransactionDayNoteTest.php` (5
+  tests, 61 assertions) covering create, update (upsert, no duplicate row),
+  delete, validation, and workspace isolation. Full suite: 202 Pest tests /
+  1094 assertions, PHPStan/Larastan (0 errors), Pint, ESLint, Prettier,
+  TypeScript checks (`vue-tsc`), and a production build all passed.
+- **Decisions:** Removed the `'date' => 'date'` Eloquent cast from `DayNote`
+  — Laravel's `date` cast serializes using the connection's full datetime
+  format on write (not `Y-m-d`), which broke `where('date', $dateString)`
+  lookups against the plain `date` column. The model now treats `date` as a
+  plain `Y-m-d` string throughout, matching how the controller and routes
+  already handle it.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-06` changes are ready to commit on `feat/phase-3`.
+- **Next:** Commit `P3-06`, then continue Phase 3 with `P3-07` (search).
+
+### 2026-06-12 22:10 WIB - `P3-05` Summary View
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-05`.
+- **Status:** In progress.
+- **Completed:** Added `transactions.summary`
+  (`TransactionController::summary()`) rendering `transactions/Summary` for a
+  workspace-local month (`?month=YYYY-MM`, defaults to the current
+  workspace-local month, with previous/next month navigation). Shows period
+  income/expense/net totals (per currency) and a record count derived from
+  `SummarizeTransactionPeriod::forMonth()`, plus an "account movement" section
+  listing each active account's opening balance, closing balance, and net
+  change for the period, computed with the existing
+  `CalculateAccountBalance::calculateAsOf()`. Added "Summary" to
+  `TransactionViewNav`.
+- **Verification:** Added `tests/Feature/TransactionSummaryTest.php` (2
+  tests, 38 assertions). Full suite: 197 Pest tests / 1033 assertions,
+  PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript checks
+  (`vue-tsc`), and a production build all passed.
+- **Decisions:** The catalog acceptance summary for `P3-05` says the period
+  summary "combines budget and account movement," but budgets (`P4-01` to
+  `P4-10`) are Phase 4 scope and do not exist yet. This slice implements the
+  account-movement half now; budget comparison is recorded as explicit
+  follow-up work for when Phase 4 budgets land, per
+  `docs/PROGRESS.md`'s "record follow-up work explicitly" rule. Opening
+  balance is the posted ledger balance as of the instant before the period
+  starts; closing balance is as of the last instant of the period.
+- **Blockers:** None.
+- **Next:** Continue Phase 3 with `P3-06` (daily memo).
+
+### 2026-06-12 21:45 WIB - `P3-04` Monthly View
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-04`.
+- **Status:** In progress.
+- **Completed:** Added `SummarizeTransactionPeriod::forYear()`, which calls
+  the existing `summarize()` for the full workspace-local year and re-buckets
+  the per-day results into per-month income/expense/net/count totals. Added
+  `transactions.monthly` (`TransactionController::monthly()`) rendering
+  `transactions/Monthly`, a 12-month grid for a workspace-local year
+  (`?year=YYYY`, defaults to the current workspace-local year) with
+  previous/next year navigation; each month cell links to its
+  `transactions.calendar` view. Added "Monthly" to `TransactionViewNav`.
+- **Verification:** Added `tests/Feature/TransactionMonthlyTest.php` (3
+  tests, 50 assertions). Full suite: 195 Pest tests / 995 assertions,
+  PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript checks
+  (`vue-tsc`), and a production build all passed.
+- **Decisions:** None beyond reusing the existing per-currency
+  income/expense/net/count aggregation shape from `SummarizeTransactionPeriod`.
+- **Blockers:** None.
+- **Next:** Continue Phase 3 with `P3-05` (summary view).
+
+### 2026-06-12 21:15 WIB - `P3-03` Weekly View
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-03`.
+- **Status:** In progress.
+- **Completed:** Renamed `SummarizeTransactionCalendar` to
+  `SummarizeTransactionPeriod` and added `forWeek()` alongside `forMonth()`,
+  sharing the same per-currency income/expense/net/count aggregation. Added
+  `transactions.weekly` (`TransactionController::weekly()`) rendering
+  `transactions/Weekly`, a 7-day grid with per-day totals, a weekly aggregate
+  total, and previous/next week navigation (`?week=YYYY-MM-DD`, defaults to
+  the current workspace-local week starting Sunday). Added `transactions.day`
+  (`TransactionController::day()`) rendering `transactions/Day`, a
+  single-date drill-down listing posted transactions for that workspace-local
+  date with previous/next day navigation (`?date=YYYY-MM-DD`, defaults to the
+  current workspace-local date). Extracted `transformTransaction()` and
+  `parseLocalDate()` helpers on `TransactionController`, shared by `index()`,
+  `day()`, `weekly()`. Added "Weekly" to `TransactionViewNav`. Each calendar
+  cell on `Weekly.vue` links to its `Day.vue` drill-down.
+- **Verification:** Added `tests/Feature/TransactionWeeklyTest.php` (5 tests,
+  80 assertions). Full suite: 192 Pest tests / 945 assertions,
+  PHPStan/Larastan (0 errors), Pint, ESLint, Prettier, TypeScript checks
+  (`vue-tsc`), and a production build all passed.
+- **Decisions:** Weeks start on Sunday (workspace-local), matching the
+  `Calendar.vue` weekday-label convention. The weekly totals card sums each
+  day's income/expense/net per currency across the 7-day window.
+- **Blockers:** None.
+- **Next:** Continue Phase 3 with `P3-04` (monthly view).
+
+### 2026-06-12 20:30 WIB - `P3-02` Calendar View
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-02`.
+- **Status:** In progress.
+- **Completed:** Added `transactions.calendar` (`TransactionController::calendar()`)
+  rendering `transactions/Calendar`, backed by a new
+  `App\Domain\Transactions\SummarizeTransactionCalendar` domain action that
+  aggregates posted income, expense, net, and transaction counts per
+  workspace-local date for a given month (`?month=YYYY-MM`, defaults to the
+  current workspace-local month). Added `resources/js/pages/transactions/Calendar.vue`
+  (month grid with previous/next navigation) and a shared
+  `TransactionViewNav` component used by both `transactions/Index` and
+  `transactions/Calendar` to switch between the daily and calendar views.
+- **Verification:** Added `tests/Feature/TransactionCalendarTest.php` (3
+  tests, 42 assertions). `composer ci:check` equivalent passed: 187 Pest
+  tests / 865 assertions, PHPStan/Larastan (0 errors), Pint, ESLint,
+  Prettier, TypeScript checks, and a production build.
+- **Decisions:** Aggregates are grouped by currency code (no cross-currency
+  summation). Only `income`/`expense` transaction types contribute to
+  income/expense/net; the `count` includes all posted transaction types
+  (including transfers) for the day.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-02` changes ready to commit on `feat/phase-3`.
+- **Next:** Commit this checkpoint, then continue Phase 3 with `P3-03`
+  (weekly view).
+
+### 2026-06-12 19:50 WIB - Phase 3 Branch Consolidation
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-01`.
+- **Status:** In progress.
+- **Completed:** Per user direction, switched Phase 3 to a single
+  branch-per-phase workflow: pull requests are opened only once a phase is
+  complete, with individual features committed to the shared phase branch.
+  Closed PR #13 (no merge) and the now-superseded
+  `feat/p3-daily-transaction-history` branch's PR, created `feat/phase-3` from
+  `main`, and cherry-picked the `P3-01` commit
+  (`feat(transactions): add daily transaction history (P3-01)`) onto it.
+  Updated `docs/PROGRESS.md` so `P3-01` reflects `In Progress` on
+  `feat/phase-3` instead of `Done` with a merged PR.
+- **Verification:** No code changes since the prior `P3-01` checkpoint;
+  `composer ci:check` already passed on that commit.
+- **Decisions:** Phase 3 features (`P3-01` onward) will be committed
+  sequentially to `feat/phase-3`. A single pull request to `main` will be
+  opened once the Phase 3 exit gate in `docs/MASTER_PLAN.md` is met.
+- **Blockers:** None.
+- **Uncommitted:** `docs/PROGRESS.md` and `docs/WORKLOG.md` updates for this
+  checkpoint are pending commit on `feat/phase-3`.
+- **Next:** Commit this checkpoint, then continue Phase 3 with `P3-02`.
+
+### 2026-06-12 16:00 WIB - `P3-01` Daily Transaction History
+
+- **Branch:** `feat/p3-daily-transaction-history`.
+- **Feature IDs:** `P3-01`.
+- **Status:** Ready for review.
+- **Completed:** Started Phase 3 with `P3-01` ("Transactions are grouped by
+  workspace-local date"), per the recommended PR sequence in
+  `docs/MASTER_PLAN.md`. Added `TransactionController::index()` and a
+  `transactions.index` route returning posted transactions (eager-loaded
+  merchant/tags/entries.account/entries.category), paginated at 30 and
+  transformed with a `local_date` computed from `occurred_at` in the
+  workspace timezone. Added `resources/js/pages/transactions/Index.vue`
+  grouping the paginated rows by `local_date` with pagination controls, and
+  added a "Transactions" sidebar nav item.
+- **Verification:** Added `tests/Feature/TransactionHistoryTest.php` (4 tests,
+  60 assertions). `composer ci:check` passed (184 Pest tests, 823 assertions,
+  PHPStan/Larastan, Pint, ESLint, Prettier, TypeScript checks, production
+  build).
+- **Decisions:** Grouping uses `occurred_at` (the user-entered transaction
+  date), not `posted_at`. Transactions with any `posted_at` are shown
+  (`Posted`, `Reversed`, `Replaced`); drafts are excluded.
+- **Blockers:** None.
+- **Uncommitted:** All changes ready to commit on
+  `feat/p3-daily-transaction-history`.
+- **Next:** Commit, push, open a pull request to `main` for `P3-01`, verify
+  CI, then continue Phase 3 with `P3-02` to `P3-06`.
+
 ### 2026-06-12 15:10 WIB - `v0.2.0-alpha.1` Phase 2 Core Ledger Alpha Published
 
 - **Branch:** `main`.

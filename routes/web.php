@@ -3,8 +3,10 @@
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AccountGroupController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DayNoteController;
 use App\Http\Controllers\MerchantController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\TransactionBookmarkController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,12 +30,36 @@ Route::middleware(['auth', 'verified', 'workspace', 'workspace.lock'])->group(fu
     Route::delete('accounts/{account}', [AccountController::class, 'destroy'])->name('accounts.destroy');
 
     // Transactions
+    Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('transactions/calendar', [TransactionController::class, 'calendar'])->name('transactions.calendar');
+    Route::get('transactions/weekly', [TransactionController::class, 'weekly'])->name('transactions.weekly');
+    Route::get('transactions/monthly', [TransactionController::class, 'monthly'])->name('transactions.monthly');
+    Route::get('transactions/summary', [TransactionController::class, 'summary'])->name('transactions.summary');
+    Route::get('transactions/day', [TransactionController::class, 'day'])->name('transactions.day');
+    Route::put('transactions/day-notes/{date}', [DayNoteController::class, 'update'])
+        ->where('date', '\d{4}-\d{2}-\d{2}')
+        ->name('transactions.day-notes.update');
+    Route::delete('transactions/day-notes/{date}', [DayNoteController::class, 'destroy'])
+        ->where('date', '\d{4}-\d{2}-\d{2}')
+        ->name('transactions.day-notes.destroy');
     Route::get('transactions/create', [TransactionController::class, 'create'])->name('transactions.create');
     Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');
+    Route::post('transactions/bulk-duplicate', [TransactionController::class, 'bulkDuplicate'])->name('transactions.bulk-duplicate');
+    Route::get('transaction-drafts', [TransactionController::class, 'drafts'])->name('transactions.drafts.index');
     Route::post('transaction-drafts', [TransactionController::class, 'storeDraft'])->name('transactions.drafts.store');
     Route::get('transaction-drafts/{transaction}/edit', [TransactionController::class, 'editDraft'])->name('transactions.drafts.edit');
     Route::patch('transaction-drafts/{transaction}', [TransactionController::class, 'updateDraft'])->name('transactions.drafts.update');
     Route::post('transactions/{transaction}/duplicate', [TransactionController::class, 'duplicate'])->name('transactions.duplicate');
+    Route::patch('transactions/{transaction}/statistics-inclusion', [TransactionController::class, 'updateStatisticsInclusion'])
+        ->whereNumber('transaction')
+        ->name('transactions.statistics-inclusion.update');
+    Route::get('transactions/{transaction}', [TransactionController::class, 'show'])->whereNumber('transaction')->name('transactions.show');
+
+    // Transaction bookmarks
+    Route::post('transaction-bookmarks', [TransactionBookmarkController::class, 'store'])->name('transaction-bookmarks.store');
+    Route::patch('transaction-bookmarks/{transaction_bookmark}', [TransactionBookmarkController::class, 'update'])->name('transaction-bookmarks.update');
+    Route::patch('transaction-bookmarks/{transaction_bookmark}/move', [TransactionBookmarkController::class, 'move'])->name('transaction-bookmarks.move');
+    Route::delete('transaction-bookmarks/{transaction_bookmark}', [TransactionBookmarkController::class, 'destroy'])->name('transaction-bookmarks.destroy');
 
     // Categories
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');

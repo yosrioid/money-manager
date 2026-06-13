@@ -8,4 +8,5 @@ enum AuditAction: string
     case TransactionVoided = 'transaction.voided';
     case TransactionReversed = 'transaction.reversed';
     case TransactionReplaced = 'transaction.replaced';
+    case TransactionStatisticsInclusionUpdated = 'transaction.statistics_inclusion_updated';
 }

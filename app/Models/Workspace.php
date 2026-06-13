@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'month_start_day',
     'adjust_month_for_weekend',
     'application_lock_minutes',
+    'entry_form_fields',
+    'navigation_shortcuts_enabled',
 ])]
 class Workspace extends Model
 {
@@ -63,7 +65,25 @@ class Workspace extends Model
             'month_start_day' => 'integer',
             'adjust_month_for_weekend' => 'boolean',
             'application_lock_minutes' => 'integer',
+            'entry_form_fields' => 'array',
+            'navigation_shortcuts_enabled' => 'boolean',
         ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function entryFormFields(): array
+    {
+        return $this->entry_form_fields ?? self::defaultEntryFormFields();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public static function defaultEntryFormFields(): array
+    {
+        return ['merchant', 'memo', 'tags'];
     }
 
     /**
@@ -128,6 +148,22 @@ class Workspace extends Model
     public function auditLogs(): HasMany
     {
         return $this->hasMany(AuditLog::class);
+    }
+
+    /**
+     * @return HasMany<DayNote, $this>
+     */
+    public function dayNotes(): HasMany
+    {
+        return $this->hasMany(DayNote::class);
+    }
+
+    /**
+     * @return HasMany<TransactionBookmark, $this>
+     */
+    public function transactionBookmarks(): HasMany
+    {
+        return $this->hasMany(TransactionBookmark::class);
     }
 
     public function isOwnedBy(User $user): bool

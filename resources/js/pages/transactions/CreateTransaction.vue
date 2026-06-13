@@ -21,15 +21,35 @@ interface TransactionDraftData {
     splits?: { category_id?: number; amount?: string }[];
 }
 
+interface BookmarkRow {
+    id: number;
+    name: string;
+    payload: TransactionDraftData;
+}
+
 const props = defineProps<{
-    accounts: { id: number; name: string; currency_code: string }[];
-    categories: { id: number; name: string; type: string }[];
+    accounts: {
+        id: number;
+        name: string;
+        currency_code: string;
+        is_favorite: boolean;
+    }[];
+    categories: {
+        id: number;
+        name: string;
+        type: string;
+        is_favorite: boolean;
+    }[];
     merchants: { id: number; name: string }[];
     tags: { id: number; name: string; color: string | null }[];
     timezone: string;
     idempotencyKey: string;
     draftId: number | null;
     initialData: TransactionDraftData | null;
+    bookmarks: BookmarkRow[];
+    recentDescriptions: string[];
+    recentMerchants: { id: number; name: string }[];
+    entryFormFields: string[];
 }>();
 
 defineOptions({
@@ -70,6 +90,10 @@ defineOptions({
             :idempotency-key="idempotencyKey"
             :draft-id="props.draftId"
             :initial-data="props.initialData"
+            :bookmarks="props.bookmarks"
+            :recent-descriptions="props.recentDescriptions"
+            :recent-merchants="props.recentMerchants"
+            :entry-form-fields="props.entryFormFields"
         />
     </div>
 </template>

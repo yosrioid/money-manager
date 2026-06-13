@@ -6,6 +6,7 @@ import {
     FolderGit2,
     Landmark,
     LayoutGrid,
+    Receipt,
     Store,
     Tags,
 } from '@lucide/vue';
@@ -27,6 +28,7 @@ import { index as accountsIndex } from '@/routes/accounts';
 import { index as categoriesIndex } from '@/routes/categories';
 import { index as merchantsIndex } from '@/routes/merchants';
 import { index as tagsIndex } from '@/routes/tags';
+import { index as transactionsIndex } from '@/routes/transactions';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -34,6 +36,11 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Transactions',
+        href: transactionsIndex(),
+        icon: Receipt,
     },
     {
         title: 'Accounts',
