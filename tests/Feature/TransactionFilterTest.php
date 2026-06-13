@@ -142,6 +142,22 @@ test('filters combine with search', function () {
         );
 });
 
+test('an invalid date filter is ignored instead of erroring', function () {
+    [$user, $workspace, $account, $incomeCategory] = setUpTransactionFilterWorkspace();
+
+    app(RecordIncomeExpense::class)->record($account, $incomeCategory, TransactionType::Income, 50000, 'June 10', now()->setDate(2026, 6, 10)->setTime(12, 0), $user);
+
+    $this->actingAs($user)
+        ->get(route('transactions.index', ['from' => '2026-99-01', 'to' => '2026-02-31']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('transactions/Index')
+            ->has('transactions.data', 1)
+            ->where('filters.from', null)
+            ->where('filters.to', null)
+        );
+});
+
 test('an invalid filter value is ignored', function () {
     [$user, $workspace, $account, $incomeCategory] = setUpTransactionFilterWorkspace();
 

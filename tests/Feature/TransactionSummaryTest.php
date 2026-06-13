@@ -1,11 +1,13 @@
 <?php
 
+use App\Domain\Ledger\ReverseTransaction;
 use App\Domain\Transactions\RecordIncomeExpense;
 use App\Domain\Workspaces\CreatePersonalWorkspace;
 use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Category;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Inertia\Testing\AssertableInertia as Assert;
 
 function setUpTransactionSummaryWorkspace(): array
@@ -57,6 +59,53 @@ test('summary view shows period totals and account movement', function () {
             ->has('accountMovements', 1)
             ->where('accountMovements.0.id', $account->id)
             ->where('accountMovements.0.change', 35000)
+        );
+});
+
+test('summary view nets a same-period reversal to zero without double counting', function () {
+    [$user, $workspace, $account, , $expenseCategory] = setUpTransactionSummaryWorkspace();
+
+    Carbon::setTestNow(now()->setDate(2026, 6, 5)->setTime(10, 0));
+
+    $expense = app(RecordIncomeExpense::class)->record(
+        $account,
+        $expenseCategory,
+        TransactionType::Expense,
+        15000,
+        'Groceries',
+        now(),
+        $user,
+    );
+
+    app(ReverseTransaction::class)->reverse($expense, $user);
+
+    $this->actingAs($user)
+        ->get(route('transactions.summary', ['month' => '2026-06']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('transactions/Summary')
+            ->where('month', '2026-06-01')
+            ->where('count', 2)
+            ->where('totals.income.'.$account->currency_code, 15000)
+            ->where('totals.expense.'.$account->currency_code, 15000)
+            ->where('totals.net.'.$account->currency_code, 0)
+            ->has('accountMovements', 1)
+            ->where('accountMovements.0.id', $account->id)
+            ->where('accountMovements.0.change', 0)
+        );
+
+    Carbon::setTestNow();
+});
+
+test('summary view falls back to the current month when given an invalid month', function () {
+    [$user, $workspace] = setUpTransactionSummaryWorkspace();
+
+    $this->actingAs($user)
+        ->get(route('transactions.summary', ['month' => '2026-99']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('transactions/Summary')
+            ->where('month', now($workspace->timezone)->startOfMonth()->toDateString())
         );
 });
 

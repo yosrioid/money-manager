@@ -60,15 +60,8 @@ class TransactionController extends Controller
         $tagId = $request->query('tag_id');
         $tagId = is_numeric($tagId) ? (int) $tagId : null;
 
-        $from = $request->query('from');
-        $from = is_string($from) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)
-            ? Carbon::parse($from, $workspace->timezone)->startOfDay()
-            : null;
-
-        $to = $request->query('to');
-        $to = is_string($to) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)
-            ? Carbon::parse($to, $workspace->timezone)->startOfDay()
-            : null;
+        $from = $this->parseStrictDate($request->query('from'), $workspace);
+        $to = $this->parseStrictDate($request->query('to'), $workspace);
 
         $sortOptions = ['date_desc', 'date_asc', 'amount_desc', 'amount_asc', 'description_asc', 'description_desc'];
         $sort = $request->query('sort');
@@ -84,8 +77,8 @@ class TransactionController extends Controller
                         ->orWhereHas('entries.account', fn ($q) => $q->where('name', 'like', "%{$search}%"))
                         ->orWhereHas('entries.category', fn ($q) => $q->where('name', 'like', "%{$search}%"));
 
-                    if (is_numeric($search)) {
-                        $amount = (int) round(abs((float) $search));
+                    if (preg_match('/^-?\d+$/', $search) === 1) {
+                        $amount = abs((int) $search);
                         $query->orWhereHas('entries', fn ($q) => $q->whereRaw('abs(amount) = ?', [$amount]));
                     }
                 });
@@ -147,12 +140,8 @@ class TransactionController extends Controller
 
         $workspace = $this->workspaceContext->get();
 
-        $month = $request->query('month');
-        $month = is_string($month) && preg_match('/^\d{4}-\d{2}$/', $month)
-            ? Carbon::parse($month.'-01', $workspace->timezone)
-            : Carbon::now($workspace->timezone);
-
-        $month = $month->startOfMonth();
+        $month = $this->parseStrictMonth($request->query('month'), $workspace)
+            ?? Carbon::now($workspace->timezone)->startOfMonth();
 
         $days = $summarizeTransactionPeriod->forMonth($workspace, $month);
 
@@ -168,6 +157,7 @@ class TransactionController extends Controller
             'previousMonth' => $month->copy()->subMonth()->format('Y-m'),
             'nextMonth' => $month->copy()->addMonth()->format('Y-m'),
             'navigationShortcutsEnabled' => $workspace->navigation_shortcuts_enabled,
+            'firstDayOfWeek' => $workspace->first_day_of_week,
         ]);
     }
 
@@ -178,7 +168,7 @@ class TransactionController extends Controller
         $workspace = $this->workspaceContext->get();
 
         $reference = $this->parseLocalDate($request->query('week'), $workspace);
-        $weekStart = $reference->copy()->subDays($reference->dayOfWeek)->startOfDay();
+        $weekStart = $summarizeTransactionPeriod->weekStart($workspace, $reference);
 
         $days = $summarizeTransactionPeriod->forWeek($workspace, $weekStart);
 
@@ -232,17 +222,13 @@ class TransactionController extends Controller
 
         $workspace = $this->workspaceContext->get();
 
-        $month = $request->query('month');
-        $month = is_string($month) && preg_match('/^\d{4}-\d{2}$/', $month)
-            ? Carbon::parse($month.'-01', $workspace->timezone)
-            : Carbon::now($workspace->timezone);
+        $month = $this->parseStrictMonth($request->query('month'), $workspace)
+            ?? Carbon::now($workspace->timezone)->startOfMonth();
 
-        $month = $month->startOfMonth();
+        $start = $summarizeTransactionPeriod->billingMonthStart($workspace, $month);
+        $end = $summarizeTransactionPeriod->billingMonthStart($workspace, $month->copy()->addMonth());
 
-        $start = $month->copy()->startOfDay();
-        $end = $start->copy()->addMonth();
-
-        $days = $summarizeTransactionPeriod->forMonth($workspace, $month);
+        $days = $summarizeTransactionPeriod->forRange($workspace, $start, $end);
 
         $totals = ['income' => [], 'expense' => [], 'net' => []];
         $count = 0;
@@ -689,10 +675,44 @@ class TransactionController extends Controller
      */
     private function parseLocalDate(mixed $value, Workspace $workspace): Carbon
     {
-        if (is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
-            return Carbon::parse($value, $workspace->timezone)->startOfDay();
+        return $this->parseStrictDate($value, $workspace) ?? Carbon::now($workspace->timezone)->startOfDay();
+    }
+
+    /**
+     * Strictly parse a `YYYY-MM-DD` workspace-local date query parameter,
+     * rejecting calendar-invalid dates (e.g. `2026-02-31`) and malformed
+     * values (e.g. `2026-99-01`) instead of silently normalizing or throwing.
+     */
+    private function parseStrictDate(mixed $value, Workspace $workspace): ?Carbon
+    {
+        if (! is_string($value) || ! preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value, $matches)) {
+            return null;
         }
 
-        return Carbon::now($workspace->timezone)->startOfDay();
+        if (! checkdate((int) $matches[2], (int) $matches[3], (int) $matches[1])) {
+            return null;
+        }
+
+        return Carbon::parse($value, $workspace->timezone)->startOfDay();
+    }
+
+    /**
+     * Strictly parse a `YYYY-MM` workspace-local month query parameter,
+     * rejecting malformed values (e.g. `2026-99`) instead of letting them
+     * reach the date parser.
+     */
+    private function parseStrictMonth(mixed $value, Workspace $workspace): ?Carbon
+    {
+        if (! is_string($value) || ! preg_match('/^(\d{4})-(\d{2})$/', $value, $matches)) {
+            return null;
+        }
+
+        $month = (int) $matches[2];
+
+        if ($month < 1 || $month > 12) {
+            return null;
+        }
+
+        return Carbon::createFromDate((int) $matches[1], $month, 1, $workspace->timezone)->startOfMonth();
     }
 }

@@ -24,6 +24,7 @@ const props = defineProps<{
     previousMonth: string;
     nextMonth: string;
     navigationShortcutsEnabled: boolean;
+    firstDayOfWeek: number;
 }>();
 
 defineOptions({
@@ -44,16 +45,22 @@ const monthLabel = computed(() =>
     monthFormatter.format(new Date(`${props.month}T00:00:00`)),
 );
 
-const weekdayLabels = (() => {
+const weekdayLabels = computed(() => {
     const formatter = new Intl.DateTimeFormat(undefined, { weekday: 'short' });
     const days: string[] = [];
 
+    // 2026-06-07 is a Sunday; offset by `firstDayOfWeek` so labels and
+    // calendar columns share the same starting weekday.
     for (let i = 0; i < 7; i++) {
-        days.push(formatter.format(new Date(Date.UTC(2026, 5, 7 + i))));
+        days.push(
+            formatter.format(
+                new Date(Date.UTC(2026, 5, 7 + props.firstDayOfWeek + i)),
+            ),
+        );
     }
 
     return days;
-})();
+});
 
 interface CalendarCell {
     date: string | null;
@@ -66,7 +73,7 @@ const weeks = computed<CalendarCell[][]>(() => {
     const [year, month] = props.month.split('-').map(Number);
     const firstDay = new Date(year, month - 1, 1);
     const daysInMonth = new Date(year, month, 0).getDate();
-    const startOffset = firstDay.getDay();
+    const startOffset = (firstDay.getDay() - props.firstDayOfWeek + 7) % 7;
 
     const cells: CalendarCell[] = [];
 

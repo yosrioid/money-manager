@@ -117,6 +117,25 @@ test('transactions can be searched by amount', function () {
         );
 });
 
+test('amount search matches large integers without float precision loss', function () {
+    [$user, $workspace, $account, $incomeCategory, $expenseCategory] = setUpTransactionSearchWorkspace();
+
+    // 9007199254740993 exceeds PHP's float precision (2^53); casting it to
+    // float would round it to 9007199254740992, the amount of the other
+    // transaction below.
+    app(RecordIncomeExpense::class)->record($account, $incomeCategory, TransactionType::Income, 9007199254740992, 'Rounded amount', now(), $user);
+    app(RecordIncomeExpense::class)->record($account, $expenseCategory, TransactionType::Expense, 9007199254740993, 'Precise amount', now(), $user);
+
+    $this->actingAs($user)
+        ->get(route('transactions.index', ['q' => '9007199254740993']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('transactions/Index')
+            ->has('transactions.data', 1)
+            ->where('transactions.data.0.description', 'Precise amount')
+        );
+});
+
 test('search with no matches returns an empty list', function () {
     [$user, $workspace, $account, $incomeCategory] = setUpTransactionSearchWorkspace();
 

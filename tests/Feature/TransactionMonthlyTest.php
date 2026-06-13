@@ -1,11 +1,13 @@
 <?php
 
+use App\Domain\Ledger\ReverseTransaction;
 use App\Domain\Transactions\RecordIncomeExpense;
 use App\Domain\Workspaces\CreatePersonalWorkspace;
 use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Category;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Inertia\Testing\AssertableInertia as Assert;
 
 function setUpTransactionMonthlyWorkspace(): array
@@ -68,6 +70,37 @@ test('monthly view summarizes income, expense, net, and counts per month', funct
             ->where('previousYear', '2025')
             ->where('nextYear', '2027')
         );
+});
+
+test('monthly view nets a same-month reversal to zero without double counting', function () {
+    [$user, $workspace, $account, , $expenseCategory] = setUpTransactionMonthlyWorkspace();
+
+    Carbon::setTestNow(now()->setDate(2026, 6, 5)->setTime(10, 0));
+
+    $expense = app(RecordIncomeExpense::class)->record(
+        $account,
+        $expenseCategory,
+        TransactionType::Expense,
+        15000,
+        'Groceries',
+        now(),
+        $user,
+    );
+
+    app(ReverseTransaction::class)->reverse($expense, $user);
+
+    $this->actingAs($user)
+        ->get(route('transactions.monthly', ['year' => '2026']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('transactions/Monthly')
+            ->where('months.2026-06.count', 2)
+            ->where('months.2026-06.income.'.$account->currency_code, 15000)
+            ->where('months.2026-06.expense.'.$account->currency_code, 15000)
+            ->where('months.2026-06.net.'.$account->currency_code, 0)
+        );
+
+    Carbon::setTestNow();
 });
 
 test('monthly view excludes transactions outside the requested year', function () {
