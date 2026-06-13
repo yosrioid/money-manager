@@ -50,6 +50,40 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-13 09:55 WIB - `P3-19` Responsive Mobile Entry
+
+- **Branch:** `feat/phase-3`.
+- **Feature IDs:** `P3-19`.
+- **Status:** Completed.
+- **Completed:** Audited `TransactionForm.vue` and the shared app shell for
+  narrow-viewport issues. The main field grid already uses
+  `grid gap-6 md:grid-cols-2` (single column below `md`), split rows already
+  collapse to one column, and recent-value/bookmark chips already use
+  `flex flex-wrap`. The shadcn sidebar already renders as a mobile drawer, and
+  `AppSidebarLayout`'s `AppContent` already sets `overflow-x-hidden`. The only
+  fix needed was the bottom action row: changed
+  `flex items-center gap-3` to `flex flex-wrap items-center gap-3` so
+  "Save transaction" / "Save draft" / "Cancel" wrap instead of overflowing on
+  narrow screens, and hid the `P3-18` keyboard-shortcut hint below the `sm`
+  breakpoint (`hidden ... sm:inline`) since it isn't relevant on touch
+  devices.
+- **Verification:** `npm run lint:check`, `npm run format:check` (after
+  `npx prettier --write` on `TransactionForm.vue`), `npm run types:check`,
+  `npm run build`, and the full `php artisan test --compact`
+  (250 tests / 1659 assertions, unaffected) all passed.
+- **Decisions:** Full automated desktop/mobile browser acceptance testing of
+  this and other journeys is the dedicated scope of `P8-04` (Browser and
+  responsive acceptance); this slice satisfies the catalog's "core entry
+  works on supported mobile viewport sizes" acceptance at the responsive
+  layout level, consistent with how `P3-05` documented its own scoped
+  deferral to a later phase.
+- **Blockers:** None.
+- **Uncommitted:** All `P3-19` changes are uncommitted on `feat/phase-3`,
+  pending the standard P3-19 commit.
+- **Next:** Commit as `feat(transactions): improve mobile layout for
+  transaction entry form (P3-19)`, then continue with `P3-20` (Swipe and
+  navigation preferences).
+
 ### 2026-06-13 09:35 WIB - `P3-18` Keyboard-First Desktop Entry
 
 - **Branch:** `feat/phase-3`.

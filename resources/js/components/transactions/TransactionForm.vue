@@ -607,7 +607,7 @@ const submitOnShortcut = (event: KeyboardEvent) => {
             </div>
         </fieldset>
 
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             <Button :disabled="processing">Save transaction</Button>
             <Button
                 type="button"
@@ -620,7 +620,7 @@ const submitOnShortcut = (event: KeyboardEvent) => {
             <Button variant="outline" as-child>
                 <Link :href="index()">Cancel</Link>
             </Button>
-            <span class="text-sm text-muted-foreground">
+            <span class="hidden text-sm text-muted-foreground sm:inline">
                 Tip: press Ctrl+Enter (Cmd+Enter on macOS) to save from anywhere
                 in the form.
             </span>
