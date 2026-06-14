@@ -8,6 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { usePeriodNavigation } from '@/composables/usePeriodNavigation';
+import {
+    index as budgetsIndex,
+    income as budgetsIncome,
+} from '@/routes/budgets';
 import { index, summary } from '@/routes/transactions';
 
 interface AccountMovement {
@@ -19,6 +23,12 @@ interface AccountMovement {
     change: number;
 }
 
+interface BudgetTotal {
+    budget: number | null;
+    actual: number;
+    currency: string | null;
+}
+
 const props = defineProps<{
     month: string;
     count: number;
@@ -28,10 +38,26 @@ const props = defineProps<{
         net: Record<string, number>;
     };
     accountMovements: AccountMovement[];
+    budgetSummary: {
+        expense: BudgetTotal;
+        income: BudgetTotal;
+    };
+    netAssets: Record<string, number>;
+    netAssetTarget: number | null;
+    defaultCurrency: string;
     previousMonth: string;
     nextMonth: string;
     navigationShortcutsEnabled: boolean;
 }>();
+
+const remaining = (total: BudgetTotal): number | null =>
+    total.budget === null ? null : total.budget - total.actual;
+
+const netAssetRemaining = computed(() =>
+    props.netAssetTarget === null
+        ? null
+        : props.netAssetTarget - (props.netAssets[props.defaultCurrency] ?? 0),
+);
 
 defineOptions({
     layout: {
@@ -165,6 +191,125 @@ usePeriodNavigation({
                 </div>
                 <p v-else class="text-muted-foreground">
                     No active accounts in this workspace.
+                </p>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardContent class="space-y-3 p-4 text-sm">
+                <Heading variant="small" title="Budget summary" />
+                <div class="grid gap-2">
+                    <div
+                        class="flex items-center justify-between gap-4 border-b pb-2"
+                    >
+                        <Link :href="budgetsIndex({ query: { month } })">
+                            <span class="font-medium text-foreground"
+                                >Expense budget</span
+                            >
+                        </Link>
+                        <div class="flex flex-wrap gap-3 text-muted-foreground">
+                            <span v-if="budgetSummary.expense.budget !== null">
+                                Budget: {{ budgetSummary.expense.budget }}
+                                {{ budgetSummary.expense.currency ?? '' }}
+                            </span>
+                            <span v-else>No budget set</span>
+                            <span>
+                                Actual: {{ budgetSummary.expense.actual }}
+                                {{ budgetSummary.expense.currency ?? '' }}
+                            </span>
+                            <span
+                                v-if="remaining(budgetSummary.expense) !== null"
+                                :class="
+                                    (remaining(
+                                        budgetSummary.expense,
+                                    ) as number) >= 0
+                                        ? 'text-emerald-600 dark:text-emerald-400'
+                                        : 'text-red-600 dark:text-red-400'
+                                "
+                            >
+                                Remaining:
+                                {{ remaining(budgetSummary.expense) }}
+                                {{ budgetSummary.expense.currency ?? '' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div
+                        class="flex items-center justify-between gap-4 last:pb-0"
+                    >
+                        <Link :href="budgetsIncome({ query: { month } })">
+                            <span class="font-medium text-foreground"
+                                >Planned income</span
+                            >
+                        </Link>
+                        <div class="flex flex-wrap gap-3 text-muted-foreground">
+                            <span v-if="budgetSummary.income.budget !== null">
+                                Planned: {{ budgetSummary.income.budget }}
+                                {{ budgetSummary.income.currency ?? '' }}
+                            </span>
+                            <span v-else>No target set</span>
+                            <span>
+                                Actual: {{ budgetSummary.income.actual }}
+                                {{ budgetSummary.income.currency ?? '' }}
+                            </span>
+                            <span
+                                v-if="remaining(budgetSummary.income) !== null"
+                                :class="
+                                    (remaining(
+                                        budgetSummary.income,
+                                    ) as number) <= 0
+                                        ? 'text-emerald-600 dark:text-emerald-400'
+                                        : 'text-red-600 dark:text-red-400'
+                                "
+                            >
+                                Remaining: {{ remaining(budgetSummary.income) }}
+                                {{ budgetSummary.income.currency ?? '' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardContent class="space-y-3 p-4 text-sm">
+                <Heading variant="small" title="Net asset" />
+                <div class="grid gap-1">
+                    <div
+                        v-for="currency in Object.keys(netAssets)"
+                        :key="currency"
+                        class="font-medium text-foreground"
+                    >
+                        {{ netAssets[currency] }} {{ currency }}
+                    </div>
+                    <p
+                        v-if="!Object.keys(netAssets).length"
+                        class="text-muted-foreground"
+                    >
+                        No accounts are included in your net asset total.
+                    </p>
+                </div>
+                <div
+                    v-if="netAssetTarget !== null"
+                    class="flex flex-wrap gap-3 text-muted-foreground"
+                >
+                    <span
+                        >Target: {{ netAssetTarget }}
+                        {{ defaultCurrency }}</span
+                    >
+                    <span
+                        :class="
+                            (netAssetRemaining as number) <= 0
+                                ? 'text-emerald-600 dark:text-emerald-400'
+                                : 'text-red-600 dark:text-red-400'
+                        "
+                    >
+                        Remaining to target: {{ netAssetRemaining }}
+                        {{ defaultCurrency }}
+                    </span>
+                </div>
+                <p v-else class="text-muted-foreground">
+                    No net asset target set. You can set one in workspace
+                    settings.
                 </p>
             </CardContent>
         </Card>

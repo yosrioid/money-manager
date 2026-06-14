@@ -31,6 +31,9 @@ class WorkspacePreferencesRequest extends FormRequest
             'entry_form_fields' => ['sometimes', 'array'],
             'entry_form_fields.*' => ['string', Rule::in(['merchant', 'memo', 'tags']), 'distinct'],
             'navigation_shortcuts_enabled' => ['required', 'boolean'],
+            'net_asset_target' => ['nullable', 'integer', 'min:0'],
+            'report_widgets' => ['sometimes', 'array'],
+            'report_widgets.*' => ['string', Rule::in(['summary', 'comparison', 'categoryBreakdown', 'merchantBreakdown', 'accountActivity', 'netWorth', 'netWorthTrend']), 'distinct'],
         ];
     }
 }

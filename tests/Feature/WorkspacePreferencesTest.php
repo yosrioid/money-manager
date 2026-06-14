@@ -127,6 +127,94 @@ test('workspace preferences are isolated between workspaces', function () {
     expect($otherWorkspace->fresh()->default_currency)->toBe('EUR');
 });
 
+test('workspace owner can set a net asset target', function () {
+    $user = User::factory()->create();
+    $workspace = app(CreatePersonalWorkspace::class)->create($user);
+
+    $this->actingAs($user)
+        ->patch(route('workspace.update'), [
+            'name' => 'My Workspace',
+            'default_currency' => 'IDR',
+            'timezone' => 'Asia/Jakarta',
+            'locale' => 'id',
+            'number_format' => 'id-ID',
+            'first_day_of_week' => 1,
+            'month_start_day' => 1,
+            'adjust_month_for_weekend' => false,
+            'application_lock_minutes' => 0,
+            'navigation_shortcuts_enabled' => true,
+            'net_asset_target' => 100000000,
+        ])
+        ->assertRedirect(route('workspace.edit'));
+
+    expect($workspace->fresh()->net_asset_target)->toBe(100000000);
+});
+
+test('workspace update rejects a negative net asset target', function () {
+    $user = User::factory()->create();
+    app(CreatePersonalWorkspace::class)->create($user);
+
+    $this->actingAs($user)
+        ->patch(route('workspace.update'), [
+            'name' => 'My Workspace',
+            'default_currency' => 'IDR',
+            'timezone' => 'Asia/Jakarta',
+            'locale' => 'id',
+            'number_format' => 'id-ID',
+            'first_day_of_week' => 1,
+            'month_start_day' => 1,
+            'adjust_month_for_weekend' => false,
+            'application_lock_minutes' => 0,
+            'navigation_shortcuts_enabled' => true,
+            'net_asset_target' => -1,
+        ])
+        ->assertSessionHasErrors('net_asset_target');
+});
+
+test('workspace owner can configure visible report widgets', function () {
+    $user = User::factory()->create();
+    $workspace = app(CreatePersonalWorkspace::class)->create($user);
+
+    $this->actingAs($user)
+        ->patch(route('workspace.update'), [
+            'name' => 'My Workspace',
+            'default_currency' => 'IDR',
+            'timezone' => 'Asia/Jakarta',
+            'locale' => 'id',
+            'number_format' => 'id-ID',
+            'first_day_of_week' => 1,
+            'month_start_day' => 1,
+            'adjust_month_for_weekend' => false,
+            'application_lock_minutes' => 0,
+            'navigation_shortcuts_enabled' => true,
+            'report_widgets' => ['summary', 'netWorth'],
+        ])
+        ->assertRedirect(route('workspace.edit'));
+
+    expect($workspace->fresh()->reportWidgets())->toBe(['summary', 'netWorth']);
+});
+
+test('workspace update rejects an unsupported report widget', function () {
+    $user = User::factory()->create();
+    app(CreatePersonalWorkspace::class)->create($user);
+
+    $this->actingAs($user)
+        ->patch(route('workspace.update'), [
+            'name' => 'My Workspace',
+            'default_currency' => 'IDR',
+            'timezone' => 'Asia/Jakarta',
+            'locale' => 'id',
+            'number_format' => 'id-ID',
+            'first_day_of_week' => 1,
+            'month_start_day' => 1,
+            'adjust_month_for_weekend' => false,
+            'application_lock_minutes' => 0,
+            'navigation_shortcuts_enabled' => true,
+            'report_widgets' => ['bogus'],
+        ])
+        ->assertSessionHasErrors('report_widgets.0');
+});
+
 test('workspace application lock only accepts supported inactivity periods', function () {
     $user = User::factory()->create();
     app(CreatePersonalWorkspace::class)->create($user);

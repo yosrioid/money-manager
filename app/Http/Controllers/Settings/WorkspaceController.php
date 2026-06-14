@@ -33,8 +33,10 @@ class WorkspaceController extends Controller
                 'adjust_month_for_weekend',
                 'application_lock_minutes',
                 'navigation_shortcuts_enabled',
+                'net_asset_target',
             ]),
             'entryFormFields' => $workspace->entryFormFields(),
+            'reportWidgets' => $workspace->reportWidgets(),
             'currencies' => Currency::query()->orderBy('code')->get(['code', 'name', 'symbol']),
         ]);
     }
@@ -47,6 +49,7 @@ class WorkspaceController extends Controller
 
         $validated = $request->validated();
         $validated['entry_form_fields'] = $validated['entry_form_fields'] ?? [];
+        $validated['report_widgets'] = $validated['report_widgets'] ?? [];
 
         $workspace->update($validated);
 
