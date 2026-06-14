@@ -1,8 +1,10 @@
 <?php
 
+use App\Domain\Ledger\PostOpeningBalance;
 use App\Domain\Ledger\ReverseTransaction;
 use App\Domain\Transactions\RecordIncomeExpense;
 use App\Domain\Workspaces\CreatePersonalWorkspace;
+use App\Enums\AccountType;
 use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Category;
@@ -261,5 +263,37 @@ test('summary view defaults to the current workspace-local month', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('transactions/Summary')
             ->where('month', now($workspace->timezone)->startOfMonth()->toDateString())
+        );
+});
+
+test('asset-like accounts can be included or excluded from net asset totals', function () {
+    [$user, $workspace, $account] = setUpTransactionSummaryWorkspace();
+
+    app(PostOpeningBalance::class)->post($account, 35000, $user);
+
+    $insuredAsset = Account::factory()->for($workspace)->create([
+        'type' => AccountType::Asset,
+        'currency_code' => $account->currency_code,
+        'include_in_total' => true,
+    ]);
+
+    app(PostOpeningBalance::class)->post($insuredAsset, 250000, $user);
+
+    $this->actingAs($user)
+        ->get(route('transactions.summary', ['month' => '2026-06']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('transactions/Summary')
+            ->where('netAssets.'.$account->currency_code, 35000 + 250000)
+        );
+
+    $insuredAsset->update(['include_in_total' => false]);
+
+    $this->actingAs($user)
+        ->get(route('transactions.summary', ['month' => '2026-06']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('transactions/Summary')
+            ->where('netAssets.'.$account->currency_code, 35000)
         );
 });

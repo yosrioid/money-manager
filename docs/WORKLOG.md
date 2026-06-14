@@ -2539,3 +2539,30 @@ tests/Browser/welcome.spec.ts` (chromium) → passed, title contains "Money
   changes remain uncommitted and unpushed on `docs/master-delivery-plan`.
 - **Next:** Review the final governance diff, then commit and push only after
   explicit user approval.
+
+### 2026-06-15 03:25 WIB - P5-16 Insurance And Tracked-Asset Workflows Verified
+
+- **Branch:** `feat/phase-5`.
+- **Feature IDs:** `P5-16`.
+- **Status:** Done.
+- **Completed:** Confirmed and tested that the existing `accounts.include_in_total`
+  boolean column (already wired into `CalculateNetAsset::current()/summary()/trend()`,
+  `AccountForm.vue`, and `accounts/Index.vue`) combined with the pre-existing
+  `AccountType::Asset` case (classified as a net asset, not a liability, by
+  `CalculateNetAsset::LIABILITY_TYPES`) already satisfies "asset-like accounts
+  (e.g. insurance, tracked assets) can be included or excluded from net asset
+  totals". Added `tests/Feature/TransactionSummaryTest.php::asset-like accounts
+  can be included or excluded from net asset totals`, which creates an
+  `Asset`-type account with an opening balance and `include_in_total=true`,
+  asserts it contributes to `netAssets`, then toggles `include_in_total=false`
+  and asserts it is excluded. No production code changes were required.
+- **Verification:** Full Pest suite (366 tests, 2789 assertions), PHPStan
+  (Larastan level 6, 0 errors), and Pint all pass.
+- **Decisions:** This completes all of Phase 5's feature scope (`P5-01`
+  through `P5-16`); `docs/PROGRESS.md` Phase 5 status and the `F-014` roadmap
+  entry are marked Done.
+- **Blockers:** None.
+- **Uncommitted:** None after this entry's commit.
+- **Next:** Phase 5 exit gate review and PR preparation per
+  `docs/MASTER_PLAN.md` Pull Request Planning Rules; push and PR creation
+  require explicit user approval.
