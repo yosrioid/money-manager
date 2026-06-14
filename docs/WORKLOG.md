@@ -50,6 +50,18 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-14 22:10 WIB - P5-04 Card Settlement Workflow Verified
+
+- **Branch:** `feat/phase-5`.
+- **Feature IDs:** `P5-04`.
+- **Status:** Completed.
+- **Completed:** Reviewed `StoreTransactionRequest::validateTransfer()` and `RecordTransfer` (from `P2-13`) and confirmed the existing generic transfer feature already satisfies "settlement transfer reduces card liability correctly": a transfer with a `credit_card` destination account posts a balanced double-entry with no category leg, increasing the card's ledger balance and thus reducing `-balance`/outstanding per `P5-01`'s liability semantics. Added `tests/Feature/TransferRecordingTest.php::credit card settlement transfer reduces the card outstanding balance` (plus a `postLedgerAdjustment()` helper) which creates a credit-card account with -1,500,000 of existing debt, performs a 1,000,000 settlement transfer from a bank account, and asserts the card's balance moves to -500,000 while the bank account's balance decreases accordingly. No production code changes were required.
+- **Verification:** `php artisan test --compact --filter=TransferRecordingTest` passed: 10 tests, 48 assertions. Full suite `php artisan test --compact` passed: 332 tests, 2556 assertions. `vendor/bin/phpstan analyse --no-progress --memory-limit=1G` passed (0 errors). `npm run types:check` passed. `vendor/bin/pint --dirty --format agent` passed.
+- **Decisions:** Treated this as a verification-and-test feature rather than new functionality, since `P2-13`'s transfer mechanism plus `P5-01`'s liability semantics already cover the acceptance criteria; an existing test (`credit card settlement is recorded as a transfer without an expense leg`) checked the entry shape but not the balance change, which the new test now covers.
+- **Blockers:** None.
+- **Uncommitted:** All of `P5-04` is uncommitted on `feat/phase-5`, pending commit.
+- **Next:** Commit `P5-04`, then continue with `P5-05` (debit-card account linkage: debit-card expense posts against its linked funding account).
+
 ### 2026-06-14 21:45 WIB - P5-03 Outstanding Card Balance Implemented
 
 - **Branch:** `feat/phase-5`.

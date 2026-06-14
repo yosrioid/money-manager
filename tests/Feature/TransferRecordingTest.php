@@ -23,6 +23,41 @@ function createTransferWorkspace(): array
     return [$user, $workspace];
 }
 
+function postLedgerAdjustment(Account $account, int $amount, User $user): Transaction
+{
+    $transaction = Transaction::query()->create([
+        'workspace_id' => $account->workspace_id,
+        'created_by' => $user->id,
+        'type' => TransactionType::OpeningBalance,
+        'status' => TransactionStatus::Draft,
+        'currency_code' => $account->currency_code,
+        'description' => 'Ledger adjustment',
+        'occurred_at' => now(),
+        'posted_at' => null,
+    ]);
+
+    $transaction->entries()->createMany([
+        [
+            'workspace_id' => $account->workspace_id,
+            'account_id' => $account->id,
+            'type' => LedgerEntryType::Account,
+            'currency_code' => $account->currency_code,
+            'amount' => $amount,
+        ],
+        [
+            'workspace_id' => $account->workspace_id,
+            'account_id' => null,
+            'type' => LedgerEntryType::OpeningBalanceEquity,
+            'currency_code' => $account->currency_code,
+            'amount' => -$amount,
+        ],
+    ]);
+
+    $transaction->update(['status' => TransactionStatus::Posted, 'posted_at' => now()]);
+
+    return $transaction;
+}
+
 function transferPayload(Account $sourceAccount, Account $destinationAccount, array $overrides = []): array
 {
     return array_merge([
@@ -115,6 +150,26 @@ test('credit card settlement is recorded as a transfer without an expense leg', 
     expect($transaction->type)->toBe(TransactionType::Transfer)
         ->and($transaction->entries()->where('type', LedgerEntryType::Category)->count())->toBe(0)
         ->and($transaction->entries()->sum('amount'))->toBe(0);
+});
+
+test('credit card settlement transfer reduces the card outstanding balance', function () {
+    [$user, $workspace] = createTransferWorkspace();
+    $bankAccount = Account::factory()->for($workspace)->create(['type' => AccountType::BankAccount]);
+    $creditCardAccount = Account::factory()->for($workspace)->creditCard(5000000)->create();
+
+    postLedgerAdjustment($creditCardAccount, -1500000, $user);
+
+    expect(app(CalculateAccountBalance::class)->calculate($creditCardAccount->fresh()))->toBe(-1500000);
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), transferPayload($bankAccount, $creditCardAccount, [
+            'amount' => 1000000,
+            'description' => 'Credit card settlement',
+        ]))
+        ->assertRedirect(route('accounts.index'));
+
+    expect(app(CalculateAccountBalance::class)->calculate($creditCardAccount->fresh()))->toBe(-500000)
+        ->and(app(CalculateAccountBalance::class)->calculate($bankAccount->fresh()))->toBe(-1000000);
 });
 
 test('transfer rejects the same source and destination account', function () {
