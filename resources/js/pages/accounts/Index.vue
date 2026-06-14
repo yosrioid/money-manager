@@ -39,6 +39,7 @@ interface Account {
     name: string;
     type: string;
     currency_code: string;
+    credit_limit: number | null;
     balance: number;
     is_visible: boolean;
     is_favorite: boolean;
@@ -62,6 +63,14 @@ const typeLabel = (value: string): string =>
         .split('_')
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join(' ');
+
+const outstandingBalance = (balance: number): number =>
+    balance < 0 ? -balance : 0;
+
+const availableCredit = (account: Account): number | null =>
+    account.credit_limit === null
+        ? null
+        : account.credit_limit - outstandingBalance(account.balance);
 </script>
 
 <template>
@@ -262,7 +271,26 @@ const typeLabel = (value: string): string =>
                                 Excluded from totals
                             </Badge>
                         </div>
-                        <p class="text-sm text-muted-foreground">
+                        <template v-if="account.type === 'credit_card'">
+                            <p class="text-sm text-muted-foreground">
+                                Outstanding balance:
+                                <span class="font-medium text-foreground">
+                                    {{ outstandingBalance(account.balance) }}
+                                    {{ account.currency_code }}
+                                </span>
+                            </p>
+                            <p
+                                v-if="account.credit_limit !== null"
+                                class="text-sm text-muted-foreground"
+                            >
+                                Available credit:
+                                <span class="font-medium text-foreground">
+                                    {{ availableCredit(account) }}
+                                    {{ account.currency_code }}
+                                </span>
+                            </p>
+                        </template>
+                        <p v-else class="text-sm text-muted-foreground">
                             Ledger balance:
                             <span class="font-medium text-foreground">
                                 {{ account.balance }}

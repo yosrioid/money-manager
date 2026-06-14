@@ -30,6 +30,7 @@ class UpdateAccountRequest extends FormRequest
             'name' => ['required', 'string', 'max:100'],
             'type' => ['required', Rule::enum(AccountType::class)],
             'currency_code' => ['required', 'string', 'size:3', Rule::exists('currencies', 'code')],
+            'credit_limit' => ['nullable', 'integer', 'min:0'],
             'account_group_id' => [
                 'nullable',
                 'integer',
@@ -57,6 +58,16 @@ class UpdateAccountRequest extends FormRequest
 
                 if ($account->currency_code !== $this->input('currency_code') && $account->ledgerEntries()->exists()) {
                     $validator->errors()->add('currency_code', __('The currency cannot change after ledger entries are posted.'));
+                }
+
+                $type = AccountType::tryFrom($this->string('type')->value());
+
+                if ($type === AccountType::CreditCard && ! $this->filled('credit_limit')) {
+                    $validator->errors()->add('credit_limit', __('Credit limit is required for credit card accounts.'));
+                }
+
+                if ($type !== AccountType::CreditCard && $this->filled('credit_limit')) {
+                    $validator->errors()->add('credit_limit', __('Credit limit is only applicable to credit card accounts.'));
                 }
             },
         ];

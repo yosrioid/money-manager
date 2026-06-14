@@ -10,6 +10,7 @@ interface Account {
     name: string;
     type: string;
     currency_code: string;
+    credit_limit: number | null;
     balance: number;
     account_group_id: number | null;
     description: string | null;

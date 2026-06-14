@@ -8,6 +8,7 @@ use App\Models\Workspace;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class StoreAccountRequest extends FormRequest
 {
@@ -29,6 +30,7 @@ class StoreAccountRequest extends FormRequest
             'name' => ['required', 'string', 'max:100'],
             'type' => ['required', Rule::enum(AccountType::class)],
             'currency_code' => ['required', 'string', 'size:3', Rule::exists('currencies', 'code')],
+            'credit_limit' => ['nullable', 'integer', 'min:0'],
             'opening_balance' => ['required', 'integer'],
             'account_group_id' => [
                 'nullable',
@@ -38,6 +40,26 @@ class StoreAccountRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:500'],
             'is_visible' => ['sometimes', 'boolean'],
             'include_in_total' => ['sometimes', 'boolean'],
+        ];
+    }
+
+    /**
+     * @return array<int, callable(Validator): void>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                $type = AccountType::tryFrom($this->string('type')->value());
+
+                if ($type === AccountType::CreditCard && ! $this->filled('credit_limit')) {
+                    $validator->errors()->add('credit_limit', __('Credit limit is required for credit card accounts.'));
+                }
+
+                if ($type !== AccountType::CreditCard && $this->filled('credit_limit')) {
+                    $validator->errors()->add('credit_limit', __('Credit limit is only applicable to credit card accounts.'));
+                }
+            },
         ];
     }
 }

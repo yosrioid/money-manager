@@ -50,6 +50,30 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-14 20:10 WIB - P5-01 Full Suite Verified
+
+- **Branch:** `feat/phase-5`.
+- **Feature IDs:** `P5-01`.
+- **Status:** Completed.
+- **Completed:** Resolved a full-suite-only failure in `FavoriteAccountsAndCategoriesTest::an account can be marked and unmarked as a favorite` that surfaced after the `UpdateAccountRequest` `credit_limit` validation was added. Cause: `Account::factory()` could randomly produce a `credit_card` type account; the favorite test's `accounts.update` PATCH omits `credit_limit`, which the new validator now rejects for `credit_card` accounts, breaking the expected redirect. Fix: `AccountFactory::definition()` now excludes `AccountType::CreditCard` from its random `type` selection (generic factory accounts default to `credit_limit => null`); dedicated `creditCard()` state remains for tests that need a credit-card account.
+- **Verification:** `php artisan test --compact` (full suite) passed: 323 tests, 2515 assertions. `vendor/bin/phpstan analyse --no-progress --memory-limit=1G` passed (0 errors). `vendor/bin/pint --dirty --format agent` passed (no changes needed).
+- **Decisions:** None.
+- **Blockers:** None.
+- **Uncommitted:** All of `P5-01` (migration, model, requests, controller, factory, Vue form/index, tests, doc updates) remains uncommitted on `feat/phase-5`, pending user approval to commit/push.
+- **Next:** Awaiting approval to commit `P5-01`, then continue the `P5-01`-`P5-05` group with `P5-02` (billing cycle - closing/payment dates determining statement periods for credit-card accounts).
+
+### 2026-06-14 19:30 WIB - Phase 5 Started: P5-01 Credit-Card Account Model Implemented
+
+- **Branch:** `feat/phase-5`.
+- **Feature IDs:** `P5-01`.
+- **Status:** Completed.
+- **Completed:** Started Phase 5 (Cards, Debt, Assets, And Multi-Currency) following `v0.3.0-beta.1`'s publication. Implemented `P5-01` (credit-card account model): added a nullable `credit_limit` bigInteger column (minor units) to `accounts` via migration. `StoreAccountRequest`/`UpdateAccountRequest` gained an `after()` check requiring `credit_limit` when `type` is `credit_card` and rejecting it for every other type; `AccountController::update` clears `credit_limit` to `null` when an account's type changes away from `credit_card`. `AccountForm.vue` now tracks the selected type reactively (`v-model` + `ref`) and only shows the "Credit limit in minor units" field for `credit_card` accounts. `accounts/Index.vue` shows credit-card accounts with "Outstanding balance" (`-balance` when negative, else 0 - following liability semantics, since existing expense postings already make a credit-card account's ledger balance more negative as debt accrues) and, when a limit is set, "Available credit" (`credit_limit - outstanding`), instead of the generic "Ledger balance" used by other account types. Added `AccountFactory::creditCard()` state. Updated `docs/PROGRESS.md`: Current Milestone now targets Phase 5 (`P5-01`-`P5-16`, In Progress); Phase 5 and `F-013` rows changed from `Planned` to `In Progress`; added a `P5-01` row to the Catalog Status Summary and Active Feature Overrides table.
+- **Verification:** `php artisan test --compact --filter="AccountManagementTest|AccountBalanceCalculationTest"` passed: 13 tests, 83 assertions (3 new tests: credit-card creation requires `credit_limit`, `credit_limit` rejected for non-credit-card types, changing type away from `credit_card` clears `credit_limit`; plus a new balance-calculation test asserting the index exposes `balance` and `credit_limit` for a credit-card account with a posted expense). `vendor/bin/phpstan analyse --no-progress --memory-limit=512M` (full app) passed (0 errors). `npm run types:check` (`vue-tsc --noEmit`) passed. `vendor/bin/pint --dirty --format agent` applied (no changes needed).
+- **Decisions:** No new transaction/posting logic was needed for liability semantics - existing income/expense posting already makes a credit-card account's ledger balance negative as charges accrue (same mechanism as any other expense-funding account), so "outstanding balance" is simply the negated ledger balance and "available credit" is `credit_limit - outstanding`. Scoped `P5-01` strictly to the account model/limit and its display; billing cycles (`P5-02`), statement balances (`P5-03`), and settlement (`P5-04`) are separate features.
+- **Blockers:** None.
+- **Uncommitted:** All of `P5-01` (migration, model, requests, controller, factory, Vue form/index, tests, doc updates) is uncommitted on `feat/phase-5`, pending user approval to commit/push.
+- **Next:** Continue the `P5-01`-`P5-05` group: `P5-02` (billing cycle - closing/payment dates determining statement periods for credit-card accounts).
+
 ### 2026-06-14 18:00 WIB - Phase 4 Merged; Preparing `v0.3.0-beta.1` Release
 
 - **Branch:** `docs/v0.3.0-beta.1-release-prep`.

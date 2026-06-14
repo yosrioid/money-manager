@@ -19,8 +19,12 @@ class AccountFactory extends Factory
             'workspace_id' => Workspace::factory(),
             'account_group_id' => null,
             'name' => fake()->words(2, true),
-            'type' => fake()->randomElement(AccountType::cases()),
+            'type' => fake()->randomElement(array_filter(
+                AccountType::cases(),
+                fn (AccountType $type): bool => $type !== AccountType::CreditCard,
+            )),
             'currency_code' => 'IDR',
+            'credit_limit' => null,
             'description' => null,
             'position' => fake()->numberBetween(0, 100),
             'is_visible' => true,
@@ -43,5 +47,13 @@ class AccountFactory extends Factory
     public function favorite(): static
     {
         return $this->state(['is_favorite' => true]);
+    }
+
+    public function creditCard(int $creditLimit = 0): static
+    {
+        return $this->state([
+            'type' => AccountType::CreditCard,
+            'credit_limit' => $creditLimit,
+        ]);
     }
 }

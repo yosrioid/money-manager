@@ -88,6 +88,20 @@ test('balance as of a date excludes transactions posted after that date', functi
         ->and($calculator->calculate($account))->toBe(3000);
 });
 
+test('credit card accounts expose their ledger balance and credit limit', function () {
+    $creditCard = Account::factory()->for($this->workspace)->creditCard(5000000)->create(['position' => 1]);
+    $transaction = createDraftTransactionWithEntries($this->workspace, $creditCard, $this->user, -1500000);
+    $transaction->update(['status' => TransactionStatus::Posted, 'posted_at' => now()]);
+
+    $this->actingAs($this->user)
+        ->get(route('accounts.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('accounts.1.balance', -1500000)
+            ->where('accounts.1.credit_limit', 5000000),
+        );
+});
+
 test('account group index reflects only posted ledger entries in account balances', function () {
     $transaction = createDraftTransactionWithEntries($this->workspace, $this->account, $this->user, 7500);
 

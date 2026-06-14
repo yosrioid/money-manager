@@ -26,9 +26,9 @@ phase is complete.
 
 ## Current Milestone
 
-- **Phase:** Phase 4 - Budgets, Goals, Statistics, And Data Exchange
-- **Milestone:** Complete Phase 4 implementation through `P4-25`
-- **Status:** Done
+- **Phase:** Phase 5 - Cards, Debt, Assets, And Multi-Currency
+- **Milestone:** Complete Phase 5 implementation through `P5-16`
+- **Status:** In Progress
 - **Updated:** 2026-06-14
 
 ## Phase Status
@@ -40,7 +40,7 @@ phase is complete.
 | Phase 2 | Ledger And Core Transactions                  | Done      | Balanced transaction engine ready     |
 | Phase 3 | Daily Use And Transaction Productivity        | Done      | Daily tracking experience ready     |
 | Phase 4 | Budgets, Goals, Statistics, And Data Exchange | Done      | MVP feature scope ready             |
-| Phase 5 | Cards, Debt, Assets, And Multi-Currency       | Planned   | Advanced finance workflows ready      |
+| Phase 5 | Cards, Debt, Assets, And Multi-Currency       | In Progress | Advanced finance workflows ready    |
 | Phase 6 | Automation, Attachments, Backup, And Restore  | Planned   | Automation and portability ready      |
 | Phase 7 | Collaboration, Sync, PWA, And Customization   | Planned   | Extended platform ready               |
 | Phase 8 | Production Hardening And Parity Acceptance    | Planned   | Applicable release gates passed       |
@@ -64,7 +64,7 @@ are defined by the mapped IDs in `docs/FEATURE_CATALOG.md`.
 | F-010 | Dashboard and fast-entry workflows              | `P3-13` to `P3-21` | Done      | 2026-06-13 |
 | F-011 | Budgets and goals                               | `P4-01` to `P4-10` | Done      | 2026-06-13 |
 | F-012 | Statistics, reports, import, and export         | `P4-11` to `P4-25` | Done      | 2026-06-14 |
-| F-013 | Cards, debt, and installments                   | `P5-01` to `P5-09` | Planned   | -          |
+| F-013 | Cards, debt, and installments                   | `P5-01` to `P5-09` | In Progress | -        |
 | F-014 | Assets and multi-currency                       | `P5-10` to `P5-16` | Planned   | -          |
 | F-015 | Recurring and scheduled transactions            | `P6-01` to `P6-06` | Planned   | -          |
 | F-016 | Attachments and receipts                        | `P6-07` to `P6-11` | Planned   | -          |
@@ -94,7 +94,8 @@ mapped feature ID.
 | `P4-23`            | Done     | Import preview and validation UI; see Active Feature Overrides for details |
 | `P4-24`            | Done     | Idempotent import; see Active Feature Overrides for details |
 | `P4-25`            | Done     | Asynchronous large CSV export via authorized queue job; see Active Feature Overrides for details |
-| `P5-01` to `P8-10` | Planned  | See phase sequence and dependencies in `docs/MASTER_PLAN.md` |
+| `P5-01`            | Done     | Credit-card account model; see Active Feature Overrides for details |
+| `P5-02` to `P8-10` | Planned  | See phase sequence and dependencies in `docs/MASTER_PLAN.md` |
 | `D-01` to `D-06`   | Deferred | Requires explicit scope approval                             |
 
 ## Active Feature Overrides
@@ -104,6 +105,7 @@ Keep the row through completion so partial package progress remains visible.
 
 | Feature ID         | Status    | Branch Or PR                                             | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ------------------ | --------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `P5-01`            | Done      | `feat/phase-5`                                                                                | Added a nullable `credit_limit` column (minor units) to `accounts`. `StoreAccountRequest`/`UpdateAccountRequest` require it for `credit_card` accounts and reject it for every other type; `AccountController::update` clears it when an account's type changes away from `credit_card`. `AccountForm.vue` shows the field only when the selected type is `credit_card`. `accounts/Index.vue` displays credit-card accounts with an "Outstanding balance" (the negated ledger balance, following liability semantics — purchases push the balance more negative) and, when a limit is set, an "Available credit" figure (`credit_limit - outstanding`), instead of the generic "Ledger balance" shown for other account types. |
 | `P4-20`            | Done      | `feat/phase-4`                                                                                | Added `transactions.export` (`TransactionController::export`, "Export CSV" button on `transactions/Index.vue`), which streams a CSV of the same posted-transaction history shown on the transaction list, filtered by the same query parameters (`q`, `type`, `status`, `category_id`, `account_id`, `tag_id`, `from`, `to`). The filter-resolution and query-building logic was extracted from `index()` into shared `resolveTransactionFilters()`/`filteredTransactionsQuery()` private methods. New `App\Domain\Export\GenerateTransactionsCsv` streams via `response()->streamDownload()` + `fputcsv()` with `chunkById(500, ...)` for memory efficiency, writing one row per account-side ledger entry (`Date, Type, Status, Description, Memo, Merchant, Account, Category, Amount, Currency, Tags`); the row's `Category` column is taken from the transaction's category-type entry (if any), so transfers (no category entry) leave it blank. |
 | `P4-21`            | Done      | `feat/phase-4`                                                                                | Added `phpoffice/phpspreadsheet` (substituting `maatwebsite/excel`, incompatible with PHP 8.5) and new `App\Domain\Export\GenerateReportSpreadsheet`, which builds and streams `.xlsx` workbooks via `Writer\Xlsx` + `response()->streamDownload()`. `reports.export` (`ReportController::export`, "Export Excel" button on `reports/Index.vue`) exports the selected billing month's report (honoring the same `account_ids`/`category_ids`/`merchant_id`/`tag_ids` filters as the Reports page) as a 5-sheet workbook: Summary, Categories (expense and income breakdown), Merchants, Accounts (opening/closing balances and activity), and Net worth. `transactions.monthly.export` (`TransactionController::exportYear`, "Export Excel" button on `transactions/Monthly.vue`) exports the selected year's `SummarizeTransactionPeriod::forYear()` data as a single "Monthly summary" sheet (one row per month with activity: income/expense/net per currency and transaction count). |
 | `P4-22` to `P4-24` | Done      | `feat/phase-4`                                                                                | Added structured, validated, idempotent transaction import (income/expense rows only; transfers are out of scope for v1 of the import format). New `ImportController` with `imports.transactions.create`/`preview`/`store` routes and `imports/Transactions.vue` page (linked from "Import" button on `transactions/Index.vue`). The import format mirrors the CSV export columns (`Date, Type, Description, Memo, Merchant, Account, Category, Amount, Currency, Tags`; `Type` is `income` or `expense`, `Amount` is a positive minor-unit integer). `App\Domain\Import\ParseTransactionImportFile` reads CSV or `.xlsx`/`.xls` (via `phpoffice/phpspreadsheet`) into header-keyed rows. `App\Domain\Import\ValidateTransactionImportRows` resolves each row's account/category/merchant/tags by name against the workspace's active records, validates date/type/amount/currency, and computes a deterministic `import:<sha256>` idempotency key from the row's resolved fields (P4-24). `ImportController::preview` stores the uploaded file under `storage/app/private/imports/{workspace_id}/{uuid}.{ext}`, returns a per-row preview with `status`/`errors` plus a `token` referencing the stored file (P4-23) without persisting anything. `ImportController::store` re-validates the stored file by `token`, then `App\Domain\Import\ImportTransactions` calls `RecordIncomeExpense` (with the row's idempotency key) for each valid row, skipping rows whose idempotency key already exists for the workspace (so retried imports of the same file do not duplicate transactions) and reporting `imported`/`duplicated`/`invalid` counts via a flash toast. |

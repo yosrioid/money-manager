@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,7 @@ interface AccountData {
     name: string;
     type: string;
     currency_code: string;
+    credit_limit: number | null;
     balance: number;
     account_group_id: number | null;
     description: string | null;
@@ -35,7 +37,7 @@ interface AccountGroup {
     name: string;
 }
 
-defineProps<{
+const props = defineProps<{
     form: RouteFormDefinition<'post'>;
     account?: AccountData;
     accountGroups: AccountGroup[];
@@ -44,6 +46,8 @@ defineProps<{
     defaultCurrency?: string;
     submitLabel: string;
 }>();
+
+const selectedType = ref(props.account?.type ?? props.accountTypes[0]?.value ?? '');
 </script>
 
 <template>
@@ -88,6 +92,7 @@ defineProps<{
                     name="type"
                     class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                     required
+                    v-model="selectedType"
                 >
                     <option
                         v-for="type in accountTypes"
@@ -124,6 +129,23 @@ defineProps<{
                     </option>
                 </select>
                 <InputError :message="errors.currency_code" />
+            </div>
+
+            <div v-if="selectedType === 'credit_card'" class="grid gap-2">
+                <Label for="credit_limit">Credit limit in minor units</Label>
+                <Input
+                    id="credit_limit"
+                    name="credit_limit"
+                    type="number"
+                    min="0"
+                    :default-value="account?.credit_limit ?? 0"
+                    required
+                />
+                <p class="text-sm text-muted-foreground">
+                    Used to calculate available credit alongside the
+                    outstanding balance.
+                </p>
+                <InputError :message="errors.credit_limit" />
             </div>
         </div>
 

@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'name',
     'type',
     'currency_code',
+    'credit_limit',
     'description',
     'position',
     'is_visible',

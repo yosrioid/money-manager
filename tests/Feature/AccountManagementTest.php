@@ -82,6 +82,66 @@ test('user can create an account in a group from the current workspace', functio
         ->toBe(100000);
 });
 
+test('creating a credit card account requires a credit limit', function () {
+    [$user, $workspace] = createUserWithPersonalWorkspace();
+
+    $this->actingAs($user)
+        ->post(route('accounts.store'), [
+            'name' => 'Visa',
+            'type' => AccountType::CreditCard->value,
+            'currency_code' => 'IDR',
+            'opening_balance' => 0,
+        ])
+        ->assertSessionHasErrors('credit_limit');
+
+    $this->actingAs($user)
+        ->post(route('accounts.store'), [
+            'name' => 'Visa',
+            'type' => AccountType::CreditCard->value,
+            'currency_code' => 'IDR',
+            'opening_balance' => 0,
+            'credit_limit' => 5000000,
+        ])
+        ->assertRedirect(route('accounts.index'));
+
+    expect($workspace->accounts()->sole())
+        ->name->toBe('Visa')
+        ->credit_limit->toBe(5000000);
+});
+
+test('credit limit is rejected for non credit card accounts', function () {
+    [$user] = createUserWithPersonalWorkspace();
+
+    $this->actingAs($user)
+        ->post(route('accounts.store'), [
+            'name' => 'Main bank',
+            'type' => AccountType::BankAccount->value,
+            'currency_code' => 'IDR',
+            'opening_balance' => 0,
+            'credit_limit' => 5000000,
+        ])
+        ->assertSessionHasErrors('credit_limit');
+});
+
+test('changing an account type away from credit card clears its credit limit', function () {
+    [$user, $workspace] = createUserWithPersonalWorkspace();
+    $account = Account::factory()->for($workspace)->creditCard(5000000)->create();
+
+    $this->actingAs($user)
+        ->patch(route('accounts.update', $account), [
+            'name' => $account->name,
+            'type' => AccountType::BankAccount->value,
+            'currency_code' => $account->currency_code,
+            'is_visible' => true,
+            'include_in_total' => true,
+        ])
+        ->assertRedirect(route('accounts.index'));
+
+    expect($account->fresh())
+        ->type->toBe(AccountType::BankAccount)
+        ->credit_limit->toBeNull();
+});
+
 test('account cannot reference a group from another workspace', function () {
     [$user] = createUserWithPersonalWorkspace();
     [, $otherWorkspace] = createUserWithPersonalWorkspace();

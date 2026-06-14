@@ -70,6 +70,11 @@ class AccountController extends Controller
     public function update(UpdateAccountRequest $request, Account $account): RedirectResponse
     {
         $validated = $request->validated();
+
+        if (AccountType::tryFrom($validated['type']) !== AccountType::CreditCard) {
+            $validated['credit_limit'] = null;
+        }
+
         $accountGroupId = array_key_exists('account_group_id', $validated)
             ? $validated['account_group_id']
             : $account->account_group_id;
