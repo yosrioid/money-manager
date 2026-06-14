@@ -72,6 +72,30 @@ test('zero opening balance does not create an unnecessary ledger transaction', f
         ->and(app(CalculateAccountBalance::class)->calculate($workspace->accounts()->sole()))->toBe(0);
 });
 
+test('an account can use an explicitly configured currency different from the workspace default', function () {
+    $user = User::factory()->create();
+    $workspace = app(CreatePersonalWorkspace::class)->create($user);
+
+    expect($workspace->default_currency)->toBe('IDR');
+
+    $this->actingAs($user)->post(route('accounts.store'), [
+        'name' => 'USD savings',
+        'type' => AccountType::BankAccount->value,
+        'currency_code' => 'USD',
+        'opening_balance' => 50000,
+        'account_group_id' => null,
+        'is_visible' => true,
+        'include_in_total' => true,
+    ])->assertRedirect(route('accounts.index'));
+
+    $account = $workspace->accounts()->sole();
+    $transaction = $workspace->transactions()->with('entries')->sole();
+
+    expect($account->currency_code)->toBe('USD')
+        ->and($transaction->currency_code)->toBe('USD')
+        ->and($transaction->entries->pluck('currency_code')->unique()->all())->toBe(['USD']);
+});
+
 test('account currency cannot change after an opening balance is posted', function () {
     $user = User::factory()->create();
     $workspace = app(CreatePersonalWorkspace::class)->create($user);

@@ -50,6 +50,18 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-15 00:10 WIB - P5-10 Account Currency Verified
+
+- **Branch:** `feat/phase-5`.
+- **Feature IDs:** `P5-10`.
+- **Status:** Completed.
+- **Completed:** Confirmed the existing account-currency feature (carried over from earlier phases) already satisfies "each account can use an explicitly configured currency": `accounts.currency_code` is a required column validated against `currencies` (`StoreAccountRequest`/`UpdateAccountRequest`), independent of the workspace's `default_currency`; `AccountForm.vue` shows a full currency selector; `UpdateAccountRequest::after()` already rejects a currency change once ledger entries exist (`tests/Feature/OpeningBalanceLedgerTest.php::account currency cannot change after an opening balance is posted`). Added a new confirming test `tests/Feature/OpeningBalanceLedgerTest.php::an account can use an explicitly configured currency different from the workspace default`, which creates a `USD` account in a workspace whose `default_currency` is `IDR` and asserts the account and its opening-balance transaction/entries are all recorded in `USD`.
+- **Verification:** `php artisan test --compact` passed: 353 tests, 2662 assertions. `vendor/bin/phpstan analyse --no-progress --memory-limit=1G` passed (0 errors). `vendor/bin/pint --dirty --format agent` passed. No Vue/TS files changed, so `vue-tsc`/ESLint were not re-run.
+- **Decisions:** No production code changes were required, mirroring `P5-04`'s "confirmed and tested existing feature" pattern.
+- **Blockers:** None.
+- **Uncommitted:** `P5-10` is uncommitted on `feat/phase-5`, pending commit.
+- **Next:** Commit `P5-10`, then continue with `P5-11` (multi-currency transaction: transaction stores source, target, and base-currency values safely).
+
 ### 2026-06-14 23:55 WIB - P5-08/P5-09 Loan Accounts And Debt Payoff Progress Implemented
 
 - **Branch:** `feat/phase-5`.
