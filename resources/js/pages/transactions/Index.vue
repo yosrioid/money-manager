@@ -1,6 +1,15 @@
 <script setup lang="ts">
 import { Head, InfiniteScroll, Link, router } from '@inertiajs/vue3';
-import { Copy, Plus, Search, X } from '@lucide/vue';
+import {
+    Clock,
+    Copy,
+    Download,
+    History,
+    Plus,
+    Search,
+    Upload,
+    X,
+} from '@lucide/vue';
 import { computed, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import TransactionViewNav from '@/components/TransactionViewNav.vue';
@@ -9,12 +18,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import importTransactions from '@/routes/imports/transactions';
 import {
     bulkDuplicate,
     create as createTransaction,
+    exportMethod as exportTransactions,
     index,
     show,
 } from '@/routes/transactions';
+import {
+    index as exportsIndex,
+    store as storeExport,
+} from '@/routes/transactions/exports';
 
 interface Tag {
     id: number;
@@ -113,7 +128,7 @@ const hasActiveFilters = computed(
         !!to.value,
 );
 
-const applyFilters = (): void => {
+const buildQuery = (): Record<string, string> => {
     const query: Record<string, string> = {};
 
     if (search.value) {
@@ -152,7 +167,22 @@ const applyFilters = (): void => {
         query.sort = sort.value;
     }
 
-    router.get(index().url, query, { preserveState: true, replace: true });
+    return query;
+};
+
+const applyFilters = (): void => {
+    router.get(index().url, buildQuery(), {
+        preserveState: true,
+        replace: true,
+    });
+};
+
+const exportUrl = computed(
+    () => exportTransactions({ query: buildQuery() }).url,
+);
+
+const queueExport = (): void => {
+    router.post(storeExport().url, buildQuery());
 };
 
 const clearFilters = (): void => {
@@ -407,6 +437,25 @@ const duplicateSelected = (): void => {
                     @click="clearFilters"
                 >
                     <X /> Clear
+                </Button>
+                <Button as-child variant="outline" size="sm">
+                    <a :href="exportUrl"><Download /> Export CSV</a>
+                </Button>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    @click="queueExport"
+                >
+                    <Clock /> Queue export
+                </Button>
+                <Button as-child variant="outline" size="sm">
+                    <Link :href="exportsIndex()"><History /> Exports</Link>
+                </Button>
+                <Button as-child variant="outline" size="sm">
+                    <Link :href="importTransactions.create()"
+                        ><Upload /> Import</Link
+                    >
                 </Button>
             </div>
         </form>

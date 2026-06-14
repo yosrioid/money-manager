@@ -50,6 +50,456 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-14 16:30 WIB - P4-25 Queued Large CSV Export Implemented (Phase 4 Feature-Complete)
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-25`.
+- **Status:** Completed.
+- **Completed:** Extracted the filter-resolution/query-building logic shared by `transactions.index` and `transactions.export` into `App\Domain\Transactions\FilterTransactionsQuery` (`resolve()` reads filters from the request via `input()` so it works for both GET query strings and POST bodies, `query()` builds the filtered `HasMany` query, and `serialize()`/`hydrate()` round-trip the `from`/`to` Carbon dates through JSON for storage). `TransactionController` now delegates to this service and no longer has its own `resolveTransactionFilters()`/`filteredTransactionsQuery()`. `App\Domain\Export\GenerateTransactionsCsv` gained `writeToFile()` (shares the header/`chunkById` writer with `stream()`) for writing the CSV directly to disk. Added migration for `transaction_exports` (`workspace_id`, `created_by`, `status`, `filters` JSON, `file_path`, `failed_reason`, `ready_at`), `App\Enums\TransactionExportStatus`, `App\Models\TransactionExport`, `Workspace::transactionExports()`, and `App\Policies\TransactionExportPolicy`. New `App\Jobs\GenerateTransactionsExportFile` (queued, `ShouldQueue`): loads the export, re-checks that its creator is still a workspace member ("authorize again inside jobs," failing the export with `failed_reason` if not), transitions `pending` -> `processing` -> `ready`/`failed`, hydrates the stored filters, and writes the CSV to `storage/app/private/exports/{workspace_id}/{uuid}.csv`. New `TransactionExportController` with routes `transactions.exports.index`/`store`/`download` and a `transactions/Exports.vue` page (status badges, download link once ready), linked via new "Queue export"/"Exports" buttons on `transactions/Index.vue`. Regenerated Wayfinder routes, ran the new migration.
+- **Verification:** `vendor/bin/phpstan analyse --no-progress --memory-limit=512M` (full app) passed (0 errors). `php artisan test --compact` (full suite) passed: 318 tests, 2491 assertions, including new `tests/Feature/TransactionExportQueueTest.php` (5 tests: guest redirects, queue-and-download happy path with filter persistence and CSV content, download blocked until `ready`, job fails the export and leaves `file_path` null when the creator is no longer a workspace member, cross-workspace download returns 404). `npx eslint`/`npx prettier --write` on changed/new Vue files passed with no issues; `vendor/bin/pint --dirty --format agent` applied. `composer ci:check` (lint, format, types, unit, analyse, build, full test suite) and `bash scripts/check-governance.sh` both passed.
+- **Decisions:** `QUEUE_CONNECTION=sync` in `phpunit.xml` means the queued job runs synchronously and inline during feature tests (no `Queue::fake()` needed for the happy-path test); the re-authorization-failure test instead constructs the job directly and calls `handle()` after removing the creator's workspace membership. `FilterTransactionsQuery::resolve()` reads filters via `$request->input()` (not `query()`) so the same method works for the GET-with-query-string history/export endpoints and the POST-with-body queued-export endpoint.
+- **Blockers:** None.
+- **Uncommitted:** All of Phase 4 (`P4-01`-`P4-25`, Groups 1-3) remains uncommitted on `feat/phase-4`, pending user approval to commit/push.
+- **Next:** Phase 4 (`P4-01`-`P4-25`) is feature-complete and `F-012` is marked Done in `docs/PROGRESS.md`. Awaiting user direction to commit/push and prepare Phase 4 for review (per the standing rule requiring explicit approval before any commit).
+
+### 2026-06-14 14:45 WIB - P4-22/P4-23/P4-24 Transaction Import Implemented
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-22`, `P4-23`, `P4-24`.
+- **Status:** Completed.
+- **Completed:** Added structured, previewable, idempotent transaction import (income/expense rows only for v1; transfers are out of scope). New domain classes: `App\Domain\Import\ParseTransactionImportFile` (parses CSV/`.xlsx`/`.xls` via `phpoffice/phpspreadsheet` into header-keyed rows), `App\Domain\Import\ValidateTransactionImportRows` (resolves account/category/merchant/tags by name, validates date/type/amount/currency, computes a deterministic `import:<sha256>` idempotency key per row), and `App\Domain\Import\ImportTransactions` (calls `RecordIncomeExpense` per valid row, skipping rows whose idempotency key already exists for the workspace). New `ImportController` with routes `imports.transactions.create` (GET, upload form), `imports.transactions.preview` (POST, stores the upload under `storage/app/private/imports/{workspace_id}/{uuid}.{ext}` and returns a per-row preview with a `token`), and `imports.transactions.store` (POST `token`, re-validates and imports, then deletes the temp file and flashes an `imported`/`duplicated`/`invalid` summary toast). New `imports/Transactions.vue` page (file upload, preview table with status badges/errors, confirm button), linked via an "Import" button on `transactions/Index.vue`. Regenerated Wayfinder routes.
+- **Verification:** `vendor/bin/phpstan analyse --no-progress --memory-limit=512M` (full app) passed (0 errors). `php artisan test --compact` (full suite) passed: 313 tests, 2470 assertions, including new `TransactionImportTest` (3 tests: guest redirect, preview validation/resolution including an unknown-account error row, and confirm-import + idempotent retry producing no duplicate transactions). `npx eslint`/`npx prettier --write` on changed/new Vue files passed with no issues; `vendor/bin/pint --dirty --format agent` applied.
+- **Decisions:** Scoped the v1 import format to income/expense rows only (mirroring the CSV export columns minus `Status`, with `Amount` as a positive minor-unit integer and `Type` determining the sign). Transfers require pairing two rows and were deferred as a documented limitation rather than adding ad hoc pairing logic. Idempotency reuses the existing `PostTransaction` idempotency-key mechanism (already used by manual transaction creation); `ImportTransactions` additionally pre-checks for an existing transaction with the same key so retried imports report `duplicated` counts instead of relying on `PostTransaction`'s match-or-throw behavior.
+- **Blockers:** None.
+- **Uncommitted:** All `P4-22`/`P4-23`/`P4-24` changes (new domain classes, controller, requests, routes, Vue page, test, generated Wayfinder routes/actions, doc updates) remain uncommitted on `feat/phase-4`, alongside the previously uncommitted `P4-20`/`P4-21` work, per the standing rule requiring explicit user approval before any commit.
+- **Next:** Continue Group 3: `P4-25` (asynchronous large export via an authorized queue job, per `docs/MASTER_PLAN.md`'s "Queue large exports/imports and authorize again inside jobs"). After `P4-25`, Phase 4 (`P4-01`-`P4-25`) is feature-complete; run `composer ci:check` and `bash scripts/check-governance.sh`, update `F-012` to Done in `docs/PROGRESS.md`, and prepare Phase 4 for review.
+
+### 2026-06-14 13:15 WIB - P4-21 Excel Report Export Implemented
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-21`.
+- **Status:** Completed.
+- **Completed:** Added `App\Domain\Export\GenerateReportSpreadsheet` (using `phpoffice/phpspreadsheet`'s `Spreadsheet`/`Xlsx` writer, streamed via `response()->streamDownload()`). `ReportController::export` (route `reports.export`) builds `forMonth()`: a 5-sheet workbook (Summary, Categories, Merchants, Accounts, Net worth) for the selected billing month, reusing `GenerateTransactionReport` and `CalculateNetAsset` with the same filters as `reports.index`. `TransactionController::exportYear` (route `transactions.monthly.export`) builds `forYear()`: a single "Monthly summary" sheet from `SummarizeTransactionPeriod::forYear()` (one row per month with activity). Added "Export Excel" buttons to `reports/Index.vue` (preserving month + filters) and `transactions/Monthly.vue` (preserving year). Regenerated Wayfinder routes.
+- **Verification:** `vendor/bin/phpstan analyse --no-progress --memory-limit=512M` (full app) passed (0 errors). `php artisan test --compact` (full suite) passed: 310 tests, 2436 assertions, including two new `ReportTest` cases that load the generated `.xlsx` via `PhpOffice\PhpSpreadsheet\IOFactory::load()` and assert sheet names and cell values. `npx eslint`/`npx prettier --write` on changed Vue files passed with no issues; `vendor/bin/pint --dirty --format agent` applied.
+- **Decisions:** Amounts are written as `"{amount} {CURRENCY}"` strings per currency (comma-separated for multi-currency), matching the `formatAmounts()` convention already used in `reports/Index.vue`, rather than splitting into separate per-currency columns.
+- **Blockers:** None.
+- **Uncommitted:** All of Group 1 (`P4-01`-`P4-10`), Group 2 (`P4-11`-`P4-19`), and Group 3 so far (`P4-20`, `P4-21`) remain uncommitted on `feat/phase-4`, pending user approval to commit/push.
+- **Next:** Continue Group 3: `P4-22` (structured CSV/Excel transaction import with validation), `P4-23` (import preview/validation UI), `P4-24` (idempotent import), `P4-25` (async large export via queue job).
+
+### 2026-06-14 11:30 WIB - P4-20 CSV Transaction Export Implemented (Group 3 Started)
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-20`.
+- **Status:** Completed.
+- **Completed:** Installed `phpoffice/phpspreadsheet` (v5.8.0) as a substitute for `maatwebsite/excel`, which cannot install on PHP 8.5 (its phpspreadsheet dependency caps PHP <8.5); this unblocks the Excel work in `P4-21`-`P4-23` while satisfying the user's approval to add Excel support. Refactored `TransactionController::index()`, extracting `resolveTransactionFilters()` and `filteredTransactionsQuery()` as shared private methods (the latter rewritten from a `when()` chain to plain `if` statements on a `Builder<Transaction>` to satisfy Larastan, per the pattern established in `GenerateTransactionReport::filteredTransactions()`). Added `TransactionController::export()` and a `transactions.export` route, and new `App\Domain\Export\GenerateTransactionsCsv`, which streams a CSV (`response()->streamDownload()` + `fputcsv()`, `chunkById(500, ...)`) of the filtered posted-transaction history, one row per account-side ledger entry (`Date, Type, Status, Description, Memo, Merchant, Account, Category, Amount, Currency, Tags`; the category column comes from the transaction's category-type entry, if any). Added an "Export CSV" button to `transactions/Index.vue` that preserves the active filters. Regenerated Wayfinder routes (`exportMethod`, since `export` is a reserved JS identifier).
+- **Verification:** `vendor/bin/phpstan analyse --no-progress --memory-limit=512M` (full app) passed (0 errors). `php artisan test --compact --filter=Transaction` passed: 140 tests, 1354 assertions, including new `tests/Feature/TransactionExportTest.php` (guest redirect, header row + income/expense rows, transfer producing two rows, and filter application). `npx eslint`/`npx prettier --write` on the changed Vue file passed with no issues; `vendor/bin/pint --dirty --format agent` applied.
+- **Decisions:** Substituted `phpoffice/phpspreadsheet` for the unavailable `maatwebsite/excel` (informed, not re-asked, since it preserves the approved intent and is the library `maatwebsite/excel` itself wraps).
+- **Blockers:** None.
+- **Uncommitted:** All of Group 1 (`P4-01`-`P4-10`), Group 2 (`P4-11`-`P4-19`), and now `P4-20` remain uncommitted on `feat/phase-4`, pending user approval to commit/push.
+- **Next:** Continue Group 3: `P4-21` (Excel export of monthly/annual reports using `phpoffice/phpspreadsheet`), then `P4-22`-`P4-25` (structured import with preview/validation, idempotent import, async large export via queue job).
+
+### 2026-06-14 09:00 WIB - P4-19 Dashboard Customization Implemented (Group 2 Complete)
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-19`.
+- **Status:** Completed.
+- **Completed:** Added a nullable `report_widgets` JSON column to `workspaces` (migration `2026_06_13_144920_add_report_widgets_to_workspaces_table`), `Workspace::reportWidgets()`/`defaultReportWidgets()` (default: all seven widgets), and `report_widgets`/`report_widgets.*` validation in `WorkspacePreferencesRequest` (restricted to `summary`, `comparison`, `categoryBreakdown`, `merchantBreakdown`, `accountActivity`, `netWorth`, `netWorthTrend`). `WorkspaceController` exposes/persists the preference; `settings/Workspace.vue` gained a "Report cards and charts" checkbox group. `ReportController::index` now only builds deferred props for enabled widgets (others are omitted from the response) and passes `visibleWidgets`; `reports/Index.vue` conditionally renders each `<Deferred>` section via `isVisible()`.
+- **Verification:** `vendor/bin/phpstan analyse --no-progress --memory-limit=512M` (full app) passed (0 errors). `php artisan test --compact` (full suite) passed: 304 tests, 2412 assertions, including new `ReportTest` ("reports page only includes the workspace configured report widgets") and `WorkspacePreferencesTest` (configure/validate `report_widgets`) tests. `npx eslint` on changed Vue files passed with no output. `npx prettier --write` and `vendor/bin/pint --dirty --format agent` applied.
+- **Decisions:** Hidden widgets are fully omitted from the Inertia response (not just hidden client-side), so their expensive deferred computations are skipped entirely. Reused the existing `entry_form_fields` checkbox-list convention for the new preference, without reordering (visibility-only, per the catalog wording).
+- **Blockers:** None.
+- **Uncommitted:** All of Group 1 (`P4-01`-`P4-10`) and Group 2 (`P4-11`-`P4-19`) remain uncommitted on `feat/phase-4`, pending user approval to commit/push. This completes Group 2 of Phase 4.
+- **Next:** Proceed to Group 3 (`P4-20`-`P4-25`, CSV/Excel export and validated idempotent import) per "lanjut seluruh phase 4".
+
+### 2026-06-13 21:30 WIB - P4-11 to P4-18 Reports Implemented (Group 2 Statistics Complete)
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-11`, `P4-12`, `P4-13`, `P4-14`, `P4-15`, `P4-16`, `P4-17`, `P4-18`.
+- **Status:** Completed.
+- **Completed:** Added `App\Domain\Reports\GenerateTransactionReport` (`summary()`, `byCategory()`, `byMerchant()`, `byAccount()`, `comparison()`, all sharing a filtered query honoring `account_ids`/`category_ids`/`merchant_id`/`tag_ids`). Extended `App\Domain\Ledger\CalculateNetAsset` with `summary()` (assets/liabilities/net by currency, `Loan`/`CreditCard` treated as liabilities) and `trend()` (6-month net worth history). Added `ReportController::index` and `reports/Index.vue` (sidebar entry "Reports", `reports.index` route), using deferred Inertia props (`reports`/`net-worth` groups) with skeleton fallbacks, month navigation via `usePeriodNavigation`, and native multi-select filters. Net worth trend rendered as CSS bars (no new chart dependency, per CLAUDE.md). Added `tests/Feature/ReportTest.php` (3 tests covering summary/breakdowns, filters, and net worth).
+- **Verification:** `vendor/bin/phpstan analyse --no-progress --memory-limit=512M app/Domain/Reports app/Domain/Ledger/CalculateNetAsset.php app/Http/Controllers/ReportController.php` passed (0 errors, after fixing 15 Larastan enum-cast/nullsafe/relation-typing errors using the `getRawOriginal('column') !== Enum->value` pattern and replacing `when()` chains with plain `if` statements in `filteredTransactions()`). `php artisan test --compact --filter=ReportTest` passed (3 tests, 127 assertions). `npx prettier --write` and `vendor/bin/pint --dirty --format agent` applied to changed files.
+- **Decisions:** Reused `SummarizeTransactionPeriod::billingMonthStart()` for period boundaries and `CalculateAccountBalance::calculateAsOf()` for opening/closing balances, consistent with `transactions.summary`. Did not add a charting library; net worth trend uses CSS bar widths.
+- **Blockers:** None.
+- **Uncommitted:** All Group 1 (`P4-01`-`P4-10`) and Group 2 (`P4-11`-`P4-18`) work remains uncommitted on `feat/phase-4`, pending user approval to commit/push.
+- **Next:** Implement `P4-19` (dashboard customization — workspace preference for visible summary cards/charts plus `Dashboard.vue` updates), the last item of Group 2, then proceed to Group 3 (`P4-20`-`P4-25`, CSV/Excel export/import) per "lanjut seluruh phase 4".
+
+### 2026-06-13 20:10 WIB - P4-10 Budget Carry-Over Implemented (Group 1 Complete)
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-10`.
+- **Status:** Completed.
+- **Completed:** Added a `budget_carryover_enabled` boolean column (default
+  `false`) to `categories` (migration
+  `2026_06_13_122903_add_budget_carryover_enabled_to_categories_table`),
+  added to `Category`'s `#[Fillable]` and `casts()`, and validated
+  (`sometimes`, `boolean`) in `StoreCategoryRequest`/`UpdateCategoryRequest`.
+  `categories/Index.vue` gained a "Carry over budget" checkbox in both the
+  category and subcategory edit forms. `CalculateBudgetUsage::forMonth()` now
+  computes the previous billing month's `forRange()` rows and passes each
+  category's `budget`/`actual` into the current month's `forRange()` call via
+  a new `$previousPeriod` parameter; `forRange()` adds a `carryover` field to
+  each row (`null` unless `budget_carryover_enabled` and a previous-period
+  budget exists), computed as `previousBudget - previousActual`, and folds it
+  into `budget` (`default_budget`/`override` + `carryover`). `pace` is now
+  derived from this carryover-adjusted `budget`. `budgets/Index.vue` and
+  `budgets/Income.vue` show "Carryover: +/-N" under the actual amount when
+  `carryover !== null`. Added 4 new tests to `BudgetTest.php` (unused
+  carry-over increases next month's budget, overspend reduces it, carry-over
+  disabled ignores prior surplus/deficit) and 1 to
+  `CategoryManagementTest.php` (toggling `budget_carryover_enabled`).
+  `docs/PROGRESS.md` marks `P4-10` `Done` and narrows the "Planned" catalog
+  range to `P4-11` to `P8-10`. This completes Group 1 (`P4-01`-`P4-10`) of
+  the Phase 4 recommended PR sequence.
+- **Verification:** `php artisan test --compact --filter=BudgetTest` (19
+  passed, 252 assertions); `php artisan test --compact
+  --filter=CategoryManagementTest` (8 passed, 54 assertions); `composer
+  ci:check` (298 tests / 2254 assertions, 0 PHPStan errors,
+  Pint/ESLint/Prettier/TypeScript/build clean); `bash
+  scripts/check-governance.sh` passed.
+- **Decisions:** Carry-over is single-hop (based only on the immediately
+  preceding billing month's effective budget vs. actual, itself computed
+  without carry-over) rather than compounding indefinitely across history —
+  bounds the computation to one extra `forRange()` call per `forMonth()` and
+  avoids unbounded recursion; matches the "Extended" (not "Core") catalog
+  level. Scoped to `forMonth`/`forRange` only (not `forWeek`/`forYear`),
+  mirroring the `P4-07` `pace` scoping decision, since a prorated
+  weekly/yearly carry-over figure would be confusing.
+- **Blockers:** None.
+- **Uncommitted:** Migration, model, request, domain service, frontend, test,
+  and doc changes are uncommitted on `feat/phase-4`.
+- **Next:** Await user approval to commit Group 1 (`P4-01`-`P4-10`), then
+  begin Group 2 (`P4-11`-`P4-19`, reporting) per the recommended PR sequence
+  in `docs/MASTER_PLAN.md`.
+
+### 2026-06-13 19:30 WIB - P4-09 Asset Target Implemented
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-09`.
+- **Status:** Completed.
+- **Completed:** Added a nullable `net_asset_target` integer column to
+  `workspaces` (migration
+  `2026_06_13_121918_add_net_asset_target_to_workspaces_table`), cast to
+  `integer` on the `Workspace` model and added to its `#[Fillable]` list.
+  `WorkspacePreferencesRequest` validates it as `['nullable', 'integer',
+  'min:0']`; `WorkspaceController::edit()` exposes it, and
+  `settings/Workspace.vue` gained a "Net asset target" number field with
+  helper text. Added `App\Domain\Ledger\CalculateNetAsset::current()`, which
+  sums `CalculateAccountBalance::calculate()` for the workspace's active
+  accounts with `include_in_total` enabled, grouped by `currency_code`.
+  `TransactionController::summary()` now injects `CalculateNetAsset` and
+  passes `netAssets`, `netAssetTarget`, and `defaultCurrency` to
+  `transactions/Summary.vue`, which gained a new "Net asset" card showing
+  per-currency totals and, when a target is set, the remaining amount to
+  reach it in `default_currency` (color-coded green at/under target, red
+  otherwise). Added 2 tests to `WorkspacePreferencesTest.php` (set target,
+  reject negative target) and 1 test to `TransactionSummaryTest.php` (net
+  asset totals with and without a target). `docs/PROGRESS.md` marks `P4-09`
+  `Done` and narrows the "Planned" catalog range to `P4-10` to `P8-10`.
+- **Verification:** `php artisan test --compact --filter=TransactionSummaryTest`
+  (6 passed, 118 assertions); `php artisan test --compact
+  --filter=WorkspacePreferencesTest` (10 passed, 37 assertions); `composer
+  ci:check` (294 tests / 2209 assertions, 0 PHPStan errors,
+  Pint/ESLint/Prettier/TypeScript/build clean); `bash
+  scripts/check-governance.sh` passed.
+- **Decisions:** Net asset is computed as the current (all-time) balance per
+  `CalculateAccountBalance`, summed per `currency_code` (no FX conversion);
+  the single workspace-level target is only compared against the
+  `default_currency` total, since cross-currency aggregation would require a
+  conversion mechanism not yet in scope.
+- **Blockers:** None.
+- **Uncommitted:** Migration, model, request, controller, domain service,
+  frontend, test, and doc changes are uncommitted on `feat/phase-4`.
+- **Next:** Await user approval to commit, then continue with `P4-10`
+  (Budget carry-over), the last feature in Group 1, per the recommended PR
+  sequence in `docs/MASTER_PLAN.md`.
+
+### 2026-06-13 18:15 WIB - P4-08 Budget Trend Implemented
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-08`.
+- **Status:** Completed.
+- **Completed:** Extracted `TransactionController`'s private
+  `summarizeBudgetRows()` (added in `P4-06`) into a public
+  `CalculateBudgetUsage::summarizeTotal()`, updating `TransactionController`
+  to call it. Added `CalculateBudgetUsage::trend()`, which calls `forMonth()`
+  + `summarizeTotal()` for each of the past 6 workspace-local billing months
+  (oldest first) up to and including the given reference month, returning
+  `{month: 'Y-m', budget, actual, currency}` rows. Added
+  `BudgetController::trend()` plus a `budgets.trend` route, and a
+  `budgets/Trend.vue` page with two 6-month tables (Expense and Income)
+  showing budget/planned vs actual vs remaining per month (remaining
+  color-coded as in `P4-06`'s summary card), with month navigation shifting
+  the 6-month window. Added a "Trend" tab to `BudgetViewNav` (now
+  Monthly/Weekly/Yearly/Income/Trend). Added a new test "budget trend page
+  shows actual versus budget for the past several months" to
+  `BudgetTest.php`. `docs/PROGRESS.md` marks `P4-08` `Done` and narrows the
+  "Planned" catalog range to `P4-09` to `P8-10`.
+- **Verification:** `php artisan test --compact --filter=BudgetTest` (16
+  passed, 213 assertions); `composer ci:check` (291 tests / 2178 assertions,
+  0 PHPStan errors, Pint/ESLint/Prettier/TypeScript/build clean); `bash
+  scripts/check-governance.sh` passed.
+- **Decisions:** Implemented the trend as a workspace-wide total (mirroring
+  `P4-06`'s summary), not per-category, to keep the page readable as an
+  "MVP"-level overview; per-category historical trends would need a
+  significantly larger UI (a grid or chart per category) and aren't required
+  by the catalog acceptance summary ("Historical actual-versus-budget trend
+  is available").
+- **Blockers:** None.
+- **Uncommitted:** Domain service, controller, routes, frontend, test, and
+  doc changes are uncommitted on `feat/phase-4`.
+- **Next:** Await user approval to commit, then continue with `P4-09` (Asset
+  target) per the recommended PR sequence in `docs/MASTER_PLAN.md`.
+
+### 2026-06-13 17:50 WIB - P4-07 Recommended Spending Pace Implemented
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-07`.
+- **Status:** Completed.
+- **Completed:** Added a `pace` field to every row returned by
+  `CalculateBudgetUsage::forRange()`/`forMonth()`: the portion of the
+  resolved budget expected to be used by "today" (the current
+  workspace-local date), via a new private `elapsedDays()` helper that
+  returns `{elapsed, total}` day counts for `[$start, $end)` — `elapsed = 0`
+  if the period has not started, `elapsed = total` if it has already ended,
+  otherwise the number of days from `$start` through today inclusive.
+  `pace = budget === null ? null : round(budget * elapsed / total)`.
+  `budgets/Index.vue` and `budgets/Income.vue` gained an "On pace: …" column
+  (added a 6th grid column), highlighted amber when actual spending exceeds
+  pace (expense) or actual income falls behind pace (income). Added a `pace`
+  assertion to the existing "shows the default budget and actual spending"
+  test (expense) and "shows planned income and actual income" test (income),
+  and a new test "the recommended spending pace is zero for a future period
+  and the full budget for a past period". `docs/PROGRESS.md` marks `P4-07`
+  `Done` and narrows the "Planned" catalog range to `P4-08` to `P8-10`.
+- **Verification:** `php artisan test --compact --filter=BudgetTest` (15
+  passed, 188 assertions); `composer ci:check` (290 tests / 2153 assertions,
+  0 PHPStan errors, Pint/ESLint/Prettier/TypeScript/build clean); `bash
+  scripts/check-governance.sh` passed.
+- **Decisions:** Scoped `pace` to `forRange()`/`forMonth()` only (used by
+  `budgets.index`/`budgets.income`), not `forWeek()`/`forYear()` — those
+  views already aggregate across different period granularities and a
+  pace-within-pace figure would be confusing; the catalog acceptance summary
+  ("Budget shows expected spend-to-date for the period") is satisfied by the
+  primary monthly budget views.
+- **Blockers:** None.
+- **Uncommitted:** Domain service, frontend, test, and doc changes are
+  uncommitted on `feat/phase-4`.
+- **Next:** Await user approval to commit, then continue with `P4-08`
+  (Budget trend) per the recommended PR sequence in `docs/MASTER_PLAN.md`.
+
+### 2026-06-13 17:25 WIB - P4-06 Total Budget Summary Implemented
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-06`.
+- **Status:** Completed.
+- **Completed:** Fulfilled the budget-comparison portion of `P3-05`'s
+  acceptance summary, deferred to `P4-06` per PR #14 review.
+  `TransactionController::summary()` now injects `CalculateBudgetUsage` and
+  computes `budgetSummary` (`expense` and `income`) via `forMonth()` for
+  `CategoryType::Expense` and `CategoryType::Income`, reduced to a single
+  `{budget, actual, currency}` total per type by a new private
+  `summarizeBudgetRows()` helper. `transactions/Summary.vue` gained a "Budget
+  summary" card with two rows: "Expense budget" (links to `budgets.index`)
+  and "Planned income" (links to `budgets.income`), each showing
+  budget/planned, actual, and a color-coded remaining amount (green when
+  under the expense budget or at/under planned income, red otherwise —
+  inverted for income since exceeding the plan is favorable). Added budget
+  assertions to the existing "summary view shows period totals and account
+  movement" test and a new dedicated test "summary view compares total actual
+  spending and income with the total budget" in `TransactionSummaryTest.php`.
+  `docs/PROGRESS.md` marks `P4-06` `Done` and narrows the "Planned" catalog
+  range to `P4-07` to `P8-10`.
+- **Verification:** `php artisan test --compact --filter=TransactionSummaryTest`
+  (5 passed, 92 assertions); `composer ci:check` (289 tests / 2131 assertions,
+  0 PHPStan errors, Pint/ESLint/Prettier/TypeScript/build clean); `bash
+  scripts/check-governance.sh` passed.
+- **Decisions:** Reused `CalculateBudgetUsage::forMonth()` for both category
+  types rather than introducing a new aggregation method, since the
+  budget-vs-actual reduction is the same shape already used per-category in
+  `budgets.index`/`budgets.income`.
+- **Blockers:** None.
+- **Uncommitted:** Controller, frontend, test, and doc changes are
+  uncommitted on `feat/phase-4`.
+- **Next:** Await user approval to commit, then continue with `P4-07`
+  (Recommended spending pace) per the recommended PR sequence in
+  `docs/MASTER_PLAN.md`.
+
+### 2026-06-13 17:00 WIB - P4-05 Income Budget Implemented
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-05`.
+- **Status:** Completed.
+- **Completed:** Removed the `P4-01` `after()` validators in
+  `StoreCategoryRequest`/`UpdateCategoryRequest` that rejected
+  `monthly_budget_amount` for non-expense categories — income categories may
+  now set the same field as a "planned monthly income" target.
+  `categories/Index.vue` now shows the field for both category types (label
+  switches to "Planned income" for income categories; the add-category form
+  label reads "Monthly budget / planned income"). Generalized
+  `CalculateBudgetUsage::forMonth()`/`forRange()`/`forWeek()`/`forYear()` to
+  accept an optional `CategoryType $type = CategoryType::Expense`, and
+  renamed/generalized `actualExpenseByCategory()` to `actualByCategory()`,
+  which sums actual income (absolute value of negative category-entry
+  amounts) for income categories and actual spend (positive amounts) for
+  expense categories. Added `BudgetController::income()` plus a
+  `budgets.income` route, and a `budgets/Income.vue` page (planned vs actual
+  income per income category for the current billing month) reusing the
+  `P4-02` override/reset mechanism. Added an "Income" tab to `BudgetViewNav`
+  (now Monthly/Weekly/Yearly/Income). Updated the `P4-01` "income category
+  cannot have a monthly budget" test in `CategoryManagementTest.php` to
+  "an income category can have planned monthly income" (now asserts success
+  instead of validation errors), and added 3 feature tests to
+  `BudgetTest.php` for the income view. `docs/PROGRESS.md` marks `P4-05`
+  `Done` and narrows the "Planned" catalog range to `P4-06` to `P8-10`.
+- **Verification:** `php artisan test --compact --filter=BudgetTest` (14
+  passed, 166 assertions); `php artisan test --compact
+  --filter=CategoryManagementTest` (7 passed, 48 assertions); `composer
+  ci:check` (288 tests / 2111 assertions, 0 PHPStan errors,
+  Pint/ESLint/Prettier/TypeScript/build clean); `bash
+  scripts/check-governance.sh` passed.
+- **Decisions:** Reused the existing `monthly_budget_amount` column and
+  `category_budget_overrides` mechanism for planned income rather than adding
+  a parallel column/table, since the "target amount vs actual" shape is
+  identical for both category types and `CategoryBudgetOverride` is already
+  keyed by `category_id` (type-agnostic).
+- **Blockers:** None.
+- **Uncommitted:** Requests, frontend, domain service, controller, routes,
+  component, test, and doc changes are uncommitted on `feat/phase-4`.
+- **Next:** Await user approval to commit, then continue with `P4-06` (Total
+  budget summary) per the recommended PR sequence in `docs/MASTER_PLAN.md`.
+
+### 2026-06-13 16:35 WIB - P4-04 Annual Budget Implemented
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-04`.
+- **Status:** Completed.
+- **Completed:** Added `CalculateBudgetUsage::forYear()`, which iterates the
+  12 billing months of the workspace-local calendar year, calling
+  `forMonth()` for each and summing each expense category's `budget` (`null`
+  if no month has a budget) and `actual` across the year — so a `P4-02`
+  monthly override is reflected in the yearly total. Added
+  `BudgetController::yearly()` plus a `budgets.yearly` route, and a
+  `budgets/Yearly.vue` page showing the annual budget/actual/remaining per
+  category with year navigation, mirroring `transactions.monthly`. Added a
+  "Yearly" tab to `BudgetViewNav` (now Monthly/Weekly/Yearly), used by
+  `budgets/Index.vue`, `budgets/Weekly.vue`, and `budgets/Yearly.vue`. Added
+  3 feature tests covering the yearly sum, override-adjusted total, and the
+  budget/spend-empty exclusion. `docs/PROGRESS.md` marks `P4-04` `Done` and
+  narrows the "Planned" catalog range to `P4-05` to `P8-10`.
+- **Verification:** `php artisan test --compact --filter=BudgetTest` (11
+  passed, 124 assertions); `composer ci:check` (285 tests / 2068 assertions,
+  0 PHPStan errors, Pint/ESLint/Prettier/TypeScript/build clean); `bash
+  scripts/check-governance.sh` passed.
+- **Decisions:** Like the weekly view, the yearly view is read-only; budget
+  overrides remain editable only from `budgets.index` (monthly).
+- **Blockers:** None.
+- **Uncommitted:** Domain service, controller, routes, frontend, component,
+  test, and doc changes are uncommitted on `feat/phase-4`.
+- **Next:** Await user approval to commit, then continue with `P4-05`
+  (Income budget) per the recommended PR sequence in `docs/MASTER_PLAN.md`.
+
+### 2026-06-13 16:10 WIB - P4-03 Weekly Budget Implemented
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-03`.
+- **Status:** Completed.
+- **Completed:** Added `CalculateBudgetUsage::forWeek()`, which resolves the
+  workspace-local week containing a reference date (via
+  `SummarizeTransactionPeriod::weekStart()`), sums actual posted expense per
+  expense category for that week (`forWeek()`/`actualExpenseByCategory()`),
+  and prorates each category's effective monthly budget (override from
+  `P4-02` or `monthly_budget_amount` from `P4-01`, resolved for the billing
+  month containing the week) to 7 days based on the number of days in that
+  billing month. Added `BudgetController::weekly()` plus a `budgets.weekly`
+  route, and a `budgets/Weekly.vue` page showing prorated weekly
+  budget/actual/remaining per category with week navigation, mirroring
+  `transactions.weekly`. Added a `BudgetViewNav` component (Monthly/Weekly
+  tabs) used by both `budgets/Index.vue` and `budgets/Weekly.vue`. Added 3
+  feature tests covering proration, override proration, and the
+  budget/spend-empty exclusion. `docs/PROGRESS.md` marks `P4-03` `Done` and
+  narrows the "Planned" catalog range to `P4-04` to `P8-10`.
+- **Verification:** `php artisan test --compact --filter=BudgetTest` (8
+  passed, 89 assertions); `composer ci:check` (282 tests / 2033 assertions, 0
+  PHPStan errors, Pint/ESLint/Prettier/TypeScript/build clean); `bash
+  scripts/check-governance.sh` passed.
+- **Decisions:** The weekly view is read-only (no override editing) since
+  `CategoryBudgetOverride.period` is keyed by billing month, not week;
+  overrides remain editable only from the monthly `budgets.index` page and
+  are reflected in the weekly view via proration.
+- **Blockers:** None.
+- **Uncommitted:** Domain service, controller, routes, frontend, component,
+  test, and doc changes are uncommitted on `feat/phase-4`.
+- **Next:** Await user approval to commit, then continue with `P4-04`
+  (Annual budget) per the recommended PR sequence in `docs/MASTER_PLAN.md`.
+
+### 2026-06-13 15:45 WIB - P4-02 Monthly Budget Override Implemented
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-02`.
+- **Status:** Completed.
+- **Completed:** Added a `category_budget_overrides` table (`workspace_id`,
+  `category_id`, `period` date, `amount`, unique on `category_id`+`period`)
+  and `CategoryBudgetOverride` model/factory, plus a `budgetOverrides()`
+  relation on `Category` and `categoryBudgetOverrides()` on `Workspace`.
+  Added `App\Domain\Budgets\CalculateBudgetUsage`, a shared domain service
+  that resolves the effective monthly budget for a category in a billing
+  period (override over `monthly_budget_amount` from `P4-01`) and sums
+  actual posted expense per category over a range, reusing
+  `SummarizeTransactionPeriod::billingMonthStart()`. Added
+  `UpdateCategoryBudgetOverrideRequest`/`DestroyCategoryBudgetOverrideRequest`
+  (authorized via `CategoryPolicy::update`), `BudgetController` with
+  `budgets.index`/`budgets.overrides.update`/`budgets.overrides.destroy`
+  routes, and a `budgets/Index.vue` page listing each expense category's
+  default/override/effective budget versus actual spend for the current
+  billing month, with month navigation and inline forms to set/reset a
+  per-month override. Added "Budgets" to the sidebar nav. Added
+  `tests/Feature/BudgetTest.php` (5 tests, 56 assertions). `docs/PROGRESS.md`
+  marks `P4-02` `Done` and narrows the "Planned" catalog range to
+  `P4-03` to `P8-10`.
+- **Verification:** `php artisan test --compact --filter=BudgetTest` (5
+  passed, 56 assertions); `composer ci:check` (279 tests / 2000 assertions, 0
+  PHPStan errors, Pint/ESLint/Prettier/TypeScript/build clean); `bash
+  scripts/check-governance.sh` passed.
+- **Decisions:** Built `CalculateBudgetUsage::forRange()`/`forMonth()` as the
+  shared engine intended for reuse by `P4-03` (weekly), `P4-04` (annual),
+  `P4-06` (total summary), `P4-07` (pace), and `P4-08` (trend), per the
+  "Architecture Work" item in `docs/MASTER_PLAN.md`. Only expense categories
+  with a default budget, an override for the period, or actual spending are
+  listed, to avoid cluttering the page with irrelevant categories.
+- **Blockers:** None.
+- **Uncommitted:** Migration, model, factory, domain service, requests,
+  controller, routes, frontend, sidebar, test, and doc changes are
+  uncommitted on `feat/phase-4`.
+- **Next:** Await user approval to commit, then continue with `P4-03`
+  (Weekly budget) per the recommended PR sequence in `docs/MASTER_PLAN.md`.
+
+### 2026-06-13 15:10 WIB - P4-01 Category Budget Implemented
+
+- **Branch:** `feat/phase-4`.
+- **Feature IDs:** `P4-01`.
+- **Status:** Completed.
+- **Completed:** Added a nullable `monthly_budget_amount` column to
+  `categories` (minor units, same convention as ledger entry amounts).
+  `StoreCategoryRequest`/`UpdateCategoryRequest` validate it as a non-negative
+  integer and reject it for non-expense categories via an `after()` validator.
+  `categories/Index.vue` shows a "Monthly budget" field for expense categories
+  (top-level and subcategories) in the add and edit forms. Added factory
+  default and two feature tests (`an expense category can have a default
+  monthly budget`, `an income category cannot have a monthly budget`).
+  `docs/PROGRESS.md` marks `P4-01` `Done`, `F-011` and Phase 4 `In Progress`.
+- **Verification:** `composer ci:check` (274 tests / 1944 assertions, 0
+  PHPStan errors, Pint/ESLint/Prettier/TypeScript/build clean) and
+  `bash scripts/check-governance.sh` passed.
+- **Decisions:** Budgets are stored as plain integers in the same unit as
+  transaction amounts (no minor/major unit conversion), matching the existing
+  transaction amount convention. Income categories are rejected rather than
+  silently nulled to keep validation explicit and consistent with other
+  type-dependent category rules.
+- **Blockers:** None.
+- **Uncommitted:** Migration, model, request, factory, frontend, test, and
+  doc changes are uncommitted on `feat/phase-4`.
+- **Next:** Await user approval to commit, then continue with `P4-02` (Monthly
+  budget override) per the recommended PR sequence in `docs/MASTER_PLAN.md`.
+
 ### 2026-06-13 14:12 WIB - Phase 3 Merged
 
 - **Branch:** `main`.

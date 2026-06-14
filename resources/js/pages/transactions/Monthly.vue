@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { ChevronLeft, ChevronRight } from '@lucide/vue';
+import { ChevronLeft, ChevronRight, Download } from '@lucide/vue';
 import { computed } from 'vue';
 import Heading from '@/components/Heading.vue';
 import TransactionViewNav from '@/components/TransactionViewNav.vue';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { usePeriodNavigation } from '@/composables/usePeriodNavigation';
 import { calendar, index, monthly } from '@/routes/transactions';
+import monthlyRoutes from '@/routes/transactions/monthly';
 
 interface MonthSummary {
     income: Record<string, number>;
@@ -68,6 +69,10 @@ usePeriodNavigation({
 
 const currencies = (record: Record<string, number>): string[] =>
     Object.keys(record);
+
+const exportUrl = computed(
+    () => monthlyRoutes.export({ query: { year: props.year } }).url,
+);
 </script>
 
 <template>
@@ -79,6 +84,9 @@ const currencies = (record: Record<string, number>): string[] =>
                 title="Monthly"
                 description="Monthly income and expense comparison"
             />
+            <Button as-child variant="outline" size="sm">
+                <a :href="exportUrl"><Download /> Export Excel</a>
+            </Button>
         </div>
 
         <TransactionViewNav current="monthly" />

@@ -24,6 +24,7 @@ class CategoryFactory extends Factory
             'position' => fake()->numberBetween(0, 100),
             'is_visible' => true,
             'is_favorite' => false,
+            'monthly_budget_amount' => null,
             'archived_at' => null,
         ];
     }

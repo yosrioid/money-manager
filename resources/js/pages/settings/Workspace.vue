@@ -28,12 +28,14 @@ interface WorkspaceData {
     adjust_month_for_weekend: boolean;
     application_lock_minutes: number;
     navigation_shortcuts_enabled: boolean;
+    net_asset_target: number | null;
 }
 
 const props = defineProps<{
     workspace: WorkspaceData;
     currencies: Currency[];
     entryFormFields: string[];
+    reportWidgets: string[];
 }>();
 
 defineOptions({
@@ -108,6 +110,36 @@ const entryFormFieldRows = ref(
 
 const visibleEntryFormFields = () =>
     entryFormFieldRows.value.filter((row) => row.visible).map((row) => row.key);
+
+const reportWidgetLabels: Record<string, string> = {
+    summary: 'Income, expense, and net summary',
+    comparison: 'Comparison with previous period',
+    categoryBreakdown: 'Expense and income by category',
+    merchantBreakdown: 'Spending by merchant',
+    accountActivity: 'Account activity',
+    netWorth: 'Assets, liabilities, and net worth',
+    netWorthTrend: 'Net worth trend',
+};
+
+const allReportWidgetKeys = [
+    'summary',
+    'comparison',
+    'categoryBreakdown',
+    'merchantBreakdown',
+    'accountActivity',
+    'netWorth',
+    'netWorthTrend',
+];
+
+const reportWidgetRows = ref(
+    allReportWidgetKeys.map((key) => ({
+        key,
+        visible: props.reportWidgets.includes(key),
+    })),
+);
+
+const visibleReportWidgets = () =>
+    reportWidgetRows.value.filter((row) => row.visible).map((row) => row.key);
 
 const moveEntryFormField = (index: number, direction: 'up' | 'down') => {
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
@@ -355,6 +387,36 @@ const moveEntryFormField = (index: number, direction: 'up' | 'down') => {
                 <InputError class="mt-2" :message="errors.entry_form_fields" />
             </div>
 
+            <div class="grid gap-3">
+                <Label>Report cards and charts</Label>
+                <p class="text-sm text-muted-foreground">
+                    Choose which summary cards and charts appear on the Reports
+                    page.
+                </p>
+                <div class="grid gap-2">
+                    <label
+                        v-for="row in reportWidgetRows"
+                        :key="row.key"
+                        class="flex items-center gap-2 rounded-md border p-3 text-sm"
+                    >
+                        <input
+                            v-model="row.visible"
+                            type="checkbox"
+                            class="size-4 rounded border-input"
+                        />
+                        {{ reportWidgetLabels[row.key] }}
+                    </label>
+                </div>
+                <input
+                    v-for="widget in visibleReportWidgets()"
+                    :key="widget"
+                    type="hidden"
+                    name="report_widgets[]"
+                    :value="widget"
+                />
+                <InputError class="mt-2" :message="errors.report_widgets" />
+            </div>
+
             <div class="flex items-center gap-2">
                 <input
                     type="hidden"
@@ -377,6 +439,25 @@ const moveEntryFormField = (index: number, direction: 'up' | 'down') => {
                     class="mt-2"
                     :message="errors.navigation_shortcuts_enabled"
                 />
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="net_asset_target">Net asset target</Label>
+                <Input
+                    id="net_asset_target"
+                    name="net_asset_target"
+                    type="number"
+                    min="0"
+                    step="1"
+                    class="mt-1 block w-full"
+                    :default-value="workspace.net_asset_target ?? ''"
+                    placeholder="Optional"
+                />
+                <p class="text-sm text-muted-foreground">
+                    Set a target total balance, in your default currency, to
+                    monitor on the summary page.
+                </p>
+                <InputError class="mt-2" :message="errors.net_asset_target" />
             </div>
 
             <div class="flex items-center gap-4">

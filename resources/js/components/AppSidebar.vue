@@ -6,7 +6,9 @@ import {
     FolderGit2,
     Landmark,
     LayoutGrid,
+    PiggyBank,
     Receipt,
+    ScrollText,
     Store,
     Tags,
 } from '@lucide/vue';
@@ -25,8 +27,10 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { index as accountsIndex } from '@/routes/accounts';
+import { index as budgetsIndex } from '@/routes/budgets';
 import { index as categoriesIndex } from '@/routes/categories';
 import { index as merchantsIndex } from '@/routes/merchants';
+import { index as reportsIndex } from '@/routes/reports';
 import { index as tagsIndex } from '@/routes/tags';
 import { index as transactionsIndex } from '@/routes/transactions';
 import type { NavItem } from '@/types';
@@ -51,6 +55,16 @@ const mainNavItems: NavItem[] = [
         title: 'Categories',
         href: categoriesIndex(),
         icon: ChartNoAxesColumnIncreasing,
+    },
+    {
+        title: 'Budgets',
+        href: budgetsIndex(),
+        icon: PiggyBank,
+    },
+    {
+        title: 'Reports',
+        href: reportsIndex(),
+        icon: ScrollText,
     },
     {
         title: 'Merchants',

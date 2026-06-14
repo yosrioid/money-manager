@@ -2,15 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Budgets\CalculateBudgetUsage;
+use App\Domain\Export\GenerateReportSpreadsheet;
+use App\Domain\Export\GenerateTransactionsCsv;
 use App\Domain\Ledger\CalculateAccountBalance;
+use App\Domain\Ledger\CalculateNetAsset;
 use App\Domain\Transactions\DuplicateTransaction;
 use App\Domain\Transactions\EvaluateAmountExpression;
+use App\Domain\Transactions\FilterTransactionsQuery;
 use App\Domain\Transactions\RecordIncomeExpense;
 use App\Domain\Transactions\RecordTransfer;
 use App\Domain\Transactions\SaveTransactionDraft;
 use App\Domain\Transactions\SummarizeTransactionPeriod;
 use App\Domain\Transactions\UpdateTransactionStatisticsInclusion;
 use App\Domain\Workspaces\WorkspaceContext;
+use App\Enums\CategoryType;
 use App\Enums\LedgerEntryType;
 use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
@@ -30,11 +36,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TransactionController extends Controller
 {
     public function __construct(
         private readonly WorkspaceContext $workspaceContext,
+        private readonly FilterTransactionsQuery $filterTransactionsQuery,
     ) {}
 
     public function index(Request $request): Response
@@ -43,53 +51,14 @@ class TransactionController extends Controller
 
         $workspace = $this->workspaceContext->get();
 
-        $search = trim((string) $request->query('q', ''));
-
-        $type = $request->query('type');
-        $type = is_string($type) && TransactionType::tryFrom($type) !== null ? $type : null;
-
-        $status = $request->query('status');
-        $status = is_string($status) && TransactionStatus::tryFrom($status) !== null ? $status : null;
-
-        $categoryId = $request->query('category_id');
-        $categoryId = is_numeric($categoryId) ? (int) $categoryId : null;
-
-        $accountId = $request->query('account_id');
-        $accountId = is_numeric($accountId) ? (int) $accountId : null;
-
-        $tagId = $request->query('tag_id');
-        $tagId = is_numeric($tagId) ? (int) $tagId : null;
-
-        $from = $this->parseStrictDate($request->query('from'), $workspace);
-        $to = $this->parseStrictDate($request->query('to'), $workspace);
+        $filters = $this->filterTransactionsQuery->resolve($request, $workspace);
+        ['search' => $search, 'type' => $type, 'status' => $status, 'category_id' => $categoryId, 'account_id' => $accountId, 'tag_id' => $tagId, 'from' => $from, 'to' => $to] = $filters;
 
         $sortOptions = ['date_desc', 'date_asc', 'amount_desc', 'amount_asc', 'description_asc', 'description_desc'];
         $sort = $request->query('sort');
         $sort = is_string($sort) && in_array($sort, $sortOptions, true) ? $sort : 'date_desc';
 
-        $transactions = $workspace->transactions()
-            ->whereNotNull('posted_at')
-            ->when($search !== '', function ($query) use ($search): void {
-                $query->where(function ($query) use ($search): void {
-                    $query->where('description', 'like', "%{$search}%")
-                        ->orWhere('memo', 'like', "%{$search}%")
-                        ->orWhereHas('merchant', fn ($q) => $q->where('name', 'like', "%{$search}%"))
-                        ->orWhereHas('entries.account', fn ($q) => $q->where('name', 'like', "%{$search}%"))
-                        ->orWhereHas('entries.category', fn ($q) => $q->where('name', 'like', "%{$search}%"));
-
-                    if (preg_match('/^-?\d+$/', $search) === 1) {
-                        $amount = abs((int) $search);
-                        $query->orWhereHas('entries', fn ($q) => $q->whereRaw('abs(amount) = ?', [$amount]));
-                    }
-                });
-            })
-            ->when($type !== null, fn ($query) => $query->where('type', $type))
-            ->when($status !== null, fn ($query) => $query->where('status', $status))
-            ->when($categoryId !== null, fn ($query) => $query->whereHas('entries', fn ($q) => $q->where('category_id', $categoryId)))
-            ->when($accountId !== null, fn ($query) => $query->whereHas('entries', fn ($q) => $q->where('account_id', $accountId)))
-            ->when($tagId !== null, fn ($query) => $query->whereHas('tags', fn ($q) => $q->where('tags.id', $tagId)))
-            ->when($from !== null, fn ($query) => $query->where('occurred_at', '>=', $from->copy()->utc()))
-            ->when($to !== null, fn ($query) => $query->where('occurred_at', '<', $to->copy()->addDay()->utc()))
+        $transactions = $this->filterTransactionsQuery->query($workspace, $filters)
             ->with(['merchant', 'tags', 'entries.account', 'entries.category'])
             ->when(in_array($sort, ['amount_desc', 'amount_asc'], true), function ($query) use ($sort): void {
                 $query->addSelect([
@@ -132,6 +101,17 @@ class TransactionController extends Controller
                 'tags' => $workspace->tags()->active()->orderBy('name')->get(['id', 'name', 'color']),
             ],
         ]);
+    }
+
+    public function export(Request $request, GenerateTransactionsCsv $generateTransactionsCsv): StreamedResponse
+    {
+        $this->authorize('viewAny', Transaction::class);
+
+        $workspace = $this->workspaceContext->get();
+
+        $filters = $this->filterTransactionsQuery->resolve($request, $workspace);
+
+        return $generateTransactionsCsv->stream($workspace, $this->filterTransactionsQuery->query($workspace, $filters));
     }
 
     public function calendar(Request $request, SummarizeTransactionPeriod $summarizeTransactionPeriod): Response
@@ -216,7 +196,27 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function summary(Request $request, SummarizeTransactionPeriod $summarizeTransactionPeriod, CalculateAccountBalance $calculateAccountBalance): Response
+    public function exportYear(Request $request, SummarizeTransactionPeriod $summarizeTransactionPeriod, GenerateReportSpreadsheet $generateReportSpreadsheet): StreamedResponse
+    {
+        $this->authorize('viewAny', Transaction::class);
+
+        $workspace = $this->workspaceContext->get();
+
+        $year = $request->query('year');
+        $year = is_string($year) && preg_match('/^\d{4}$/', $year)
+            ? Carbon::createFromDate((int) $year, 1, 1, $workspace->timezone)
+            : Carbon::now($workspace->timezone);
+
+        $year = $year->startOfYear();
+
+        $months = $summarizeTransactionPeriod->forYear($workspace, $year);
+
+        $spreadsheet = $generateReportSpreadsheet->forYear($months);
+
+        return $generateReportSpreadsheet->stream($spreadsheet, "annual-report-{$year->format('Y')}.xlsx");
+    }
+
+    public function summary(Request $request, SummarizeTransactionPeriod $summarizeTransactionPeriod, CalculateAccountBalance $calculateAccountBalance, CalculateBudgetUsage $calculateBudgetUsage, CalculateNetAsset $calculateNetAsset): Response
     {
         $this->authorize('viewAny', Transaction::class);
 
@@ -258,11 +258,20 @@ class TransactionController extends Controller
                 ];
             })->all();
 
+        $budgetSummary = [
+            'expense' => $calculateBudgetUsage->summarizeTotal($calculateBudgetUsage->forMonth($workspace, $month)),
+            'income' => $calculateBudgetUsage->summarizeTotal($calculateBudgetUsage->forMonth($workspace, $month, CategoryType::Income)),
+        ];
+
         return Inertia::render('transactions/Summary', [
             'month' => $month->toDateString(),
             'count' => $count,
             'totals' => $totals,
             'accountMovements' => $accountMovements,
+            'budgetSummary' => $budgetSummary,
+            'netAssets' => $calculateNetAsset->current($workspace),
+            'netAssetTarget' => $workspace->net_asset_target,
+            'defaultCurrency' => $workspace->default_currency,
             'previousMonth' => $month->copy()->subMonth()->format('Y-m'),
             'nextMonth' => $month->copy()->addMonth()->format('Y-m'),
             'navigationShortcutsEnabled' => $workspace->navigation_shortcuts_enabled,

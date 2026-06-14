@@ -59,6 +59,91 @@ test('summary view shows period totals and account movement', function () {
             ->has('accountMovements', 1)
             ->where('accountMovements.0.id', $account->id)
             ->where('accountMovements.0.change', 35000)
+            ->where('budgetSummary.expense.actual', 15000)
+            ->where('budgetSummary.income.actual', 50000)
+        );
+});
+
+test('summary view compares total actual spending and income with the total budget', function () {
+    [$user, $workspace, $account, $incomeCategory, $expenseCategory] = setUpTransactionSummaryWorkspace();
+
+    $expenseCategory->update(['monthly_budget_amount' => 20000]);
+    $incomeCategory->update(['monthly_budget_amount' => 60000]);
+
+    app(RecordIncomeExpense::class)->record(
+        $account,
+        $incomeCategory,
+        TransactionType::Income,
+        50000,
+        'Salary',
+        now()->setDate(2026, 6, 5)->setTime(1, 0),
+        $user,
+    );
+
+    app(RecordIncomeExpense::class)->record(
+        $account,
+        $expenseCategory,
+        TransactionType::Expense,
+        15000,
+        'Groceries',
+        now()->setDate(2026, 6, 5)->setTime(10, 0),
+        $user,
+    );
+
+    $this->actingAs($user)
+        ->get(route('transactions.summary', ['month' => '2026-06']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('transactions/Summary')
+            ->where('budgetSummary.expense.budget', 20000)
+            ->where('budgetSummary.expense.actual', 15000)
+            ->where('budgetSummary.income.budget', 60000)
+            ->where('budgetSummary.income.actual', 50000)
+        );
+});
+
+test('summary view shows the net asset total against an optional workspace target', function () {
+    [$user, $workspace, $account, $incomeCategory, $expenseCategory] = setUpTransactionSummaryWorkspace();
+
+    app(RecordIncomeExpense::class)->record(
+        $account,
+        $incomeCategory,
+        TransactionType::Income,
+        50000,
+        'Salary',
+        now()->setDate(2026, 6, 5)->setTime(1, 0),
+        $user,
+    );
+
+    app(RecordIncomeExpense::class)->record(
+        $account,
+        $expenseCategory,
+        TransactionType::Expense,
+        15000,
+        'Groceries',
+        now()->setDate(2026, 6, 5)->setTime(10, 0),
+        $user,
+    );
+
+    $this->actingAs($user)
+        ->get(route('transactions.summary', ['month' => '2026-06']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('transactions/Summary')
+            ->where('netAssets.'.$account->currency_code, 35000)
+            ->where('netAssetTarget', null)
+            ->where('defaultCurrency', $workspace->default_currency)
+        );
+
+    $workspace->update(['net_asset_target' => 100000]);
+
+    $this->actingAs($user)
+        ->get(route('transactions.summary', ['month' => '2026-06']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('transactions/Summary')
+            ->where('netAssets.'.$account->currency_code, 35000)
+            ->where('netAssetTarget', 100000)
         );
 });
 

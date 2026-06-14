@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'position',
     'is_visible',
     'is_favorite',
+    'monthly_budget_amount',
+    'budget_carryover_enabled',
     'archived_at',
 ])]
 class Category extends Model
@@ -37,6 +39,8 @@ class Category extends Model
             'type' => CategoryType::class,
             'is_visible' => 'boolean',
             'is_favorite' => 'boolean',
+            'monthly_budget_amount' => 'integer',
+            'budget_carryover_enabled' => 'boolean',
             'archived_at' => 'datetime',
         ];
     }
@@ -63,6 +67,14 @@ class Category extends Model
     public function subcategories(): HasMany
     {
         return $this->hasMany(Category::class, 'parent_id');
+    }
+
+    /**
+     * @return HasMany<CategoryBudgetOverride, $this>
+     */
+    public function budgetOverrides(): HasMany
+    {
+        return $this->hasMany(CategoryBudgetOverride::class);
     }
 
     /**
