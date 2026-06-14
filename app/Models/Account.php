@@ -73,6 +73,14 @@ class Account extends Model
     }
 
     /**
+     * @return HasMany<InstallmentPlan, $this>
+     */
+    public function installmentPlans(): HasMany
+    {
+        return $this->hasMany(InstallmentPlan::class);
+    }
+
+    /**
      * @return HasMany<TransactionEntry, $this>
      */
     public function ledgerEntries(): HasMany

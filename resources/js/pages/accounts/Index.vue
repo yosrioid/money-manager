@@ -34,6 +34,16 @@ interface AccountGroup {
     accounts_count: number;
 }
 
+interface InstallmentPlanSummary {
+    total_amount: number;
+    installment_count: number;
+    paid_count: number;
+    paid_amount: number;
+    due: { sequence: number; due_date: string; amount: number } | null;
+    remaining_count: number;
+    remaining_amount: number;
+}
+
 interface Account {
     id: number;
     name: string;
@@ -49,6 +59,7 @@ interface Account {
     include_in_total: boolean;
     account_group: { id: number; name: string } | null;
     linked_account: { id: number; name: string } | null;
+    installment_plans?: InstallmentPlanSummary[];
 }
 
 defineProps<{
@@ -306,6 +317,39 @@ const availableCredit = (account: Account): number | null =>
                                 <br />
                                 Payment due {{ account.payment_due_date }}
                             </p>
+                            <div
+                                v-if="account.installment_plans?.length"
+                                class="space-y-2"
+                            >
+                                <p class="text-sm font-medium">
+                                    Installment plans
+                                </p>
+                                <ul class="space-y-1 text-sm text-muted-foreground">
+                                    <li
+                                        v-for="(plan, planIndex) in account.installment_plans"
+                                        :key="planIndex"
+                                    >
+                                        {{ plan.paid_count }}/{{
+                                            plan.installment_count
+                                        }}
+                                        paid
+                                        <template v-if="plan.due">
+                                            — next
+                                            <span class="font-medium text-foreground">
+                                                {{ plan.due.amount }}
+                                                {{ account.currency_code }}
+                                            </span>
+                                            due {{ plan.due.due_date }}
+                                        </template>
+                                        <template v-else>
+                                            — fully paid
+                                        </template>
+                                        ({{ plan.remaining_count }} remaining,
+                                        {{ plan.remaining_amount }}
+                                        {{ account.currency_code }})
+                                    </li>
+                                </ul>
+                            </div>
                         </template>
                         <p
                             v-else-if="

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Domain\Transactions\EvaluateAmountExpression;
+use App\Enums\AccountType;
 use App\Enums\CategoryType;
 use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
@@ -52,6 +53,8 @@ class StoreTransactionRequest extends FormRequest
             'splits.*' => ['array:category_id,amount'],
             'splits.*.category_id' => ['required', 'integer', 'distinct', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
             'splits.*.amount' => ['required'],
+            'installment_count' => ['nullable', 'prohibited_unless:type,expense', 'integer', 'min:2', 'max:60'],
+            'first_due_date' => ['nullable', 'required_with:installment_count', 'prohibited_unless:type,expense', 'date'],
         ];
     }
 
@@ -91,6 +94,10 @@ class StoreTransactionRequest extends FormRequest
                 return;
             }
 
+            if (filled($this->input('installment_count'))) {
+                $this->validateInstallmentPlan($validator, $workspace);
+            }
+
             $splits = $this->input('splits');
 
             if (is_array($splits) && $splits !== []) {
@@ -119,6 +126,29 @@ class StoreTransactionRequest extends FormRequest
                 $validator->errors()->add('category_id', 'The selected category does not match the transaction type.');
             }
         }];
+    }
+
+    private function validateInstallmentPlan(Validator $validator, Workspace $workspace): void
+    {
+        $splits = $this->input('splits');
+
+        if (is_array($splits) && $splits !== []) {
+            $validator->errors()->add('installment_count', 'Installment plans cannot be used with split transactions.');
+
+            return;
+        }
+
+        $accountId = $this->input('account_id');
+
+        if (! is_numeric($accountId)) {
+            return;
+        }
+
+        $account = Account::query()->where('workspace_id', $workspace->id)->find($accountId);
+
+        if ($account instanceof Account && $account->getAttribute('type') !== AccountType::CreditCard) {
+            $validator->errors()->add('installment_count', 'Installment plans are only available for credit card accounts.');
+        }
     }
 
     private function validateTransfer(Validator $validator, EvaluateAmountExpression $evaluator): void

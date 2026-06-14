@@ -10,6 +10,7 @@ use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Category;
+use App\Models\InstallmentPlan;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Support\Str;
@@ -422,6 +423,124 @@ test('a debit card expense posts against its linked funding account', function (
         ->and($transaction->entries()->where('account_id', $debitCard->id)->exists())->toBeFalse()
         ->and(app(CalculateAccountBalance::class)->calculate($bankAccount->fresh()))->toBe(-25000)
         ->and(app(CalculateAccountBalance::class)->calculate($debitCard->fresh()))->toBe(0);
+});
+
+test('a credit card expense can be split into an installment plan', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $creditCard = Account::factory()->for($workspace)->creditCard()->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), [
+            'type' => 'expense',
+            'account_id' => $creditCard->id,
+            'category_id' => $category->id,
+            'amount' => 120000,
+            'description' => 'New laptop',
+            'occurred_at' => now()->toDateTimeString(),
+            'installment_count' => 3,
+            'first_due_date' => '2026-07-01',
+        ])
+        ->assertRedirect(route('accounts.index'));
+
+    $transaction = Transaction::query()->sole();
+    $plan = InstallmentPlan::query()->sole();
+
+    expect($plan->transaction_id)->toBe($transaction->id)
+        ->and($plan->account_id)->toBe($creditCard->id)
+        ->and($plan->total_amount)->toBe(120000)
+        ->and($plan->installment_count)->toBe(3)
+        ->and($plan->first_due_date->toDateString())->toBe('2026-07-01');
+});
+
+test('installment plans are rejected for non credit card accounts', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), [
+            'type' => 'expense',
+            'account_id' => $account->id,
+            'category_id' => $category->id,
+            'amount' => 120000,
+            'description' => 'New laptop',
+            'occurred_at' => now()->toDateTimeString(),
+            'installment_count' => 3,
+            'first_due_date' => '2026-07-01',
+        ])
+        ->assertSessionHasErrors('installment_count');
+
+    expect(InstallmentPlan::query()->count())->toBe(0);
+});
+
+test('installment plans are rejected for split transactions', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $creditCard = Account::factory()->for($workspace)->creditCard()->create();
+    $categoryOne = Category::factory()->for($workspace)->expense()->create();
+    $categoryTwo = Category::factory()->for($workspace)->expense()->create();
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), [
+            'type' => 'expense',
+            'account_id' => $creditCard->id,
+            'amount' => 120000,
+            'description' => 'New laptop',
+            'occurred_at' => now()->toDateTimeString(),
+            'splits' => [
+                ['category_id' => $categoryOne->id, 'amount' => 60000],
+                ['category_id' => $categoryTwo->id, 'amount' => 60000],
+            ],
+            'installment_count' => 3,
+            'first_due_date' => '2026-07-01',
+        ])
+        ->assertSessionHasErrors('installment_count');
+
+    expect(InstallmentPlan::query()->count())->toBe(0);
+});
+
+test('installment count requires a first due date', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $creditCard = Account::factory()->for($workspace)->creditCard()->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), [
+            'type' => 'expense',
+            'account_id' => $creditCard->id,
+            'category_id' => $category->id,
+            'amount' => 120000,
+            'description' => 'New laptop',
+            'occurred_at' => now()->toDateTimeString(),
+            'installment_count' => 3,
+        ])
+        ->assertSessionHasErrors('first_due_date');
+});
+
+test('accounts index shows installment plan progress for credit card accounts', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $creditCard = Account::factory()->for($workspace)->creditCard()->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+
+    $this->actingAs($user)->post(route('transactions.store'), [
+        'type' => 'expense',
+        'account_id' => $creditCard->id,
+        'category_id' => $category->id,
+        'amount' => 120000,
+        'description' => 'New laptop',
+        'occurred_at' => now()->toDateTimeString(),
+        'installment_count' => 3,
+        'first_due_date' => '2026-07-01',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('accounts.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('accounts/Index')
+            ->where('accounts.0.installment_plans.0.installment_count', 3)
+            ->where('accounts.0.installment_plans.0.total_amount', 120000),
+        );
 });
 
 test('transaction create page renders accounts and categories', function () {

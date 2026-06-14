@@ -25,6 +25,7 @@ use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionStatisticsInclusionRequest;
 use App\Models\Account;
 use App\Models\AuditLog;
+use App\Models\InstallmentPlan;
 use App\Models\Merchant;
 use App\Models\Transaction;
 use App\Models\TransactionEntry;
@@ -379,7 +380,7 @@ class TransactionController extends Controller
                 ]];
             }
 
-            $recordIncomeExpense->recordSplit(
+            $transaction = $recordIncomeExpense->recordSplit(
                 $account,
                 $splits,
                 $type,
@@ -391,6 +392,17 @@ class TransactionController extends Controller
                 $tags,
                 $validated['idempotency_key'],
             );
+
+            if (filled($validated['installment_count'] ?? null)) {
+                InstallmentPlan::query()->create([
+                    'workspace_id' => $workspace->id,
+                    'transaction_id' => $transaction->id,
+                    'account_id' => $account->id,
+                    'total_amount' => $amount,
+                    'installment_count' => $validated['installment_count'],
+                    'first_due_date' => Carbon::parse($validated['first_due_date'], $workspace->timezone),
+                ]);
+            }
         }
 
         if (isset($validated['draft_id'])) {
@@ -624,7 +636,7 @@ class TransactionController extends Controller
             ->values();
 
         return [
-            'accounts' => $workspace->accounts()->active()->orderByDesc('is_favorite')->orderBy('name')->get(['id', 'name', 'currency_code', 'is_favorite']),
+            'accounts' => $workspace->accounts()->active()->orderByDesc('is_favorite')->orderBy('name')->get(['id', 'name', 'type', 'currency_code', 'is_favorite']),
             'categories' => $workspace->categories()->active()->orderByDesc('is_favorite')->orderBy('name')->get(['id', 'name', 'type', 'is_favorite']),
             'merchants' => $workspace->merchants()->active()->orderBy('name')->get(['id', 'name']),
             'tags' => $workspace->tags()->active()->orderBy('name')->get(['id', 'name', 'color']),

@@ -31,6 +31,7 @@ const props = defineProps<{
     accounts: {
         id: number;
         name: string;
+        type: string;
         currency_code: string;
         is_favorite: boolean;
     }[];

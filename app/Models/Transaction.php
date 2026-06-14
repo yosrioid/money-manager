@@ -90,6 +90,14 @@ class Transaction extends Model
     }
 
     /**
+     * @return HasOne<InstallmentPlan, $this>
+     */
+    public function installmentPlan(): HasOne
+    {
+        return $this->hasOne(InstallmentPlan::class);
+    }
+
+    /**
      * @return BelongsTo<Transaction, $this>
      */
     public function reverses(): BelongsTo

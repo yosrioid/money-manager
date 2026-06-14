@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Accounts\CalculateCardOutstandingBalance;
+use App\Domain\Accounts\SummarizeInstallmentPlan;
 use App\Domain\Ordering\MoveOrderedResource;
 use App\Domain\Workspaces\WorkspaceContext;
 use App\Enums\AccountType;
@@ -11,6 +12,7 @@ use App\Http\Requests\StoreAccountGroupRequest;
 use App\Http\Requests\UpdateAccountGroupRequest;
 use App\Models\Account;
 use App\Models\AccountGroup;
+use App\Models\InstallmentPlan;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -21,6 +23,7 @@ class AccountGroupController extends Controller
     public function __construct(
         private readonly WorkspaceContext $workspaceContext,
         private readonly CalculateCardOutstandingBalance $calculateCardOutstandingBalance,
+        private readonly SummarizeInstallmentPlan $summarizeInstallmentPlan,
     ) {}
 
     public function index(): Response
@@ -29,7 +32,7 @@ class AccountGroupController extends Controller
         $today = Carbon::now($workspace->timezone);
 
         $accounts = $workspace->accounts()
-            ->with('accountGroup:id,name', 'linkedAccount:id,name')
+            ->with('accountGroup:id,name', 'linkedAccount:id,name', 'installmentPlans')
             ->withSum('postedLedgerEntries as balance', 'amount')
             ->active()
             ->orderBy(
@@ -43,6 +46,7 @@ class AccountGroupController extends Controller
                 $account->setAttribute('balance', (int) ($account->getAttribute('balance') ?? 0));
 
                 $this->applyCardOutstandingBalance($account, $today);
+                $this->applyInstallmentPlans($account, $today);
             });
 
         return Inertia::render('accounts/Index', [
@@ -68,6 +72,17 @@ class AccountGroupController extends Controller
         $account->setAttribute('statement_outstanding', $outstanding['statement']);
         $account->setAttribute('statement_closing_date', $outstanding['statement_closing_date']->toDateString());
         $account->setAttribute('payment_due_date', $outstanding['payment_due_date']->toDateString());
+    }
+
+    private function applyInstallmentPlans(Account $account, Carbon $today): void
+    {
+        if ($account->getAttribute('type') !== AccountType::CreditCard) {
+            return;
+        }
+
+        $account->setAttribute('installment_plans', $account->installmentPlans
+            ->map(fn (InstallmentPlan $plan) => $this->summarizeInstallmentPlan->summarize($plan, $today))
+            ->values());
     }
 
     public function store(StoreAccountGroupRequest $request): RedirectResponse

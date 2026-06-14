@@ -15,6 +15,7 @@ import type { RouteFormDefinition } from '@/wayfinder';
 interface Account {
     id: number;
     name: string;
+    type: string;
     currency_code: string;
     is_favorite: boolean;
 }
@@ -118,6 +119,26 @@ const destinationAccounts = computed(() =>
         (account) => account.id.toString() !== sourceAccountId.value,
     ),
 );
+
+const installmentsAvailable = computed(() => {
+    const account = props.accounts.find(
+        (account) => account.id.toString() === sourceAccountId.value,
+    );
+
+    return (
+        type.value === 'expense' &&
+        !splitEnabled.value &&
+        account?.type === 'credit_card'
+    );
+});
+
+const installmentEnabled = ref(false);
+
+watch(installmentsAvailable, (available) => {
+    if (!available) {
+        installmentEnabled.value = false;
+    }
+});
 
 watch(sourceAccountId, (accountId) => {
     if (destinationAccountId.value === accountId) {
@@ -411,6 +432,45 @@ const submitOnShortcut = (event: KeyboardEvent) => {
                 <Button type="button" variant="outline" @click="addSplit">
                     Add split
                 </Button>
+            </div>
+        </div>
+
+        <div v-if="installmentsAvailable" class="grid gap-4">
+            <label class="flex items-center gap-2 text-sm font-medium">
+                <input
+                    v-model="installmentEnabled"
+                    type="checkbox"
+                    class="size-4 rounded border-input"
+                />
+                Pay in installments
+            </label>
+
+            <div
+                v-if="installmentEnabled"
+                class="grid gap-4 rounded-md border p-4 md:grid-cols-2"
+            >
+                <div class="grid gap-2">
+                    <Label for="installment_count">Number of installments</Label>
+                    <Input
+                        id="installment_count"
+                        name="installment_count"
+                        type="number"
+                        min="2"
+                        max="60"
+                        required
+                    />
+                    <InputError :message="errors.installment_count" />
+                </div>
+                <div class="grid gap-2">
+                    <Label for="first_due_date">First due date</Label>
+                    <Input
+                        id="first_due_date"
+                        name="first_due_date"
+                        type="date"
+                        required
+                    />
+                    <InputError :message="errors.first_due_date" />
+                </div>
             </div>
         </div>
 
