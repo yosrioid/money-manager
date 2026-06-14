@@ -41,6 +41,7 @@ class ReverseTransaction
                 'type' => $transaction->type,
                 'status' => TransactionStatus::Draft,
                 'currency_code' => $transaction->currency_code,
+                'exchange_rate' => $transaction->getRawOriginal('exchange_rate'),
                 'description' => "Reversal of: {$transaction->description}",
                 'occurred_at' => $postedAt,
                 'posted_at' => null,
@@ -55,10 +56,11 @@ class ReverseTransaction
                     'type' => $entry->type,
                     'currency_code' => $entry->currency_code,
                     'amount' => -$entry->amount,
+                    'base_amount' => -$entry->base_amount,
                 ])->all()
             );
 
-            if ($reversal->entries()->sum('amount') !== 0) {
+            if ($reversal->entries()->sum('base_amount') !== 0) {
                 throw new LogicException('Reversal transactions must balance to zero.');
             }
 

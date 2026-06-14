@@ -54,6 +54,7 @@ class PostOpeningBalance
                     'type' => LedgerEntryType::Account,
                     'currency_code' => $lockedAccount->currency_code,
                     'amount' => $amount,
+                    'base_amount' => $amount,
                 ],
                 [
                     'workspace_id' => $lockedAccount->workspace_id,
@@ -61,6 +62,7 @@ class PostOpeningBalance
                     'type' => LedgerEntryType::OpeningBalanceEquity,
                     'currency_code' => $lockedAccount->currency_code,
                     'amount' => -$amount,
+                    'base_amount' => -$amount,
                 ],
             ]);
 

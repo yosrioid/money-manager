@@ -350,6 +350,13 @@ class TransactionController extends Controller
                 ? $workspace->categories()->whereKey($validated['fee_category_id'])->firstOrFail()
                 : null;
 
+            $destinationAmount = filled($validated['destination_amount'] ?? null)
+                ? $evaluator->evaluate($validated['destination_amount'])
+                : null;
+            $exchangeRate = filled($validated['exchange_rate'] ?? null)
+                ? (string) $validated['exchange_rate']
+                : null;
+
             $recordTransfer->record(
                 $account,
                 $destinationAccount,
@@ -362,6 +369,8 @@ class TransactionController extends Controller
                 $validated['memo'] ?? null,
                 $tags,
                 $validated['idempotency_key'],
+                $destinationAmount,
+                $exchangeRate,
             );
         } else {
             if (isset($validated['splits']) && is_array($validated['splits'])) {

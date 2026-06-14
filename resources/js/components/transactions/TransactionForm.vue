@@ -45,6 +45,8 @@ interface TransactionDraftData {
     destination_account_id?: number;
     fee_amount?: string;
     fee_category_id?: number;
+    destination_amount?: string;
+    exchange_rate?: string;
     amount?: string;
     description?: string;
     merchant_id?: number;
@@ -118,6 +120,27 @@ const destinationAccounts = computed(() =>
     props.accounts.filter(
         (account) => account.id.toString() !== sourceAccountId.value,
     ),
+);
+
+const sourceAccount = computed(() =>
+    props.accounts.find(
+        (account) => account.id.toString() === sourceAccountId.value,
+    ),
+);
+
+const destinationAccount = computed(() =>
+    props.accounts.find(
+        (account) => account.id.toString() === destinationAccountId.value,
+    ),
+);
+
+const isCrossCurrencyTransfer = computed(
+    () =>
+        type.value === 'transfer' &&
+        sourceAccount.value !== undefined &&
+        destinationAccount.value !== undefined &&
+        sourceAccount.value.currency_code !==
+            destinationAccount.value.currency_code,
 );
 
 const installmentsAvailable = computed(() => {
@@ -362,6 +385,40 @@ const submitOnShortcut = (event: KeyboardEvent) => {
                     </option>
                 </select>
                 <InputError :message="errors.fee_category_id" />
+            </div>
+
+            <div v-if="isCrossCurrencyTransfer" class="grid gap-2">
+                <Label for="destination_amount">
+                    Destination amount in
+                    {{ destinationAccount?.currency_code }} minor units
+                </Label>
+                <Input
+                    id="destination_amount"
+                    name="destination_amount"
+                    type="text"
+                    inputmode="numeric"
+                    placeholder="10000"
+                    required
+                    :value="initialData?.destination_amount ?? ''"
+                />
+                <InputError :message="errors.destination_amount" />
+            </div>
+
+            <div v-if="isCrossCurrencyTransfer" class="grid gap-2">
+                <Label for="exchange_rate">
+                    Exchange rate ({{ sourceAccount?.currency_code }} to
+                    {{ destinationAccount?.currency_code }})
+                </Label>
+                <Input
+                    id="exchange_rate"
+                    name="exchange_rate"
+                    type="text"
+                    inputmode="decimal"
+                    placeholder="1.0000000000"
+                    required
+                    :value="initialData?.exchange_rate ?? ''"
+                />
+                <InputError :message="errors.exchange_rate" />
             </div>
 
             <div class="grid gap-2">

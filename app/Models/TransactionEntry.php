@@ -17,6 +17,7 @@ use LogicException;
     'type',
     'currency_code',
     'amount',
+    'base_amount',
 ])]
 class TransactionEntry extends Model
 {
@@ -28,6 +29,7 @@ class TransactionEntry extends Model
         return [
             'type' => LedgerEntryType::class,
             'amount' => 'integer',
+            'base_amount' => 'integer',
         ];
     }
 

@@ -23,7 +23,7 @@ class RecordTransfer
     /**
      * @param  array<int, Tag>  $tags
      */
-    public function record(Account $sourceAccount, Account $destinationAccount, int $amount, int $feeAmount, ?Category $feeCategory, string $description, CarbonInterface $occurredAt, User $actor, ?string $memo = null, array $tags = [], ?string $idempotencyKey = null): Transaction
+    public function record(Account $sourceAccount, Account $destinationAccount, int $amount, int $feeAmount, ?Category $feeCategory, string $description, CarbonInterface $occurredAt, User $actor, ?string $memo = null, array $tags = [], ?string $idempotencyKey = null, ?int $destinationAmount = null, ?string $exchangeRate = null): Transaction
     {
         if ($amount < 1 || $feeAmount < 0) {
             throw new LogicException('Transfer amounts must be valid positive minor-unit values.');
@@ -37,8 +37,14 @@ class RecordTransfer
             throw new LogicException('Transfer accounts must belong to the same workspace.');
         }
 
-        if ($sourceAccount->currency_code !== $destinationAccount->currency_code) {
-            throw new LogicException('Transfers between different currencies are not supported.');
+        $crossCurrency = $sourceAccount->currency_code !== $destinationAccount->currency_code;
+
+        if ($crossCurrency) {
+            if ($destinationAmount === null || $destinationAmount < 1 || $exchangeRate === null || (float) $exchangeRate <= 0) {
+                throw new LogicException('Cross-currency transfers require a positive destination amount and exchange rate.');
+            }
+        } else {
+            $destinationAmount = $amount;
         }
 
         if ($feeAmount > 0 && (! $feeCategory instanceof Category || $feeCategory->workspace_id !== $sourceAccount->workspace_id || $feeCategory->getRawOriginal('type') !== CategoryType::Expense->value)) {
@@ -46,12 +52,12 @@ class RecordTransfer
         }
 
         $entries = [
-            ['account_id' => $sourceAccount->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => -($amount + $feeAmount)],
-            ['account_id' => $destinationAccount->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => $amount],
+            ['account_id' => $sourceAccount->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => -($amount + $feeAmount), 'currency_code' => $sourceAccount->currency_code, 'base_amount' => -($amount + $feeAmount)],
+            ['account_id' => $destinationAccount->id, 'category_id' => null, 'type' => LedgerEntryType::Account, 'amount' => $destinationAmount, 'currency_code' => $destinationAccount->currency_code, 'base_amount' => $amount],
         ];
 
         if ($feeAmount > 0) {
-            $entries[] = ['account_id' => null, 'category_id' => $feeCategory->id, 'type' => LedgerEntryType::Category, 'amount' => $feeAmount];
+            $entries[] = ['account_id' => null, 'category_id' => $feeCategory->id, 'type' => LedgerEntryType::Category, 'amount' => $feeAmount, 'currency_code' => $sourceAccount->currency_code, 'base_amount' => $feeAmount];
         }
 
         return $this->postTransaction->post(
@@ -66,6 +72,7 @@ class RecordTransfer
             $memo,
             $tags,
             $idempotencyKey,
+            $crossCurrency ? $exchangeRate : null,
         );
     }
 }

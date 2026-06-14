@@ -28,10 +28,10 @@ class PostTransaction
     ) {}
 
     /**
-     * @param  array<int, array{account_id: ?int, category_id: ?int, type: LedgerEntryType, amount: int}>  $entries
+     * @param  array<int, array{account_id: ?int, category_id: ?int, type: LedgerEntryType, amount: int, currency_code?: string, base_amount?: int}>  $entries
      * @param  array<int, Tag>  $tags
      */
-    public function post(Workspace $workspace, TransactionType $type, string $currencyCode, string $description, CarbonInterface $occurredAt, array $entries, User $actor, ?Merchant $merchant = null, ?string $memo = null, array $tags = [], ?string $idempotencyKey = null): Transaction
+    public function post(Workspace $workspace, TransactionType $type, string $currencyCode, string $description, CarbonInterface $occurredAt, array $entries, User $actor, ?Merchant $merchant = null, ?string $memo = null, array $tags = [], ?string $idempotencyKey = null, ?string $exchangeRate = null): Transaction
     {
         if (! $workspace->memberships()->where('user_id', $actor->id)->exists()) {
             throw new AuthorizationException;
@@ -53,8 +53,10 @@ class PostTransaction
             }
         }
 
-        if (array_sum(array_column($entries, 'amount')) !== 0) {
-            throw new LogicException('Posted transactions must balance to zero.');
+        $baseAmounts = array_map(fn (array $entry): int => $entry['base_amount'] ?? $entry['amount'], $entries);
+
+        if (array_sum($baseAmounts) !== 0) {
+            throw new LogicException('Posted transactions must balance to zero in their base currency.');
         }
 
         if ($merchant instanceof Merchant && ($merchant->workspace_id !== $workspace->id || $merchant->archived_at !== null)) {
@@ -69,7 +71,7 @@ class PostTransaction
             throw new LogicException('Transaction tags must be active and belong to the transaction workspace.');
         }
 
-        return DB::transaction(function () use ($workspace, $type, $currencyCode, $description, $occurredAt, $entries, $actor, $merchant, $memo, $tags, $idempotencyKey): Transaction {
+        return DB::transaction(function () use ($workspace, $type, $currencyCode, $description, $occurredAt, $entries, $actor, $merchant, $memo, $tags, $idempotencyKey, $exchangeRate): Transaction {
             if ($idempotencyKey !== null) {
                 $existingTransaction = Transaction::query()
                     ->where('workspace_id', $workspace->id)
@@ -89,7 +91,15 @@ class PostTransaction
             $categoryIds = array_values(array_unique(array_filter(array_column($entries, 'category_id'))));
             $categories = Category::query()->whereIn('id', $categoryIds)->get();
 
-            if ($lockedAccounts->count() !== count($accountIds) || $lockedAccounts->contains(fn (Account $account): bool => $account->workspace_id !== $workspace->id || $account->currency_code !== $currencyCode || $account->archived_at !== null)) {
+            $entryCurrencyByAccountId = [];
+
+            foreach ($entries as $entry) {
+                if ($entry['type'] === LedgerEntryType::Account && $entry['account_id'] !== null) {
+                    $entryCurrencyByAccountId[$entry['account_id']] = $entry['currency_code'] ?? $currencyCode;
+                }
+            }
+
+            if ($lockedAccounts->count() !== count($accountIds) || $lockedAccounts->contains(fn (Account $account): bool => $account->workspace_id !== $workspace->id || $account->currency_code !== ($entryCurrencyByAccountId[$account->id] ?? $currencyCode) || $account->archived_at !== null)) {
                 throw new LogicException('Posted accounts must be active and belong to the transaction workspace and currency.');
             }
 
@@ -106,6 +116,7 @@ class PostTransaction
                 'type' => $type,
                 'status' => TransactionStatus::Draft,
                 'currency_code' => $currencyCode,
+                'exchange_rate' => $exchangeRate,
                 'description' => $description,
                 'memo' => $memo,
                 'occurred_at' => $occurredAt,
@@ -117,8 +128,9 @@ class PostTransaction
                 'account_id' => $entry['account_id'],
                 'category_id' => $entry['category_id'],
                 'type' => $entry['type'],
-                'currency_code' => $currencyCode,
+                'currency_code' => $entry['currency_code'] ?? $currencyCode,
                 'amount' => $entry['amount'],
+                'base_amount' => $entry['base_amount'] ?? $entry['amount'],
             ], $entries));
 
             $transaction->tags()->attach(collect($tags)->mapWithKeys(fn (Tag $tag): array => [
@@ -133,7 +145,7 @@ class PostTransaction
     }
 
     /**
-     * @param  array<int, array{account_id: ?int, category_id: ?int, type: LedgerEntryType, amount: int}>  $entries
+     * @param  array<int, array{account_id: ?int, category_id: ?int, type: LedgerEntryType, amount: int, currency_code?: string, base_amount?: int}>  $entries
      * @param  array<int, Tag>  $tags
      */
     private function assertMatchingIdempotentRequest(Transaction $transaction, TransactionType $type, string $currencyCode, string $description, CarbonInterface $occurredAt, array $entries, ?Merchant $merchant, ?string $memo, array $tags): void
@@ -146,6 +158,8 @@ class PostTransaction
                 'category_id' => $entry->category_id,
                 'type' => $entry->getRawOriginal('type'),
                 'amount' => $entry->amount,
+                'currency_code' => $entry->currency_code,
+                'base_amount' => $entry->base_amount,
             ])
             ->sort()
             ->values()
@@ -156,6 +170,8 @@ class PostTransaction
                 'category_id' => $entry['category_id'],
                 'type' => $entry['type']->value,
                 'amount' => $entry['amount'],
+                'currency_code' => $entry['currency_code'] ?? $currencyCode,
+                'base_amount' => $entry['base_amount'] ?? $entry['amount'],
             ])
             ->sort()
             ->values()

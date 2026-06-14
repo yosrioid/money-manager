@@ -50,6 +50,18 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-15 01:30 WIB - P5-11/P5-12 Multi-Currency Transaction And Exchange-Rate Entry Implemented
+
+- **Branch:** `feat/phase-5`.
+- **Feature IDs:** `P5-11`, `P5-12`.
+- **Status:** Completed.
+- **Completed:** Added `transactions.exchange_rate` (nullable `decimal(24,10)`) and `transaction_entries.base_amount` (nullable `bigInteger`, backfilled to `amount` for existing rows) via a new migration. Generalized the ledger "balance to zero" invariant in `App\Domain\Ledger\PostTransaction::post()` from `sum(amount) === 0` to `sum(base_amount) === 0` (each entry's value in the transaction's base currency); per-entry `currency_code` is now independent of the transaction's `currency_code`, with account-currency validation checked per entry via a new `$entryCurrencyByAccountId` map. Updated `PostOpeningBalance`, `ReverseTransaction` (negates `base_amount`, checks `sum(base_amount) === 0`, copies `exchange_rate`), and `ReplaceTransaction` (single-currency, `base_amount = amount`) to populate the new column. `App\Domain\Transactions\RecordTransfer::record()` gained optional `$destinationAmount`/`$exchangeRate`: for cross-currency transfers (required when source/destination account currencies differ), the source entry's `base_amount = -(amount + fee)` and the destination entry's `amount = destinationAmount` (destination currency) with `base_amount = amount` (source/base currency) - balancing to zero by construction with no rounding residual; `exchange_rate` is stored on the transaction only for cross-currency transfers. `StoreTransactionRequest` replaces the old same-currency-only rejection with `validateExchangeRate()`: cross-currency transfers require `destination_amount` (arithmetic expression, like `amount`) and `exchange_rate` (positive decimal, up to 10 fractional digits); same-currency transfers reject both fields. `TransactionController::store()` passes the evaluated values through. `TransactionForm.vue` conditionally shows "Destination amount" and "Exchange rate" inputs when the selected accounts' currencies differ.
+- **Verification:** `php artisan test --compact` passed: 356 tests, 2684 assertions (new/updated cases in `tests/Feature/TransferRecordingTest.php`: cross-currency transfer requires destination amount/exchange rate, rejects invalid exchange rate, same-currency transfer rejects a stray exchange rate, and a full cross-currency transfer posts with `sum(base_amount) === 0`). `vendor/bin/phpstan analyse --no-progress --memory-limit=1G` passed (0 errors). `npm run lint` (ESLint) and `npx vue-tsc --noEmit` passed with no output. `vendor/bin/pint --dirty --format agent` passed.
+- **Decisions:** Chose to model cross-currency transfer entries so `base_amount` always sums to exactly zero by construction (destination entry's `base_amount` = source amount), avoiding any rounding-residual handling; exchange gain/loss representation is deferred to `P5-14`.
+- **Blockers:** None.
+- **Uncommitted:** All of `P5-11`/`P5-12` is uncommitted on `feat/phase-5`, pending commit.
+- **Next:** Commit `P5-11`/`P5-12`, then continue with `P5-13` (base-currency totals: workspace summaries convert supported balances consistently).
+
 ### 2026-06-15 00:10 WIB - P5-10 Account Currency Verified
 
 - **Branch:** `feat/phase-5`.

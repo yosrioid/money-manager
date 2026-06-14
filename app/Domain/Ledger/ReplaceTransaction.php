@@ -103,6 +103,7 @@ class ReplaceTransaction
                 'type' => $entry['type'],
                 'currency_code' => $transaction->currency_code,
                 'amount' => $entry['amount'],
+                'base_amount' => $entry['amount'],
             ], $entries));
 
             $replacement->update(['status' => TransactionStatus::Posted, 'posted_at' => $postedAt]);

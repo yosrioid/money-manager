@@ -20,6 +20,7 @@ use LogicException;
     'type',
     'status',
     'currency_code',
+    'exchange_rate',
     'description',
     'memo',
     'occurred_at',
@@ -43,6 +44,7 @@ class Transaction extends Model
             'posted_at' => 'immutable_datetime',
             'draft_data' => 'array',
             'include_in_statistics' => 'boolean',
+            'exchange_rate' => 'decimal:10',
         ];
     }
 

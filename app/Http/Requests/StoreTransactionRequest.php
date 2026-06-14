@@ -42,6 +42,8 @@ class StoreTransactionRequest extends FormRequest
             'destination_account_id' => ['required_if:type,transfer', 'prohibited_unless:type,transfer', 'integer', Rule::exists('accounts', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
             'fee_amount' => ['nullable', 'prohibited_unless:type,transfer'],
             'fee_category_id' => ['nullable', 'prohibited_unless:type,transfer', 'integer', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
+            'destination_amount' => ['nullable', 'prohibited_unless:type,transfer'],
+            'exchange_rate' => ['nullable', 'prohibited_unless:type,transfer'],
             'amount' => ['required'],
             'description' => ['required', 'string', 'max:255'],
             'merchant_id' => ['nullable', 'prohibited_if:type,transfer', 'integer', Rule::exists('merchants', 'id')->where(fn ($query) => $query->where('workspace_id', $workspace->id)->whereNull('archived_at'))],
@@ -180,8 +182,17 @@ class StoreTransactionRequest extends FormRequest
                 ->whereKey([(int) $sourceAccountId, (int) $destinationAccountId])
                 ->get();
 
-            if ($accounts->count() === 2 && $accounts->pluck('currency_code')->unique()->count() !== 1) {
-                $validator->errors()->add('destination_account_id', 'Transfers between different currencies are not supported.');
+            if ($accounts->count() === 2) {
+                $sourceAccount = $accounts->firstWhere('id', (int) $sourceAccountId);
+                $destinationAccount = $accounts->firstWhere('id', (int) $destinationAccountId);
+                $crossCurrency = $sourceAccount instanceof Account && $destinationAccount instanceof Account
+                    && $sourceAccount->currency_code !== $destinationAccount->currency_code;
+
+                if ($crossCurrency) {
+                    $this->validateExchangeRate($validator, $evaluator);
+                } elseif (filled($this->input('destination_amount')) || filled($this->input('exchange_rate'))) {
+                    $validator->errors()->add('exchange_rate', 'A destination amount and exchange rate are only used for transfers between different currencies.');
+                }
             }
         }
 
@@ -201,6 +212,29 @@ class StoreTransactionRequest extends FormRequest
 
         if ($feeCategory instanceof Category && $feeCategory->getRawOriginal('type') !== CategoryType::Expense->value) {
             $validator->errors()->add('fee_category_id', 'The transfer fee category must be an expense category.');
+        }
+    }
+
+    private function validateExchangeRate(Validator $validator, EvaluateAmountExpression $evaluator): void
+    {
+        $destinationAmount = $this->input('destination_amount');
+
+        if (! filled($destinationAmount)) {
+            $validator->errors()->add('destination_amount', 'A destination amount is required for transfers between different currencies.');
+        } else {
+            try {
+                $evaluator->evaluate($destinationAmount);
+            } catch (\LogicException) {
+                $validator->errors()->add('destination_amount', 'The destination amount must be a safe arithmetic expression that resolves to a positive whole number.');
+            }
+        }
+
+        $exchangeRate = $this->input('exchange_rate');
+
+        if (! filled($exchangeRate)) {
+            $validator->errors()->add('exchange_rate', 'An exchange rate is required for transfers between different currencies.');
+        } elseif (! is_numeric($exchangeRate) || (float) $exchangeRate <= 0 || ! preg_match('/^\d{1,13}(\.\d{1,10})?$/', (string) $exchangeRate)) {
+            $validator->errors()->add('exchange_rate', 'The exchange rate must be a positive number with up to 10 decimal places.');
         }
     }
 

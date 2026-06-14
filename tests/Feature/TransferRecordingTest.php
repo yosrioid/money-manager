@@ -216,7 +216,7 @@ test('transfer rejects accounts from another workspace', function () {
     expect(Transaction::query()->count())->toBe(0);
 });
 
-test('transfer rejects accounts with different currencies', function () {
+test('cross-currency transfer requires a destination amount and exchange rate', function () {
     $this->seed(CurrencySeeder::class);
 
     [$user, $workspace] = createTransferWorkspace();
@@ -225,9 +225,75 @@ test('transfer rejects accounts with different currencies', function () {
 
     $this->actingAs($user)
         ->post(route('transactions.store'), transferPayload($sourceAccount, $destinationAccount))
-        ->assertSessionHasErrors('destination_account_id');
+        ->assertSessionHasErrors(['destination_amount', 'exchange_rate']);
 
     expect(Transaction::query()->count())->toBe(0);
+});
+
+test('cross-currency transfer rejects an invalid exchange rate', function () {
+    $this->seed(CurrencySeeder::class);
+
+    [$user, $workspace] = createTransferWorkspace();
+    $sourceAccount = Account::factory()->for($workspace)->create(['currency_code' => 'IDR']);
+    $destinationAccount = Account::factory()->for($workspace)->create(['currency_code' => 'USD']);
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), transferPayload($sourceAccount, $destinationAccount, [
+            'destination_amount' => 325,
+            'exchange_rate' => '-1',
+        ]))
+        ->assertSessionHasErrors('exchange_rate');
+
+    expect(Transaction::query()->count())->toBe(0);
+});
+
+test('same-currency transfer rejects a stray exchange rate', function () {
+    [$user, $workspace] = createTransferWorkspace();
+    $sourceAccount = Account::factory()->for($workspace)->create();
+    $destinationAccount = Account::factory()->for($workspace)->create();
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), transferPayload($sourceAccount, $destinationAccount, [
+            'exchange_rate' => '1.5',
+        ]))
+        ->assertSessionHasErrors('exchange_rate');
+
+    expect(Transaction::query()->count())->toBe(0);
+});
+
+test('user can record a cross-currency transfer with an exchange rate', function () {
+    $this->seed(CurrencySeeder::class);
+
+    [$user, $workspace] = createTransferWorkspace();
+    $sourceAccount = Account::factory()->for($workspace)->create(['currency_code' => 'IDR']);
+    $destinationAccount = Account::factory()->for($workspace)->create(['currency_code' => 'USD']);
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), transferPayload($sourceAccount, $destinationAccount, [
+            'amount' => 1_625_000,
+            'destination_amount' => 100_00,
+            'exchange_rate' => '16250.0000000000',
+        ]))
+        ->assertRedirect(route('accounts.index'));
+
+    $transaction = Transaction::query()->sole();
+
+    expect($transaction)
+        ->type->toBe(TransactionType::Transfer)
+        ->status->toBe(TransactionStatus::Posted)
+        ->currency_code->toBe('IDR')
+        ->and((string) $transaction->exchange_rate)->toBe('16250.0000000000')
+        ->and($transaction->entries()->sum('base_amount'))->toBe(0)
+        ->and($transaction->entries()->where('account_id', $sourceAccount->id)->sole())
+        ->amount->toBe(-1_625_000)
+        ->currency_code->toBe('IDR')
+        ->base_amount->toBe(-1_625_000)
+        ->and($transaction->entries()->where('account_id', $destinationAccount->id)->sole())
+        ->amount->toBe(100_00)
+        ->currency_code->toBe('USD')
+        ->base_amount->toBe(1_625_000)
+        ->and(app(CalculateAccountBalance::class)->calculate($sourceAccount->fresh()))->toBe(-1_625_000)
+        ->and(app(CalculateAccountBalance::class)->calculate($destinationAccount->fresh()))->toBe(100_00);
 });
 
 test('transfer fee requires an expense category', function () {
