@@ -13,7 +13,7 @@ exist.
 - **Version:** `v0.3.0-beta.1`
 - **Name:** Phase 3 And Phase 4 Private Beta
 - **Type:** Milestone prerelease
-- **Status:** Ready
+- **Status:** Published
 - **Target:** `4ffd49523666bc646a000d977f4e7b8475ac2e31`
 - **Scope:** Phase 3 `P3-01` to `P3-21` and Phase 4 `P4-01` to `P4-25`
 - **Updated:** 2026-06-14
@@ -24,7 +24,7 @@ exist.
 | ---------------- | ------------------------- | -------------------- | --------- | -------------------------------------------- | ---------- |
 | `v0.1.0-alpha.1` | Phase 1 internal alpha    | Milestone prerelease | Published | `b304c18`                                    | 2026-06-11 |
 | `v0.2.0-alpha.1` | Phase 2 core ledger alpha | Milestone prerelease | Published | `fd75b78`                                     | 2026-06-12 |
-| `v0.3.0-beta.1`  | Phase 3 and Phase 4 private beta | Milestone prerelease | Ready     | `4ffd495`                                     | -          |
+| `v0.3.0-beta.1`  | Phase 3 and Phase 4 private beta | Milestone prerelease | Published | `4ffd495`                                     | 2026-06-14 |
 | `v1.0.0-rc.1`    | Phase 4 MVP candidate     | Milestone prerelease | Planned   | Pending Phase 4 and applicable Phase 8 gates | -          |
 | `v1.0.0`         | MVP release               | MVP                  | Planned   | Pending MVP release gates                    | -          |
 
@@ -51,7 +51,8 @@ exist.
       (user request: "merge and release").
 - [x] Explicit user approval to publish the GitHub prerelease is recorded
       (user request: "merge and release").
-- [ ] Annotated tag and GitHub prerelease are published.
+- [x] Annotated tag and GitHub prerelease are published
+      ([v0.3.0-beta.1](https://github.com/yosrioid/money-manager/releases/tag/v0.3.0-beta.1)).
 
 ### `v0.2.0-alpha.1` - Phase 2 Core Ledger Alpha
 
@@ -142,6 +143,18 @@ exist.
   independently, and pull-request CI remains the final merged-content gate.
 
 ## Release History
+
+### 2026-06-14 - `v0.3.0-beta.1` Phase 3 And Phase 4 Private Beta
+
+- **Type:** Milestone prerelease.
+- **Target:** `4ffd49523666bc646a000d977f4e7b8475ac2e31`.
+- **Tag:** `v0.3.0-beta.1`.
+- **Release:** [GitHub prerelease](https://github.com/yosrioid/money-manager/releases/tag/v0.3.0-beta.1).
+- **Scope:** Phase 3 `P3-01` to `P3-21` and Phase 4 `P4-01` to `P4-25`.
+- **Verification:** Required PR quality and browser CI for
+  [#14](https://github.com/yosrioid/money-manager/pull/14) and
+  [#16](https://github.com/yosrioid/money-manager/pull/16), local release
+  gates, migration rehearsal, and security audits passed.
 
 ### 2026-06-12 - `v0.2.0-alpha.1` Phase 2 Core Ledger Alpha
 
