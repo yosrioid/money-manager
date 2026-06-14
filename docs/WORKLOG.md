@@ -50,6 +50,18 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-14 21:45 WIB - P5-03 Outstanding Card Balance Implemented
+
+- **Branch:** `feat/phase-5`.
+- **Feature IDs:** `P5-03`.
+- **Status:** Completed.
+- **Completed:** Added `App\Domain\Accounts\CalculateCardOutstandingBalance::calculate()`, combining `CalculateCardBillingCycle` (to find the most recently closed statement period) and `CalculateAccountBalance::calculateAsOf()` (to get the balance as of that closing date) to derive a "statement outstanding" amount, the statement closing date, and the payment due date. `AccountGroupController::index()` now computes this for `credit_card` accounts with a configured billing cycle and exposes `statement_outstanding`/`statement_closing_date`/`payment_due_date`; `accounts/Index.vue` displays "Statement outstanding (as of <date>)" and "Payment due <date>" alongside the existing current "Outstanding balance"/"Available credit".
+- **Verification:** `php artisan test --compact --filter="AccountBalanceCalculationTest"` passed: 5 tests, 49 assertions. Full suite `php artisan test --compact` passed: 331 tests, 2551 assertions. `vendor/bin/phpstan analyse --no-progress --memory-limit=1G` passed (0 errors). `npm run types:check` passed. `vendor/bin/pint --dirty --format agent` passed.
+- **Decisions:** Discovered that comparing an Eloquent model's enum-cast attribute directly to a backed-enum case (e.g. `$account->type === AccountType::CreditCard`) makes Larastan (level 6) infer the property as plain `string` and report `identical.alwaysFalse` - reproduced in isolation against `Transaction::$type`/`TransactionType` too, so this is a pre-existing Larastan/PHPDoc limitation, not specific to `Account`. Fixed by comparing via `$account->getAttribute('type')` (typed `mixed`) instead, which is valid Eloquent API and avoids the false-positive without `@phpstan-ignore`, baseline entries, or type widening. Extracted the credit-card outstanding-balance logic into a private `applyCardOutstandingBalance()` method on `AccountGroupController` for clarity.
+- **Blockers:** None.
+- **Uncommitted:** All of `P5-03` is uncommitted on `feat/phase-5`, pending commit.
+- **Next:** Commit `P5-03`, then continue with `P5-04` (card settlement workflow: settlement transfer reduces card liability correctly, per `P2-16`).
+
 ### 2026-06-14 21:00 WIB - P5-02 Billing Cycle Implemented
 
 - **Branch:** `feat/phase-5`.

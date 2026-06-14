@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Accounts\CalculateCardOutstandingBalance;
 use App\Domain\Ordering\MoveOrderedResource;
 use App\Domain\Workspaces\WorkspaceContext;
+use App\Enums\AccountType;
 use App\Http\Requests\MoveOrderedResourceRequest;
 use App\Http\Requests\StoreAccountGroupRequest;
 use App\Http\Requests\UpdateAccountGroupRequest;
 use App\Models\Account;
 use App\Models\AccountGroup;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,11 +20,14 @@ class AccountGroupController extends Controller
 {
     public function __construct(
         private readonly WorkspaceContext $workspaceContext,
+        private readonly CalculateCardOutstandingBalance $calculateCardOutstandingBalance,
     ) {}
 
     public function index(): Response
     {
         $workspace = $this->workspaceContext->get();
+        $today = Carbon::now($workspace->timezone);
+
         $accounts = $workspace->accounts()
             ->with('accountGroup:id,name')
             ->withSum('postedLedgerEntries as balance', 'amount')
@@ -33,10 +39,11 @@ class AccountGroupController extends Controller
             )
             ->orderBy('position')
             ->get()
-            ->each(fn (Account $account) => $account->setAttribute(
-                'balance',
-                (int) ($account->getAttribute('balance') ?? 0),
-            ));
+            ->each(function (Account $account) use ($today): void {
+                $account->setAttribute('balance', (int) ($account->getAttribute('balance') ?? 0));
+
+                $this->applyCardOutstandingBalance($account, $today);
+            });
 
         return Inertia::render('accounts/Index', [
             'accountGroups' => $workspace->accountGroups()
@@ -46,6 +53,21 @@ class AccountGroupController extends Controller
                 ->get(),
             'accounts' => $accounts,
         ]);
+    }
+
+    private function applyCardOutstandingBalance(Account $account, Carbon $today): void
+    {
+        if ($account->getAttribute('type') !== AccountType::CreditCard
+            || $account->statement_closing_day === null
+            || $account->payment_due_day === null) {
+            return;
+        }
+
+        $outstanding = $this->calculateCardOutstandingBalance->calculate($account, $today);
+
+        $account->setAttribute('statement_outstanding', $outstanding['statement']);
+        $account->setAttribute('statement_closing_date', $outstanding['statement_closing_date']->toDateString());
+        $account->setAttribute('payment_due_date', $outstanding['payment_due_date']->toDateString());
     }
 
     public function store(StoreAccountGroupRequest $request): RedirectResponse

@@ -11,6 +11,7 @@ use App\Models\Account;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Workspace;
+use Carbon\Carbon;
 use Database\Seeders\CurrencySeeder;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -100,6 +101,30 @@ test('credit card accounts expose their ledger balance and credit limit', functi
             ->where('accounts.1.balance', -1500000)
             ->where('accounts.1.credit_limit', 5000000),
         );
+});
+
+test('credit card accounts expose current and statement outstanding balances', function () {
+    Carbon::setTestNow(Carbon::parse('2026-06-10'));
+
+    $creditCard = Account::factory()->for($this->workspace)->creditCard(5000000)->create(['position' => 1]);
+
+    $before = createDraftTransactionWithEntries($this->workspace, $creditCard, $this->user, -1000000, Carbon::parse('2026-05-20'));
+    $before->update(['status' => TransactionStatus::Posted, 'posted_at' => Carbon::parse('2026-05-20')]);
+
+    $after = createDraftTransactionWithEntries($this->workspace, $creditCard, $this->user, -500000, Carbon::parse('2026-06-05'));
+    $after->update(['status' => TransactionStatus::Posted, 'posted_at' => Carbon::parse('2026-06-05')]);
+
+    $this->actingAs($this->user)
+        ->get(route('accounts.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('accounts.1.balance', -1500000)
+            ->where('accounts.1.statement_outstanding', 1000000)
+            ->where('accounts.1.statement_closing_date', '2026-05-25')
+            ->where('accounts.1.payment_due_date', '2026-06-10'),
+        );
+
+    Carbon::setTestNow();
 });
 
 test('account group index reflects only posted ledger entries in account balances', function () {

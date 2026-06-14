@@ -41,6 +41,9 @@ interface Account {
     currency_code: string;
     credit_limit: number | null;
     balance: number;
+    statement_outstanding?: number;
+    statement_closing_date?: string;
+    payment_due_date?: string;
     is_visible: boolean;
     is_favorite: boolean;
     include_in_total: boolean;
@@ -288,6 +291,19 @@ const availableCredit = (account: Account): number | null =>
                                     {{ availableCredit(account) }}
                                     {{ account.currency_code }}
                                 </span>
+                            </p>
+                            <p
+                                v-if="account.statement_outstanding !== undefined"
+                                class="text-sm text-muted-foreground"
+                            >
+                                Statement outstanding (as of
+                                {{ account.statement_closing_date }}):
+                                <span class="font-medium text-foreground">
+                                    {{ account.statement_outstanding }}
+                                    {{ account.currency_code }}
+                                </span>
+                                <br />
+                                Payment due {{ account.payment_due_date }}
                             </p>
                         </template>
                         <p v-else class="text-sm text-muted-foreground">
