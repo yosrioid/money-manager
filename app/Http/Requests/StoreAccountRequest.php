@@ -99,6 +99,10 @@ class StoreAccountRequest extends FormRequest
                 if ($type === AccountType::DebitCard && (int) $this->input('opening_balance', 0) !== 0) {
                     $validator->errors()->add('opening_balance', __('Debit card accounts cannot have an opening balance; the linked account holds the balance.'));
                 }
+
+                if ($type === AccountType::Loan && (int) $this->input('opening_balance', 0) >= 0) {
+                    $validator->errors()->add('opening_balance', __('Loan accounts must have a negative opening balance representing the principal owed.'));
+                }
             },
         ];
     }

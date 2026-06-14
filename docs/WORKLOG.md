@@ -50,6 +50,18 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-14 23:55 WIB - P5-08/P5-09 Loan Accounts And Debt Payoff Progress Implemented
+
+- **Branch:** `feat/phase-5`.
+- **Feature IDs:** `P5-08`, `P5-09`.
+- **Status:** Completed.
+- **Completed:** `AccountType::Loan` already existed and was already classified as a liability type in `CalculateNetAsset`, so the remaining scope was opening-balance validation and payoff reporting. `StoreAccountRequest::after()` now rejects a `loan` account with `(int) opening_balance >= 0`, requiring the principal owed to be recorded as negative. New pure domain service `App\Domain\Accounts\CalculateDebtPayoffProgress::calculate(Account $account): ?array` finds the account's `OpeningBalance` ledger entry, treats its negated amount as `original_principal` (returns `null` if there is none or it is `>= 0`), derives `outstanding` via `CalculateAccountBalance` (liability semantics: `-balance` if negative else `0`), `paid_amount = original_principal - outstanding`, and `paid_percentage = round(paid_amount / original_principal * 100, 2)`. `AccountGroupController::index()` adds this as a 4th constructor dependency and a new `applyDebtPayoffProgress()` step exposing `debt_payoff` for `loan`-type accounts. `accounts/Index.vue` adds a `v-else-if="account.type === 'loan'"` branch showing "Outstanding balance" (reusing the existing `outstandingBalance()` helper, parity with `credit_card`) and, when `debt_payoff` is present, "Paid off: X of Y (Z%)".
+- **Verification:** `php artisan test --compact` passed: 352 tests, 2656 assertions (new: `tests/Feature/AccountManagementTest.php::loan accounts require a negative opening balance` and `::accounts index shows debt payoff progress for loan accounts`, `tests/Feature/TransferRecordingTest.php::a repayment transfer reduces a loan account outstanding balance`). `vendor/bin/phpstan analyse --no-progress --memory-limit=1G` passed (0 errors). `npm run types:check` passed. `vendor/bin/pint --dirty --format agent` passed. `npx eslint resources/js/pages/accounts/Index.vue` passed with no output.
+- **Decisions:** A repayment transfer into a loan account reduces its outstanding balance via the existing generic transfer feature (`P2-13`), so no new transfer-side production code was needed for that part of `P5-08` - only a confirming test, mirroring `P5-04`'s approach for credit cards.
+- **Blockers:** None.
+- **Uncommitted:** All of `P5-08`/`P5-09` is uncommitted on `feat/phase-5`, pending commit.
+- **Next:** Commit `P5-08`/`P5-09`, then continue with `P5-10` (account currency: each account can use an explicitly configured currency).
+
 ### 2026-06-14 23:40 WIB - P5-06/P5-07 Installment Purchases And Tracking Implemented
 
 - **Branch:** `feat/phase-5`.

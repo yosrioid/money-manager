@@ -283,6 +283,53 @@ test('changing an account type away from debit card clears its linked account', 
         ->linked_account_id->toBeNull();
 });
 
+test('loan accounts require a negative opening balance', function () {
+    [$user, $workspace] = createUserWithPersonalWorkspace();
+
+    $this->actingAs($user)
+        ->post(route('accounts.store'), [
+            'name' => 'Car Loan',
+            'type' => AccountType::Loan->value,
+            'currency_code' => 'IDR',
+            'opening_balance' => 0,
+        ])
+        ->assertSessionHasErrors('opening_balance');
+
+    $this->actingAs($user)
+        ->post(route('accounts.store'), [
+            'name' => 'Car Loan',
+            'type' => AccountType::Loan->value,
+            'currency_code' => 'IDR',
+            'opening_balance' => -50_000_000,
+        ])
+        ->assertRedirect(route('accounts.index'));
+
+    expect($workspace->accounts()->where('type', AccountType::Loan)->sole())
+        ->name->toBe('Car Loan');
+
+    expect(app(CalculateAccountBalance::class)->calculate($workspace->accounts()->where('type', AccountType::Loan)->sole()))
+        ->toBe(-50_000_000);
+});
+
+test('accounts index shows debt payoff progress for loan accounts', function () {
+    [$user, $workspace] = createUserWithPersonalWorkspace();
+    $loanAccount = Account::factory()->for($workspace)->create(['type' => AccountType::Loan]);
+
+    postLedgerAdjustment($loanAccount, -50_000_000, $user);
+    postLedgerAdjustment($loanAccount, 10_000_000, $user);
+
+    $this->actingAs($user)
+        ->get(route('accounts.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('accounts/Index')
+            ->where('accounts.0.debt_payoff.original_principal', 50_000_000)
+            ->where('accounts.0.debt_payoff.outstanding', 40_000_000)
+            ->where('accounts.0.debt_payoff.paid_amount', 10_000_000)
+            ->where('accounts.0.debt_payoff.paid_percentage', 20),
+        );
+});
+
 test('account cannot reference a group from another workspace', function () {
     [$user] = createUserWithPersonalWorkspace();
     [, $otherWorkspace] = createUserWithPersonalWorkspace();

@@ -44,6 +44,13 @@ interface InstallmentPlanSummary {
     remaining_amount: number;
 }
 
+interface DebtPayoffProgress {
+    original_principal: number;
+    outstanding: number;
+    paid_amount: number;
+    paid_percentage: number;
+}
+
 interface Account {
     id: number;
     name: string;
@@ -60,6 +67,7 @@ interface Account {
     account_group: { id: number; name: string } | null;
     linked_account: { id: number; name: string } | null;
     installment_plans?: InstallmentPlanSummary[];
+    debt_payoff?: DebtPayoffProgress | null;
 }
 
 defineProps<{
@@ -350,6 +358,29 @@ const availableCredit = (account: Account): number | null =>
                                     </li>
                                 </ul>
                             </div>
+                        </template>
+                        <template v-else-if="account.type === 'loan'">
+                            <p class="text-sm text-muted-foreground">
+                                Outstanding balance:
+                                <span class="font-medium text-foreground">
+                                    {{ outstandingBalance(account.balance) }}
+                                    {{ account.currency_code }}
+                                </span>
+                            </p>
+                            <p
+                                v-if="account.debt_payoff"
+                                class="text-sm text-muted-foreground"
+                            >
+                                Paid off:
+                                <span class="font-medium text-foreground">
+                                    {{ account.debt_payoff.paid_amount }}
+                                    {{ account.currency_code }}
+                                </span>
+                                of
+                                {{ account.debt_payoff.original_principal }}
+                                {{ account.currency_code }}
+                                ({{ account.debt_payoff.paid_percentage }}%)
+                            </p>
                         </template>
                         <p
                             v-else-if="

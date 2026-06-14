@@ -172,6 +172,26 @@ test('credit card settlement transfer reduces the card outstanding balance', fun
         ->and(app(CalculateAccountBalance::class)->calculate($bankAccount->fresh()))->toBe(-1000000);
 });
 
+test('a repayment transfer reduces a loan account outstanding balance', function () {
+    [$user, $workspace] = createTransferWorkspace();
+    $bankAccount = Account::factory()->for($workspace)->create(['type' => AccountType::BankAccount]);
+    $loanAccount = Account::factory()->for($workspace)->create(['type' => AccountType::Loan]);
+
+    postLedgerAdjustment($loanAccount, -50_000_000, $user);
+
+    expect(app(CalculateAccountBalance::class)->calculate($loanAccount->fresh()))->toBe(-50_000_000);
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), transferPayload($bankAccount, $loanAccount, [
+            'amount' => 1_000_000,
+            'description' => 'Loan repayment',
+        ]))
+        ->assertRedirect(route('accounts.index'));
+
+    expect(app(CalculateAccountBalance::class)->calculate($loanAccount->fresh()))->toBe(-49_000_000)
+        ->and(app(CalculateAccountBalance::class)->calculate($bankAccount->fresh()))->toBe(-1_000_000);
+});
+
 test('transfer rejects the same source and destination account', function () {
     [$user, $workspace] = createTransferWorkspace();
     $account = Account::factory()->for($workspace)->create();

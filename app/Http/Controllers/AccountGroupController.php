@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Accounts\CalculateCardOutstandingBalance;
+use App\Domain\Accounts\CalculateDebtPayoffProgress;
 use App\Domain\Accounts\SummarizeInstallmentPlan;
 use App\Domain\Ordering\MoveOrderedResource;
 use App\Domain\Workspaces\WorkspaceContext;
@@ -24,6 +25,7 @@ class AccountGroupController extends Controller
         private readonly WorkspaceContext $workspaceContext,
         private readonly CalculateCardOutstandingBalance $calculateCardOutstandingBalance,
         private readonly SummarizeInstallmentPlan $summarizeInstallmentPlan,
+        private readonly CalculateDebtPayoffProgress $calculateDebtPayoffProgress,
     ) {}
 
     public function index(): Response
@@ -47,6 +49,7 @@ class AccountGroupController extends Controller
 
                 $this->applyCardOutstandingBalance($account, $today);
                 $this->applyInstallmentPlans($account, $today);
+                $this->applyDebtPayoffProgress($account);
             });
 
         return Inertia::render('accounts/Index', [
@@ -83,6 +86,15 @@ class AccountGroupController extends Controller
         $account->setAttribute('installment_plans', $account->installmentPlans
             ->map(fn (InstallmentPlan $plan) => $this->summarizeInstallmentPlan->summarize($plan, $today))
             ->values());
+    }
+
+    private function applyDebtPayoffProgress(Account $account): void
+    {
+        if ($account->getAttribute('type') !== AccountType::Loan) {
+            return;
+        }
+
+        $account->setAttribute('debt_payoff', $this->calculateDebtPayoffProgress->calculate($account));
     }
 
     public function store(StoreAccountGroupRequest $request): RedirectResponse
