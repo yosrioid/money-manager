@@ -88,15 +88,31 @@ class GenerateTransactionsCsv
                 $occurredAt->toDateString(),
                 $transaction->getRawOriginal('type'),
                 $transaction->getRawOriginal('status'),
-                $transaction->description,
-                $transaction->memo,
-                $merchant,
-                $entry->account->name,
-                $category,
+                $this->escapeFormula($transaction->description),
+                $this->escapeFormula($transaction->memo),
+                $this->escapeFormula($merchant),
+                $this->escapeFormula($entry->account->name),
+                $this->escapeFormula($category),
                 $entry->amount,
                 $entry->currency_code,
-                $tags,
+                $this->escapeFormula($tags),
             ]);
         }
+    }
+
+    /**
+     * Prefix values that would be interpreted as formulas by spreadsheet
+     * applications (Excel, Google Sheets, LibreOffice) with a single quote,
+     * preventing CSV formula injection from user-controlled text fields.
+     */
+    private function escapeFormula(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        return in_array($value[0], ['=', '+', '-', '@', "\t", "\r"], true)
+            ? "'".$value
+            : $value;
     }
 }

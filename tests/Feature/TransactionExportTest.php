@@ -59,6 +59,19 @@ test('the csv export produces a row per account for transfers', function () {
     expect($rows[2])->toBe([now()->toDateString(), 'transfer', 'posted', 'Move funds', '', '', 'Savings', '', '10000', 'IDR', '']);
 });
 
+test('the csv export escapes values that look like spreadsheet formulas', function () {
+    [$user, $workspace, $account, $incomeCategory] = setUpTransactionExportWorkspace();
+
+    app(RecordIncomeExpense::class)->record($account, $incomeCategory, TransactionType::Income, 50000, '=cmd|"/c calc"!A1', now(), $user);
+
+    $response = $this->actingAs($user)->get(route('transactions.export'));
+
+    $content = $response->streamedContent();
+    $rows = array_map('str_getcsv', array_values(array_filter(explode("\n", $content))));
+
+    expect($rows[1][3])->toBe('\'=cmd|"/c calc"!A1');
+});
+
 test('the csv export applies the requested filters', function () {
     [$user, $workspace, $account, $incomeCategory, $expenseCategory] = setUpTransactionExportWorkspace();
 
