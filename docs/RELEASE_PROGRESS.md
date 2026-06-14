@@ -10,13 +10,13 @@ exist.
 
 ## Current Candidate
 
-- **Version:** `v0.2.0-alpha.1`
-- **Name:** Phase 2 Core Ledger Alpha
+- **Version:** `v0.3.0-beta.1`
+- **Name:** Phase 3 And Phase 4 Private Beta
 - **Type:** Milestone prerelease
-- **Status:** Published
-- **Target:** `fd75b78c8d0c366a32bff69ea5fe229b6b8eb662`
-- **Scope:** Phase 2 `P2-01` to `P2-24`
-- **Updated:** 2026-06-12
+- **Status:** Preparing
+- **Target:** `5e27e89` (release-preparation merge commit will supersede this once merged)
+- **Scope:** Phase 3 `P3-01` to `P3-21` and Phase 4 `P4-01` to `P4-25`
+- **Updated:** 2026-06-14
 
 ## Release Roadmap
 
@@ -24,11 +24,31 @@ exist.
 | ---------------- | ------------------------- | -------------------- | --------- | -------------------------------------------- | ---------- |
 | `v0.1.0-alpha.1` | Phase 1 internal alpha    | Milestone prerelease | Published | `b304c18`                                    | 2026-06-11 |
 | `v0.2.0-alpha.1` | Phase 2 core ledger alpha | Milestone prerelease | Published | `fd75b78`                                     | 2026-06-12 |
-| `v0.3.0-beta.1`  | Phase 3 private beta      | Milestone prerelease | Planned   | Pending Phase 3                              | -          |
+| `v0.3.0-beta.1`  | Phase 3 and Phase 4 private beta | Milestone prerelease | Preparing | `5e27e89` (pending release-prep merge) | -          |
 | `v1.0.0-rc.1`    | Phase 4 MVP candidate     | Milestone prerelease | Planned   | Pending Phase 4 and applicable Phase 8 gates | -          |
 | `v1.0.0`         | MVP release               | MVP                  | Planned   | Pending MVP release gates                    | -          |
 
 ## Candidate Checklist
+
+### `v0.3.0-beta.1` - Phase 3 And Phase 4 Private Beta
+
+- [x] Phase 3 implementation merged to `main`
+      ([#14](https://github.com/yosrioid/money-manager/pull/14)).
+- [x] Phase 4 implementation merged to `main`
+      ([#16](https://github.com/yosrioid/money-manager/pull/16)).
+- [x] Phase 4 implementation pull-request CI passed (`browser`, `quality`).
+- [x] Phase 3 and Phase 4 feature, package, milestone, and exit-gate statuses
+      are marked `Done` in `docs/PROGRESS.md`.
+- [x] Phase 4 completion entry and current worklog checkpoint are included in
+      this release-preparation change.
+- [x] Release notes follow `docs/RELEASE_PROCESS.md`.
+- [ ] Release-preparation merge commit is confirmed as the latest `main` and
+      its full SHA is recorded.
+- [x] Applicable release checks pass against the target commit (see Current
+      Verification below).
+- [ ] Explicit user approval to create and push the annotated tag is recorded.
+- [ ] Explicit user approval to publish the GitHub prerelease is recorded.
+- [ ] Annotated tag and GitHub prerelease are published.
 
 ### `v0.2.0-alpha.1` - Phase 2 Core Ledger Alpha
 
@@ -67,6 +87,27 @@ exist.
 - [x] Annotated tag and GitHub prerelease are published.
 
 ## Current Verification
+
+### `v0.3.0-beta.1`
+
+- **Passed:** Governance checks (`bash scripts/check-governance.sh`),
+  `composer ci:check` (Pint, PHPStan/Larastan with 0 errors, Pest with 319
+  tests and 2492 assertions, ESLint, Prettier, vue-tsc, Vitest, production
+  build), `composer audit` (0 advisories), and `npm audit --audit-level=high`
+  (0 vulnerabilities), all against the merged `main` commit `5e27e89` (Phase 4
+  implementation, before release preparation).
+- **Migration rehearsal:** Fresh `php artisan migrate:fresh --seed --force`
+  passed against an isolated SQLite database (`/tmp/release-rehearsal.sqlite`),
+  applying all migrations through `2026_06_14_053829_create_transaction_exports_table`.
+- **Browser:** `npx playwright test` passed 2/2 (Chromium and mobile Safari).
+- **Code review:** Reviewed the Phase 4 queued export job
+  (`App\Jobs\GenerateTransactionsExportFile`), `TransactionExportPolicy`,
+  `TransactionExportController`, `FilterTransactionsQuery`, the transaction
+  import pipeline, and `CalculateBudgetUsage` against `docs/STRICT_RULES.md`.
+  Found and fixed a CSV/formula-injection issue in
+  `GenerateTransactionsCsv::writeTransaction` (escaping fields starting with
+  `=`, `+`, `-`, `@`, tab, or CR) with a regression test, included in PR #16
+  before merge.
 
 ### `v0.2.0-alpha.1`
 

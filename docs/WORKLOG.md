@@ -50,6 +50,18 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-14 18:00 WIB - Phase 4 Merged; Preparing `v0.3.0-beta.1` Release
+
+- **Branch:** `docs/v0.3.0-beta.1-release-prep`.
+- **Feature IDs:** `P4-01` to `P4-25` (release preparation only; no scope change).
+- **Status:** In progress.
+- **Completed:** Reviewed the Phase 4 PR (#16): fixed a CSV/formula-injection issue in `GenerateTransactionsCsv::writeTransaction` (escape leading `=`, `+`, `-`, `@`, tab, CR on text fields, covering both `stream()` and the queued `writeToFile()` path) with a regression test, and rewrote the 5 `feat/phase-4` commit messages to remove `Co-Authored-By` AI-attribution trailers per `docs/STRICT_RULES.md` (force-pushed with `--force-with-lease`). Merged PR #16 into `main` (`5e27e89`). Updated `docs/PROGRESS.md`: Phase 4 status changed from `In Progress` to `Done`, and the Current Milestone section now points at Phase 4 (`P4-01`-`P4-25`, completed 2026-06-14). Re-ran the full release gate suite against `main` at `5e27e89`.
+- **Verification:** `composer ci:check` passed (Pint, PHPStan/Larastan 0 errors, Pest 319 tests / 2492 assertions, ESLint, Prettier, vue-tsc, Vitest, production build). `bash scripts/check-governance.sh` passed. `composer audit` and `npm audit --audit-level=high` both report 0 vulnerabilities. Fresh `php artisan migrate:fresh --seed --force` rehearsal against an isolated SQLite database (`/tmp/release-rehearsal.sqlite`, not the dev Postgres database) passed. `npx playwright test` passed 2/2 (Chromium and mobile Safari).
+- **Decisions:** Chose `v0.3.0-beta.1` (Phase 3 private beta, never previously published) as the release candidate rather than `v1.0.0-rc.1`, since the roadmap in `docs/RELEASE_PROGRESS.md` explicitly gates `v1.0.0-rc.1` on "Phase 4 and applicable Phase 8 gates" and Phase 8 has not started. `v0.3.0-beta.1`'s scope now covers both Phase 3 (`P3-01`-`P3-21`) and Phase 4 (`P4-01`-`P4-25`), since both are `Done` on `main` and neither has been released yet.
+- **Blockers:** None.
+- **Uncommitted:** `docs/PROGRESS.md` and `docs/WORKLOG.md` updates on `docs/v0.3.0-beta.1-release-prep`, plus a pending `docs/RELEASE_PROGRESS.md` update with release notes for `v0.3.0-beta.1`.
+- **Next:** Finish updating `docs/RELEASE_PROGRESS.md` (candidate, checklist, release notes), open and merge the release-preparation PR, confirm the merge commit is the latest `main`, then seek explicit approval before creating the `v0.3.0-beta.1` tag and before publishing the GitHub prerelease.
+
 ### 2026-06-14 16:30 WIB - P4-25 Queued Large CSV Export Implemented (Phase 4 Feature-Complete)
 
 - **Branch:** `feat/phase-4`.
