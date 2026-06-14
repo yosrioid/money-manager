@@ -7,6 +7,7 @@ use App\Domain\Export\GenerateReportSpreadsheet;
 use App\Domain\Export\GenerateTransactionsCsv;
 use App\Domain\Ledger\CalculateAccountBalance;
 use App\Domain\Ledger\CalculateNetAsset;
+use App\Domain\Ledger\ConvertToBaseCurrency;
 use App\Domain\Transactions\DuplicateTransaction;
 use App\Domain\Transactions\EvaluateAmountExpression;
 use App\Domain\Transactions\FilterTransactionsQuery;
@@ -217,7 +218,7 @@ class TransactionController extends Controller
         return $generateReportSpreadsheet->stream($spreadsheet, "annual-report-{$year->format('Y')}.xlsx");
     }
 
-    public function summary(Request $request, SummarizeTransactionPeriod $summarizeTransactionPeriod, CalculateAccountBalance $calculateAccountBalance, CalculateBudgetUsage $calculateBudgetUsage, CalculateNetAsset $calculateNetAsset): Response
+    public function summary(Request $request, SummarizeTransactionPeriod $summarizeTransactionPeriod, CalculateAccountBalance $calculateAccountBalance, CalculateBudgetUsage $calculateBudgetUsage, CalculateNetAsset $calculateNetAsset, ConvertToBaseCurrency $convertToBaseCurrency): Response
     {
         $this->authorize('viewAny', Transaction::class);
 
@@ -264,13 +265,18 @@ class TransactionController extends Controller
             'income' => $calculateBudgetUsage->summarizeTotal($calculateBudgetUsage->forMonth($workspace, $month, CategoryType::Income)),
         ];
 
+        $netAssets = $calculateNetAsset->current($workspace);
+        $netAssetsBase = $convertToBaseCurrency->convert($workspace, $netAssets);
+
         return Inertia::render('transactions/Summary', [
             'month' => $month->toDateString(),
             'count' => $count,
             'totals' => $totals,
             'accountMovements' => $accountMovements,
             'budgetSummary' => $budgetSummary,
-            'netAssets' => $calculateNetAsset->current($workspace),
+            'netAssets' => $netAssets,
+            'netAssetBase' => $netAssetsBase['total'],
+            'unsupportedCurrencies' => $netAssetsBase['unsupported_currencies'],
             'netAssetTarget' => $workspace->net_asset_target,
             'defaultCurrency' => $workspace->default_currency,
             'previousMonth' => $month->copy()->subMonth()->format('Y-m'),

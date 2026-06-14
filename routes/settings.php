@@ -30,4 +30,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'verified', 'workspace', 'workspace.lock'])->group(function () {
     Route::get('settings/workspace', [WorkspaceController::class, 'edit'])->name('workspace.edit');
     Route::patch('settings/workspace', [WorkspaceController::class, 'update'])->name('workspace.update');
+    Route::put('settings/workspace/exchange-rates', [WorkspaceController::class, 'updateExchangeRates'])->name('workspace.exchange-rates.update');
 });

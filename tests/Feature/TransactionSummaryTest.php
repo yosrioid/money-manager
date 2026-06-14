@@ -7,6 +7,7 @@ use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Category;
 use App\Models\User;
+use Database\Seeders\CurrencySeeder;
 use Illuminate\Support\Carbon;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -131,6 +132,8 @@ test('summary view shows the net asset total against an optional workspace targe
         ->assertInertia(fn (Assert $page) => $page
             ->component('transactions/Summary')
             ->where('netAssets.'.$account->currency_code, 35000)
+            ->where('netAssetBase', 35000)
+            ->where('unsupportedCurrencies', [])
             ->where('netAssetTarget', null)
             ->where('defaultCurrency', $workspace->default_currency)
         );
@@ -144,6 +147,61 @@ test('summary view shows the net asset total against an optional workspace targe
             ->component('transactions/Summary')
             ->where('netAssets.'.$account->currency_code, 35000)
             ->where('netAssetTarget', 100000)
+        );
+});
+
+test('summary view converts non-default currency balances using configured exchange rates', function () {
+    $this->seed(CurrencySeeder::class);
+
+    [$user, $workspace, $account, $incomeCategory] = setUpTransactionSummaryWorkspace();
+
+    expect($workspace->default_currency)->toBe('IDR');
+
+    $usdAccount = Account::factory()->for($workspace)->create(['currency_code' => 'USD']);
+    $eurAccount = Account::factory()->for($workspace)->create(['currency_code' => 'EUR']);
+
+    app(RecordIncomeExpense::class)->record(
+        $account,
+        $incomeCategory,
+        TransactionType::Income,
+        50000,
+        'Salary',
+        now()->setDate(2026, 6, 5)->setTime(1, 0),
+        $user,
+    );
+
+    app(RecordIncomeExpense::class)->record(
+        $usdAccount,
+        $incomeCategory,
+        TransactionType::Income,
+        100,
+        'Freelance',
+        now()->setDate(2026, 6, 5)->setTime(1, 0),
+        $user,
+    );
+
+    app(RecordIncomeExpense::class)->record(
+        $eurAccount,
+        $incomeCategory,
+        TransactionType::Income,
+        10,
+        'Gift',
+        now()->setDate(2026, 6, 5)->setTime(1, 0),
+        $user,
+    );
+
+    $workspace->exchangeRates()->create(['currency_code' => 'USD', 'rate_to_base' => '16000.0000000000']);
+
+    $this->actingAs($user)
+        ->get(route('transactions.summary', ['month' => '2026-06']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('transactions/Summary')
+            ->where('netAssets.IDR', 50000)
+            ->where('netAssets.USD', 100)
+            ->where('netAssets.EUR', 10)
+            ->where('netAssetBase', 50000 + 100 * 16000)
+            ->where('unsupportedCurrencies', ['EUR'])
         );
 });
 

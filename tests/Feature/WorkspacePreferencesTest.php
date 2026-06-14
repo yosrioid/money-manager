@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Workspaces\CreatePersonalWorkspace;
+use App\Models\Account;
 use App\Models\User;
 use Database\Seeders\CurrencySeeder;
 
@@ -233,4 +234,76 @@ test('workspace application lock only accepts supported inactivity periods', fun
             'navigation_shortcuts_enabled' => true,
         ])
         ->assertSessionHasErrors('application_lock_minutes');
+});
+
+test('workspace owner can configure an exchange rate for a non-default currency', function () {
+    $user = User::factory()->create();
+    $workspace = app(CreatePersonalWorkspace::class)->create($user);
+
+    Account::factory()->for($workspace)->create(['currency_code' => 'USD']);
+
+    $this->actingAs($user)
+        ->put(route('workspace.exchange-rates.update'), [
+            'exchange_rates' => [
+                ['currency_code' => 'USD', 'rate_to_base' => '16250.0000000000'],
+            ],
+        ])
+        ->assertRedirect(route('workspace.edit'));
+
+    $rate = $workspace->exchangeRates()->sole();
+
+    expect($rate->currency_code)->toBe('USD')
+        ->and((string) $rate->rate_to_base)->toBe('16250.0000000000');
+});
+
+test('exchange rate update replaces previous rates', function () {
+    $user = User::factory()->create();
+    $workspace = app(CreatePersonalWorkspace::class)->create($user);
+
+    Account::factory()->for($workspace)->create(['currency_code' => 'USD']);
+    Account::factory()->for($workspace)->create(['currency_code' => 'EUR']);
+
+    $workspace->exchangeRates()->create(['currency_code' => 'USD', 'rate_to_base' => '16000.0000000000']);
+
+    $this->actingAs($user)
+        ->put(route('workspace.exchange-rates.update'), [
+            'exchange_rates' => [
+                ['currency_code' => 'USD', 'rate_to_base' => '16250.0000000000'],
+                ['currency_code' => 'EUR', 'rate_to_base' => '17500.0000000000'],
+            ],
+        ])
+        ->assertRedirect(route('workspace.edit'));
+
+    expect($workspace->exchangeRates()->count())->toBe(2)
+        ->and((string) $workspace->exchangeRates()->where('currency_code', 'USD')->sole()->rate_to_base)->toBe('16250.0000000000');
+});
+
+test('exchange rate update rejects a rate for the workspace default currency', function () {
+    $user = User::factory()->create();
+    $workspace = app(CreatePersonalWorkspace::class)->create($user);
+
+    expect($workspace->default_currency)->toBe('IDR');
+
+    $this->actingAs($user)
+        ->put(route('workspace.exchange-rates.update'), [
+            'exchange_rates' => [
+                ['currency_code' => 'IDR', 'rate_to_base' => '1.0000000000'],
+            ],
+        ])
+        ->assertSessionHasErrors('exchange_rates.0.currency_code');
+});
+
+test('exchange rate update rejects a non-positive rate', function () {
+    $user = User::factory()->create();
+    $workspace = app(CreatePersonalWorkspace::class)->create($user);
+
+    Account::factory()->for($workspace)->create(['currency_code' => 'USD']);
+
+    $this->actingAs($user)
+        ->put(route('workspace.exchange-rates.update'), [
+            'exchange_rates' => [
+                ['currency_code' => 'USD', 'rate_to_base' => '0'],
+            ],
+        ])
+        ->assertSessionHasErrors('exchange_rates.0.rate_to_base');
 });

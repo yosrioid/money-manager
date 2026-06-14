@@ -16,6 +16,11 @@ interface Currency {
     symbol: string;
 }
 
+interface ExchangeRate {
+    currency_code: string;
+    rate_to_base: string;
+}
+
 interface WorkspaceData {
     id: number;
     name: string;
@@ -36,7 +41,13 @@ const props = defineProps<{
     currencies: Currency[];
     entryFormFields: string[];
     reportWidgets: string[];
+    exchangeRates: ExchangeRate[];
+    accountCurrencies: string[];
 }>();
+
+const rateFor = (currencyCode: string): string =>
+    props.exchangeRates.find((rate) => rate.currency_code === currencyCode)
+        ?.rate_to_base ?? '';
 
 defineOptions({
     layout: {
@@ -462,6 +473,52 @@ const moveEntryFormField = (index: number, direction: 'up' | 'down') => {
 
             <div class="flex items-center gap-4">
                 <Button :disabled="processing">Save workspace settings</Button>
+            </div>
+        </Form>
+
+        <Heading
+            v-if="accountCurrencies.length"
+            variant="small"
+            title="Exchange rates"
+            description="Set how many units of your default currency equal one unit of each other currency used by your accounts, so net asset totals can be converted consistently."
+        />
+
+        <Form
+            v-if="accountCurrencies.length"
+            v-bind="WorkspaceController.updateExchangeRates.form()"
+            class="space-y-6"
+            v-slot="{ errors, processing }"
+        >
+            <div
+                v-for="(currencyCode, index) in accountCurrencies"
+                :key="currencyCode"
+                class="grid gap-2"
+            >
+                <Label :for="`exchange_rate_${currencyCode}`">
+                    1 {{ currencyCode }} = ? {{ workspace.default_currency }}
+                </Label>
+                <input
+                    type="hidden"
+                    :name="`exchange_rates[${index}][currency_code]`"
+                    :value="currencyCode"
+                />
+                <Input
+                    :id="`exchange_rate_${currencyCode}`"
+                    :name="`exchange_rates[${index}][rate_to_base]`"
+                    type="text"
+                    inputmode="decimal"
+                    placeholder="1.0000000000"
+                    class="mt-1 block w-full"
+                    :default-value="rateFor(currencyCode)"
+                />
+                <InputError
+                    class="mt-2"
+                    :message="errors[`exchange_rates.${index}.rate_to_base`]"
+                />
+            </div>
+
+            <div class="flex items-center gap-4">
+                <Button :disabled="processing">Save exchange rates</Button>
             </div>
         </Form>
     </div>

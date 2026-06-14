@@ -202,6 +202,14 @@ class Workspace extends Model
         return $this->hasMany(CategoryBudgetOverride::class);
     }
 
+    /**
+     * @return HasMany<WorkspaceExchangeRate, $this>
+     */
+    public function exchangeRates(): HasMany
+    {
+        return $this->hasMany(WorkspaceExchangeRate::class);
+    }
+
     public function isOwnedBy(User $user): bool
     {
         return $this->owner_id === $user->id;

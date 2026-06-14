@@ -50,6 +50,18 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-15 02:15 WIB - P5-13 Base-Currency Totals Implemented
+
+- **Branch:** `feat/phase-5`.
+- **Feature IDs:** `P5-13`.
+- **Status:** Completed.
+- **Completed:** Added a `workspace_exchange_rates` table (`workspace_id`, `currency_code` FK to `currencies`, `rate_to_base` `decimal(24,10)`, unique per workspace/currency) and `App\Models\WorkspaceExchangeRate` with `Workspace::exchangeRates(): HasMany`. New pure domain service `App\Domain\Ledger\ConvertToBaseCurrency::convert()` converts a `currency_code => amount` map (from `CalculateNetAsset::current()`) into a base-currency `total` (amounts already in the workspace's `default_currency` pass through; others convert via their configured `rate_to_base`, rounded) plus `unsupported_currencies` (currencies with no configured rate, excluded from the total). `TransactionController::summary()` now exposes `netAssetBase`/`unsupportedCurrencies`; `transactions/Summary.vue` shows the converted total, an "unsupported currencies" notice, and computes `netAssetRemaining` against `netAssetBase`. New `App\Http\Requests\Settings\UpdateWorkspaceExchangeRatesRequest` and `WorkspaceController::updateExchangeRates()` (route `PUT settings/workspace/exchange-rates`, named `workspace.exchange-rates.update`) let the workspace owner set/replace per-currency rates (currency must exist in `currencies`, must not equal the workspace's default currency, must be distinct, `rate_to_base` a positive decimal with up to 10 fractional digits; a blank rate is simply not persisted). `settings/Workspace.vue` gained an "Exchange rates" section (shown only when the workspace holds accounts in non-default currencies) with one rate input per such currency.
+- **Verification:** `php artisan test --compact` passed: 361 tests, 2720 assertions (new in `tests/Feature/WorkspacePreferencesTest.php`: configuring a rate persists it, updating replaces previous rates, rejects a rate for the default currency, rejects a non-positive rate; new in `tests/Feature/TransactionSummaryTest.php`: `netAssetBase`/`unsupportedCurrencies` for a single-currency workspace and for a workspace with USD/EUR balances where only USD has a configured rate). `vendor/bin/phpstan analyse --no-progress --memory-limit=1G` passed (0 errors). `vendor/bin/pint --dirty --format agent` passed. `npm run lint` and `npx vue-tsc --noEmit` passed with no output.
+- **Decisions:** Chose a per-workspace, per-currency `rate_to_base` configuration (rather than deriving rates from recorded transfer `exchange_rate` values) so that workspace summary totals can convert any currency held by an account, not only currencies involved in an actual cross-currency transfer.
+- **Blockers:** None.
+- **Uncommitted:** All of `P5-13` is uncommitted on `feat/phase-5`, pending commit.
+- **Next:** Commit `P5-13`, then continue with `P5-14` (exchange gain and loss handling: conversion differences are represented explicitly).
+
 ### 2026-06-15 01:30 WIB - P5-11/P5-12 Multi-Currency Transaction And Exchange-Rate Entry Implemented
 
 - **Branch:** `feat/phase-5`.

@@ -43,6 +43,8 @@ const props = defineProps<{
         income: BudgetTotal;
     };
     netAssets: Record<string, number>;
+    netAssetBase: number;
+    unsupportedCurrencies: string[];
     netAssetTarget: number | null;
     defaultCurrency: string;
     previousMonth: string;
@@ -56,7 +58,7 @@ const remaining = (total: BudgetTotal): number | null =>
 const netAssetRemaining = computed(() =>
     props.netAssetTarget === null
         ? null
-        : props.netAssetTarget - (props.netAssets[props.defaultCurrency] ?? 0),
+        : props.netAssetTarget - props.netAssetBase,
 );
 
 defineOptions({
@@ -288,6 +290,20 @@ usePeriodNavigation({
                         No accounts are included in your net asset total.
                     </p>
                 </div>
+                <div
+                    v-if="Object.keys(netAssets).length"
+                    class="font-medium text-foreground"
+                >
+                    Total: {{ netAssetBase }} {{ defaultCurrency }}
+                </div>
+                <p
+                    v-if="unsupportedCurrencies.length"
+                    class="text-muted-foreground"
+                >
+                    {{ unsupportedCurrencies.join(', ') }} balances are not
+                    included in the total above. Configure an exchange rate
+                    in workspace settings to include them.
+                </p>
                 <div
                     v-if="netAssetTarget !== null"
                     class="flex flex-wrap gap-3 text-muted-foreground"

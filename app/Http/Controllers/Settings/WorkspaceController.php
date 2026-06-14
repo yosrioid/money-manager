@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Domain\Workspaces\WorkspaceContext;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Settings\UpdateWorkspaceExchangeRatesRequest;
 use App\Http\Requests\Settings\WorkspacePreferencesRequest;
 use App\Models\Currency;
 use Illuminate\Http\RedirectResponse;
@@ -38,6 +39,13 @@ class WorkspaceController extends Controller
             'entryFormFields' => $workspace->entryFormFields(),
             'reportWidgets' => $workspace->reportWidgets(),
             'currencies' => Currency::query()->orderBy('code')->get(['code', 'name', 'symbol']),
+            'exchangeRates' => $workspace->exchangeRates()->orderBy('currency_code')->get(['currency_code', 'rate_to_base']),
+            'accountCurrencies' => $workspace->accounts()
+                ->select('currency_code')
+                ->distinct()
+                ->where('currency_code', '!=', $workspace->default_currency)
+                ->orderBy('currency_code')
+                ->pluck('currency_code'),
         ]);
     }
 
@@ -54,6 +62,25 @@ class WorkspaceController extends Controller
         $workspace->update($validated);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Workspace settings updated.')]);
+
+        return to_route('workspace.edit');
+    }
+
+    public function updateExchangeRates(UpdateWorkspaceExchangeRatesRequest $request): RedirectResponse
+    {
+        $workspace = $this->workspaceContext->get();
+
+        $this->authorize('update', $workspace);
+
+        $rates = $request->validated('exchange_rates', []);
+
+        $workspace->exchangeRates()->delete();
+        $workspace->exchangeRates()->createMany(array_map(fn (array $rate): array => [
+            'currency_code' => $rate['currency_code'],
+            'rate_to_base' => $rate['rate_to_base'],
+        ], array_filter($rates, fn (array $rate): bool => filled($rate['rate_to_base'] ?? null))));
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Exchange rates updated.')]);
 
         return to_route('workspace.edit');
     }
