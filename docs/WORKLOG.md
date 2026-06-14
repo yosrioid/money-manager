@@ -50,6 +50,18 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-15 03:05 WIB - P5-15 Time-Deposit And Savings Workflows Verified
+
+- **Branch:** `feat/phase-5`.
+- **Feature IDs:** `P5-15`.
+- **Status:** Completed.
+- **Completed:** Confirmed the existing `AccountType::Savings` case (already in the enum, already selectable via `AccountController::accountTypes()`/`AccountForm.vue`, and already excluded from `CalculateNetAsset::LIABILITY_TYPES`) already satisfies "restricted savings movements are represented as transfers": no special-casing exists or is needed for moving money into/out of a savings account - the generic transfer feature (`P2-13`) applies as-is. Added a confirming test `tests/Feature/TransferRecordingTest.php::savings account deposits and withdrawals are recorded as transfers and counted as net assets`, which transfers funds from a bank account into a savings account and back, asserting both accounts' resulting balances and that `CalculateNetAsset::current()` sums the two balances directly to `0` (it would be `-3,000,000` if the savings account's balance were negated as a liability).
+- **Verification:** `php artisan test --compact` passed: 365 tests, 2769 assertions. `vendor/bin/phpstan analyse --no-progress --memory-limit=1G` passed (0 errors). `vendor/bin/pint --dirty --format agent` passed. No Vue/TS files changed, so `vue-tsc`/ESLint were not re-run.
+- **Decisions:** No production code changes were required, mirroring `P5-04`/`P5-10`'s "confirmed and tested existing feature" pattern. "Time-deposit" was treated as the same `savings` account type rather than a new enum case, since the catalog item's acceptance criterion ("restricted savings movements are represented as transfers") does not require a maturity-date or lock-period mechanism, and adding a new account type would be uncataloged scope.
+- **Blockers:** None.
+- **Uncommitted:** `P5-15` is uncommitted on `feat/phase-5`, pending commit.
+- **Next:** Commit `P5-15`, then continue with `P5-16` (insurance and tracked-asset workflows: asset-like accounts can be included or excluded from totals).
+
 ### 2026-06-15 02:45 WIB - P5-14 Exchange Gain And Loss Handling Implemented
 
 - **Branch:** `feat/phase-5`.

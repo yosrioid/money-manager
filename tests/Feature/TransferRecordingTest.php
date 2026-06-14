@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Ledger\CalculateAccountBalance;
+use App\Domain\Ledger\CalculateNetAsset;
 use App\Domain\Transactions\RecordTransfer;
 use App\Domain\Workspaces\CreatePersonalWorkspace;
 use App\Enums\AccountType;
@@ -191,6 +192,36 @@ test('a repayment transfer reduces a loan account outstanding balance', function
 
     expect(app(CalculateAccountBalance::class)->calculate($loanAccount->fresh()))->toBe(-49_000_000)
         ->and(app(CalculateAccountBalance::class)->calculate($bankAccount->fresh()))->toBe(-1_000_000);
+});
+
+test('savings account deposits and withdrawals are recorded as transfers and counted as net assets', function () {
+    [$user, $workspace] = createTransferWorkspace();
+    $bankAccount = Account::factory()->for($workspace)->create(['type' => AccountType::BankAccount]);
+    $savingsAccount = Account::factory()->for($workspace)->create(['type' => AccountType::Savings]);
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), transferPayload($bankAccount, $savingsAccount, [
+            'amount' => 2_000_000,
+            'description' => 'Move to savings',
+        ]))
+        ->assertRedirect(route('accounts.index'));
+
+    expect(app(CalculateAccountBalance::class)->calculate($savingsAccount->fresh()))->toBe(2_000_000)
+        ->and(app(CalculateAccountBalance::class)->calculate($bankAccount->fresh()))->toBe(-2_000_000);
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), transferPayload($savingsAccount, $bankAccount, [
+            'amount' => 500_000,
+            'description' => 'Withdraw from savings',
+        ]))
+        ->assertRedirect(route('accounts.index'));
+
+    expect(app(CalculateAccountBalance::class)->calculate($savingsAccount->fresh()))->toBe(1_500_000)
+        ->and(app(CalculateAccountBalance::class)->calculate($bankAccount->fresh()))->toBe(-1_500_000);
+
+    $netAssets = app(CalculateNetAsset::class)->current($workspace->fresh());
+
+    expect($netAssets[$savingsAccount->currency_code])->toBe(0);
 });
 
 test('transfer rejects the same source and destination account', function () {
