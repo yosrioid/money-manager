@@ -13,8 +13,8 @@ exist.
 - **Version:** `v0.3.0-beta.1`
 - **Name:** Phase 3 And Phase 4 Private Beta
 - **Type:** Milestone prerelease
-- **Status:** Preparing
-- **Target:** `5e27e89` (release-preparation merge commit will supersede this once merged)
+- **Status:** Ready
+- **Target:** `4ffd49523666bc646a000d977f4e7b8475ac2e31`
 - **Scope:** Phase 3 `P3-01` to `P3-21` and Phase 4 `P4-01` to `P4-25`
 - **Updated:** 2026-06-14
 
@@ -24,7 +24,7 @@ exist.
 | ---------------- | ------------------------- | -------------------- | --------- | -------------------------------------------- | ---------- |
 | `v0.1.0-alpha.1` | Phase 1 internal alpha    | Milestone prerelease | Published | `b304c18`                                    | 2026-06-11 |
 | `v0.2.0-alpha.1` | Phase 2 core ledger alpha | Milestone prerelease | Published | `fd75b78`                                     | 2026-06-12 |
-| `v0.3.0-beta.1`  | Phase 3 and Phase 4 private beta | Milestone prerelease | Preparing | `5e27e89` (pending release-prep merge) | -          |
+| `v0.3.0-beta.1`  | Phase 3 and Phase 4 private beta | Milestone prerelease | Ready     | `4ffd495`                                     | -          |
 | `v1.0.0-rc.1`    | Phase 4 MVP candidate     | Milestone prerelease | Planned   | Pending Phase 4 and applicable Phase 8 gates | -          |
 | `v1.0.0`         | MVP release               | MVP                  | Planned   | Pending MVP release gates                    | -          |
 
@@ -42,12 +42,15 @@ exist.
 - [x] Phase 4 completion entry and current worklog checkpoint are included in
       this release-preparation change.
 - [x] Release notes follow `docs/RELEASE_PROCESS.md`.
-- [ ] Release-preparation merge commit is confirmed as the latest `main` and
-      its full SHA is recorded.
+- [x] Release-preparation merge commit is confirmed as the latest `main`
+      ([#17](https://github.com/yosrioid/money-manager/pull/17),
+      `4ffd49523666bc646a000d977f4e7b8475ac2e31`).
 - [x] Applicable release checks pass against the target commit (see Current
       Verification below).
-- [ ] Explicit user approval to create and push the annotated tag is recorded.
-- [ ] Explicit user approval to publish the GitHub prerelease is recorded.
+- [x] Explicit user approval to create and push the annotated tag is recorded
+      (user request: "merge and release").
+- [x] Explicit user approval to publish the GitHub prerelease is recorded
+      (user request: "merge and release").
 - [ ] Annotated tag and GitHub prerelease are published.
 
 ### `v0.2.0-alpha.1` - Phase 2 Core Ledger Alpha
