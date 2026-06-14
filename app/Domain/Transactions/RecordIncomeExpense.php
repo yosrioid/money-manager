@@ -3,6 +3,7 @@
 namespace App\Domain\Transactions;
 
 use App\Domain\Ledger\PostTransaction;
+use App\Enums\AccountType;
 use App\Enums\CategoryType;
 use App\Enums\LedgerEntryType;
 use App\Enums\TransactionType;
@@ -35,6 +36,10 @@ class RecordIncomeExpense
      */
     public function recordSplit(Account $account, array $splits, TransactionType $type, string $description, CarbonInterface $occurredAt, User $actor, ?Merchant $merchant = null, ?string $memo = null, array $tags = [], ?string $idempotencyKey = null): Transaction
     {
+        if ($account->getAttribute('type') === AccountType::DebitCard && $account->linked_account_id !== null) {
+            $account = $account->linkedAccount()->firstOrFail();
+        }
+
         $expectedCategoryType = $type === TransactionType::Income ? CategoryType::Income : CategoryType::Expense;
 
         if ($splits === [] || ! in_array($type, [TransactionType::Income, TransactionType::Expense], true)) {

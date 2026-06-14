@@ -48,6 +48,7 @@ interface Account {
     is_favorite: boolean;
     include_in_total: boolean;
     account_group: { id: number; name: string } | null;
+    linked_account: { id: number; name: string } | null;
 }
 
 defineProps<{
@@ -306,6 +307,18 @@ const availableCredit = (account: Account): number | null =>
                                 Payment due {{ account.payment_due_date }}
                             </p>
                         </template>
+                        <p
+                            v-else-if="
+                                account.type === 'debit_card' &&
+                                account.linked_account
+                            "
+                            class="text-sm text-muted-foreground"
+                        >
+                            Linked to:
+                            <span class="font-medium text-foreground">
+                                {{ account.linked_account.name }}
+                            </span>
+                        </p>
                         <p v-else class="text-sm text-muted-foreground">
                             Ledger balance:
                             <span class="font-medium text-foreground">

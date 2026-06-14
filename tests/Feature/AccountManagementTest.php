@@ -179,6 +179,110 @@ test('changing an account type away from credit card clears its credit limit and
         ->payment_due_day->toBeNull();
 });
 
+test('creating a debit card account requires a linked account', function () {
+    [$user, $workspace] = createUserWithPersonalWorkspace();
+    $bankAccount = Account::factory()->for($workspace)->create(['type' => AccountType::BankAccount, 'currency_code' => 'IDR']);
+
+    $this->actingAs($user)
+        ->post(route('accounts.store'), [
+            'name' => 'Debit Visa',
+            'type' => AccountType::DebitCard->value,
+            'currency_code' => 'IDR',
+            'opening_balance' => 0,
+        ])
+        ->assertSessionHasErrors('linked_account_id');
+
+    $this->actingAs($user)
+        ->post(route('accounts.store'), [
+            'name' => 'Debit Visa',
+            'type' => AccountType::DebitCard->value,
+            'currency_code' => 'IDR',
+            'opening_balance' => 0,
+            'linked_account_id' => $bankAccount->id,
+        ])
+        ->assertRedirect(route('accounts.index'));
+
+    expect($workspace->accounts()->where('type', AccountType::DebitCard)->sole())
+        ->name->toBe('Debit Visa')
+        ->linked_account_id->toBe($bankAccount->id);
+});
+
+test('a debit card account must be linked to a same currency funding account', function () {
+    [$user, $workspace] = createUserWithPersonalWorkspace();
+    $usdAccount = Account::factory()->for($workspace)->create(['type' => AccountType::BankAccount, 'currency_code' => 'USD']);
+    $creditCard = Account::factory()->for($workspace)->creditCard(5000000)->create();
+
+    $this->actingAs($user)
+        ->post(route('accounts.store'), [
+            'name' => 'Debit Visa',
+            'type' => AccountType::DebitCard->value,
+            'currency_code' => 'IDR',
+            'opening_balance' => 0,
+            'linked_account_id' => $usdAccount->id,
+        ])
+        ->assertSessionHasErrors('linked_account_id');
+
+    $this->actingAs($user)
+        ->post(route('accounts.store'), [
+            'name' => 'Debit Visa',
+            'type' => AccountType::DebitCard->value,
+            'currency_code' => 'IDR',
+            'opening_balance' => 0,
+            'linked_account_id' => $creditCard->id,
+        ])
+        ->assertSessionHasErrors('linked_account_id');
+});
+
+test('linked account is rejected for non debit card accounts', function () {
+    [$user, $workspace] = createUserWithPersonalWorkspace();
+    $bankAccount = Account::factory()->for($workspace)->create(['type' => AccountType::BankAccount, 'currency_code' => 'IDR']);
+
+    $this->actingAs($user)
+        ->post(route('accounts.store'), [
+            'name' => 'Main bank',
+            'type' => AccountType::BankAccount->value,
+            'currency_code' => 'IDR',
+            'opening_balance' => 0,
+            'linked_account_id' => $bankAccount->id,
+        ])
+        ->assertSessionHasErrors('linked_account_id');
+});
+
+test('debit card accounts cannot have an opening balance', function () {
+    [$user, $workspace] = createUserWithPersonalWorkspace();
+    $bankAccount = Account::factory()->for($workspace)->create(['type' => AccountType::BankAccount, 'currency_code' => 'IDR']);
+
+    $this->actingAs($user)
+        ->post(route('accounts.store'), [
+            'name' => 'Debit Visa',
+            'type' => AccountType::DebitCard->value,
+            'currency_code' => 'IDR',
+            'opening_balance' => 50000,
+            'linked_account_id' => $bankAccount->id,
+        ])
+        ->assertSessionHasErrors('opening_balance');
+});
+
+test('changing an account type away from debit card clears its linked account', function () {
+    [$user, $workspace] = createUserWithPersonalWorkspace();
+    $bankAccount = Account::factory()->for($workspace)->create(['type' => AccountType::BankAccount, 'currency_code' => 'IDR']);
+    $debitCard = Account::factory()->for($workspace)->debitCard($bankAccount)->create();
+
+    $this->actingAs($user)
+        ->patch(route('accounts.update', $debitCard), [
+            'name' => $debitCard->name,
+            'type' => AccountType::Cash->value,
+            'currency_code' => $debitCard->currency_code,
+            'is_visible' => true,
+            'include_in_total' => true,
+        ])
+        ->assertRedirect(route('accounts.index'));
+
+    expect($debitCard->fresh())
+        ->type->toBe(AccountType::Cash)
+        ->linked_account_id->toBeNull();
+});
+
 test('account cannot reference a group from another workspace', function () {
     [$user] = createUserWithPersonalWorkspace();
     [, $otherWorkspace] = createUserWithPersonalWorkspace();

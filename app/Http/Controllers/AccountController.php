@@ -12,6 +12,8 @@ use App\Http\Requests\UpdateAccountRequest;
 use App\Models\Account;
 use App\Models\Currency;
 use App\Models\User;
+use App\Models\Workspace;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -32,6 +34,7 @@ class AccountController extends Controller
             'currencies' => Currency::query()->orderBy('code')->get(['code', 'name', 'symbol']),
             'defaultCurrency' => $workspace->default_currency,
             'accountTypes' => $this->accountTypes(),
+            'accounts' => $this->linkableAccounts($workspace),
         ]);
     }
 
@@ -64,6 +67,7 @@ class AccountController extends Controller
             'accountGroups' => $workspace->accountGroups()->active()->orderBy('position')->get(['id', 'name']),
             'currencies' => Currency::query()->orderBy('code')->get(['code', 'name', 'symbol']),
             'accountTypes' => $this->accountTypes(),
+            'accounts' => $this->linkableAccounts($workspace, $account),
         ]);
     }
 
@@ -75,6 +79,10 @@ class AccountController extends Controller
             $validated['credit_limit'] = null;
             $validated['statement_closing_day'] = null;
             $validated['payment_due_day'] = null;
+        }
+
+        if (AccountType::tryFrom($validated['type']) !== AccountType::DebitCard) {
+            $validated['linked_account_id'] = null;
         }
 
         $accountGroupId = array_key_exists('account_group_id', $validated)
@@ -122,6 +130,19 @@ class AccountController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Account archived.')]);
 
         return to_route('accounts.index');
+    }
+
+    /**
+     * @return Collection<int, Account>
+     */
+    private function linkableAccounts(Workspace $workspace, ?Account $excluding = null): Collection
+    {
+        return $workspace->accounts()
+            ->active()
+            ->whereNotIn('type', [AccountType::CreditCard, AccountType::DebitCard])
+            ->when($excluding, fn ($query) => $query->whereKeyNot($excluding->id))
+            ->orderBy('name')
+            ->get(['id', 'name', 'type', 'currency_code']);
     }
 
     /**

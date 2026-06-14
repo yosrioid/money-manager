@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'credit_limit',
     'statement_closing_day',
     'payment_due_day',
+    'linked_account_id',
     'description',
     'position',
     'is_visible',
@@ -61,6 +62,14 @@ class Account extends Model
     public function accountGroup(): BelongsTo
     {
         return $this->belongsTo(AccountGroup::class);
+    }
+
+    /**
+     * @return BelongsTo<Account, $this>
+     */
+    public function linkedAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'linked_account_id');
     }
 
     /**

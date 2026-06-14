@@ -50,6 +50,18 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-14 22:45 WIB - P5-05 Debit-Card Account Linkage Implemented
+
+- **Branch:** `feat/phase-5`.
+- **Feature IDs:** `P5-05`.
+- **Status:** Completed.
+- **Completed:** Added `AccountType::DebitCard = 'debit_card'` and a nullable, self-referencing `linked_account_id` FK on `accounts` (migration `2026_06_14_082751_add_linked_account_id_to_accounts_table`, `nullOnDelete`). `StoreAccountRequest`/`UpdateAccountRequest::after()` require `linked_account_id` for `debit_card` accounts, reject it for other types, validate the linked account is an active, same-currency, non-card account different from itself, and require a zero `opening_balance` for `debit_card` accounts. `AccountController::update` clears `linked_account_id` on type change away from `debit_card` (mirrors `P5-01`'s `credit_limit` clearing). Core behavior: `RecordIncomeExpense::recordSplit()` resolves a `debit_card` account with a `linked_account_id` to its `linkedAccount` before building ledger entries, so income/expense transactions post against the funding account's balance, not the card. UI: `AccountController::create()/edit()` now also pass a `linkableAccounts()` list (active, non-card accounts); `AccountForm.vue` shows a "Linked account" selector for `debit_card` accounts and hides/zeroes the opening-balance input for them; `accounts/Index.vue` shows "Linked to: <account>" for `debit_card` accounts instead of "Ledger balance".
+- **Verification:** `php artisan test --compact --filter="AccountManagementTest|TransactionRecordingTest"` passed: 31 tests, 150 assertions. Full suite `php artisan test --compact` passed: 338 tests, 2580 assertions. `vendor/bin/phpstan analyse --no-progress --memory-limit=1G` passed (0 errors). `npm run types:check` passed. `vendor/bin/pint --dirty --format agent` passed.
+- **Decisions:** Excluded `AccountType::DebitCard` (alongside `CreditCard`) from `AccountFactory`'s random type selection, matching the `P5-01` pattern, since debit cards require a `linked_account_id` set up via the new `debitCard()` factory state. Restricted linkable accounts to non-card types and matching currency to keep `PostTransaction`'s "posted accounts must match the transaction currency" invariant intact after resolution.
+- **Blockers:** None.
+- **Uncommitted:** All of `P5-05` is uncommitted on `feat/phase-5`, pending commit.
+- **Next:** Commit `P5-05`, then continue with `P5-06` (installment purchase: purchase can generate a validated installment schedule).
+
 ### 2026-06-14 22:10 WIB - P5-04 Card Settlement Workflow Verified
 
 - **Branch:** `feat/phase-5`.

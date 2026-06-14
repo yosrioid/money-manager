@@ -21,12 +21,13 @@ class AccountFactory extends Factory
             'name' => fake()->words(2, true),
             'type' => fake()->randomElement(array_filter(
                 AccountType::cases(),
-                fn (AccountType $type): bool => $type !== AccountType::CreditCard,
+                fn (AccountType $type): bool => ! in_array($type, [AccountType::CreditCard, AccountType::DebitCard], true),
             )),
             'currency_code' => 'IDR',
             'credit_limit' => null,
             'statement_closing_day' => null,
             'payment_due_day' => null,
+            'linked_account_id' => null,
             'description' => null,
             'position' => fake()->numberBetween(0, 100),
             'is_visible' => true,
@@ -58,6 +59,15 @@ class AccountFactory extends Factory
             'credit_limit' => $creditLimit,
             'statement_closing_day' => $statementClosingDay,
             'payment_due_day' => $paymentDueDay,
+        ]);
+    }
+
+    public function debitCard(Account $linkedAccount): static
+    {
+        return $this->state([
+            'type' => AccountType::DebitCard,
+            'currency_code' => $linkedAccount->currency_code,
+            'linked_account_id' => $linkedAccount->id,
         ]);
     }
 }

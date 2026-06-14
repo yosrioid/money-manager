@@ -33,6 +33,11 @@ class UpdateAccountRequest extends FormRequest
             'credit_limit' => ['nullable', 'integer', 'min:0'],
             'statement_closing_day' => ['nullable', 'integer', 'between:1,28'],
             'payment_due_day' => ['nullable', 'integer', 'between:1,28'],
+            'linked_account_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('accounts', 'id')->where('workspace_id', $workspace->id),
+            ],
             'account_group_id' => [
                 'nullable',
                 'integer',
@@ -78,6 +83,31 @@ class UpdateAccountRequest extends FormRequest
 
                 if ($type !== AccountType::CreditCard && ($this->filled('statement_closing_day') || $this->filled('payment_due_day'))) {
                     $validator->errors()->add('statement_closing_day', __('Statement closing and payment due days are only applicable to credit card accounts.'));
+                }
+
+                if ($type === AccountType::DebitCard && ! $this->filled('linked_account_id')) {
+                    $validator->errors()->add('linked_account_id', __('A linked account is required for debit card accounts.'));
+                }
+
+                if ($type !== AccountType::DebitCard && $this->filled('linked_account_id')) {
+                    $validator->errors()->add('linked_account_id', __('A linked account is only applicable to debit card accounts.'));
+                }
+
+                if ($type === AccountType::DebitCard && $this->filled('linked_account_id')) {
+                    if ((int) $this->input('linked_account_id') === $account->id) {
+                        $validator->errors()->add('linked_account_id', __('A debit card account cannot be linked to itself.'));
+                    }
+
+                    $linkedAccount = Account::query()->find($this->input('linked_account_id'));
+
+                    if ($linkedAccount instanceof Account
+                        && in_array($linkedAccount->getAttribute('type'), [AccountType::CreditCard, AccountType::DebitCard], true)) {
+                        $validator->errors()->add('linked_account_id', __('The linked account must be a funding account, not a card account.'));
+                    }
+
+                    if ($linkedAccount instanceof Account && $linkedAccount->currency_code !== $this->string('currency_code')->value()) {
+                        $validator->errors()->add('linked_account_id', __('The linked account must use the same currency as the debit card.'));
+                    }
                 }
             },
         ];

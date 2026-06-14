@@ -9,6 +9,7 @@ defineProps<{
     accountGroups: { id: number; name: string }[];
     currencies: { code: string; name: string; symbol: string }[];
     accountTypes: { value: string; label: string }[];
+    accounts: { id: number; name: string; type: string; currency_code: string }[];
     defaultCurrency: string;
 }>();
 
@@ -32,6 +33,7 @@ defineOptions({
             :account-groups="accountGroups"
             :currencies="currencies"
             :account-types="accountTypes"
+            :accounts="accounts"
             :default-currency="defaultCurrency"
             submit-label="Create account"
         />

@@ -399,6 +399,31 @@ test('amount must be a positive integer', function () {
     expect(Transaction::query()->count())->toBe(0);
 });
 
+test('a debit card expense posts against its linked funding account', function () {
+    [$user, $workspace] = createTransactionWorkspace();
+    $bankAccount = Account::factory()->for($workspace)->create();
+    $debitCard = Account::factory()->for($workspace)->debitCard($bankAccount)->create();
+    $category = Category::factory()->for($workspace)->expense()->create();
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), [
+            'type' => 'expense',
+            'account_id' => $debitCard->id,
+            'category_id' => $category->id,
+            'amount' => 25000,
+            'description' => 'Groceries',
+            'occurred_at' => now()->toDateTimeString(),
+        ])
+        ->assertRedirect(route('accounts.index'));
+
+    $transaction = Transaction::query()->sole();
+
+    expect($transaction->entries()->where('account_id', $bankAccount->id)->exists())->toBeTrue()
+        ->and($transaction->entries()->where('account_id', $debitCard->id)->exists())->toBeFalse()
+        ->and(app(CalculateAccountBalance::class)->calculate($bankAccount->fresh()))->toBe(-25000)
+        ->and(app(CalculateAccountBalance::class)->calculate($debitCard->fresh()))->toBe(0);
+});
+
 test('transaction create page renders accounts and categories', function () {
     [$user, $workspace] = createTransactionWorkspace();
     Account::factory()->for($workspace)->create();

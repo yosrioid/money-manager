@@ -12,4 +12,5 @@ enum AccountType: string
     case Asset = 'asset';
     case Loan = 'loan';
     case CreditCard = 'credit_card';
+    case DebitCard = 'debit_card';
 }

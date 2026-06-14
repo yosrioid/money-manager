@@ -29,7 +29,7 @@ class AccountGroupController extends Controller
         $today = Carbon::now($workspace->timezone);
 
         $accounts = $workspace->accounts()
-            ->with('accountGroup:id,name')
+            ->with('accountGroup:id,name', 'linkedAccount:id,name')
             ->withSum('postedLedgerEntries as balance', 'amount')
             ->active()
             ->orderBy(

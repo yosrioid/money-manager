@@ -15,12 +15,20 @@ interface AccountData {
     credit_limit: number | null;
     statement_closing_day: number | null;
     payment_due_day: number | null;
+    linked_account_id: number | null;
     balance: number;
     account_group_id: number | null;
     description: string | null;
     is_visible: boolean;
     is_favorite: boolean;
     include_in_total: boolean;
+}
+
+interface LinkableAccount {
+    id: number;
+    name: string;
+    type: string;
+    currency_code: string;
 }
 
 interface Option {
@@ -45,6 +53,7 @@ const props = defineProps<{
     accountGroups: AccountGroup[];
     currencies: Currency[];
     accountTypes: Option[];
+    accounts: LinkableAccount[];
     defaultCurrency?: string;
     submitLabel: string;
 }>();
@@ -183,9 +192,41 @@ const selectedType = ref(props.account?.type ?? props.accountTypes[0]?.value ?? 
                 </p>
                 <InputError :message="errors.payment_due_day" />
             </div>
+
+            <div v-if="selectedType === 'debit_card'" class="grid gap-2">
+                <Label for="linked_account_id">Linked account</Label>
+                <select
+                    id="linked_account_id"
+                    name="linked_account_id"
+                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                    required
+                >
+                    <option value="">Select an account</option>
+                    <option
+                        v-for="linkable in accounts"
+                        :key="linkable.id"
+                        :value="linkable.id"
+                        :selected="linkable.id === account?.linked_account_id"
+                    >
+                        {{ linkable.name }} ({{ linkable.currency_code }})
+                    </option>
+                </select>
+                <p class="text-sm text-muted-foreground">
+                    Expenses on this debit card post against the linked
+                    account's balance.
+                </p>
+                <InputError :message="errors.linked_account_id" />
+            </div>
         </div>
 
-        <div v-if="!account" class="grid gap-2">
+        <div v-if="!account && selectedType === 'debit_card'" class="grid gap-2">
+            <input type="hidden" name="opening_balance" value="0" />
+            <p class="text-sm text-muted-foreground">
+                Debit card accounts have no balance of their own; the linked
+                account holds the balance.
+            </p>
+        </div>
+        <div v-else-if="!account" class="grid gap-2">
             <Label for="opening_balance">Opening balance in minor units</Label>
             <Input
                 id="opening_balance"

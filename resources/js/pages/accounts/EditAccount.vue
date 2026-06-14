@@ -13,6 +13,7 @@ interface Account {
     credit_limit: number | null;
     statement_closing_day: number | null;
     payment_due_day: number | null;
+    linked_account_id: number | null;
     balance: number;
     account_group_id: number | null;
     description: string | null;
@@ -26,6 +27,7 @@ defineProps<{
     accountGroups: { id: number; name: string }[];
     currencies: { code: string; name: string; symbol: string }[];
     accountTypes: { value: string; label: string }[];
+    accounts: { id: number; name: string; type: string; currency_code: string }[];
 }>();
 
 defineOptions({
@@ -49,6 +51,7 @@ defineOptions({
             :account-groups="accountGroups"
             :currencies="currencies"
             :account-types="accountTypes"
+            :accounts="accounts"
             submit-label="Save account"
         />
     </div>
