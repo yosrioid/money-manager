@@ -23,6 +23,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'application_lock_minutes',
     'entry_form_fields',
     'navigation_shortcuts_enabled',
+    'net_asset_target',
+    'report_widgets',
 ])]
 class Workspace extends Model
 {
@@ -67,6 +69,8 @@ class Workspace extends Model
             'application_lock_minutes' => 'integer',
             'entry_form_fields' => 'array',
             'navigation_shortcuts_enabled' => 'boolean',
+            'net_asset_target' => 'integer',
+            'report_widgets' => 'array',
         ];
     }
 
@@ -84,6 +88,22 @@ class Workspace extends Model
     public static function defaultEntryFormFields(): array
     {
         return ['merchant', 'memo', 'tags'];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function reportWidgets(): array
+    {
+        return $this->report_widgets ?? self::defaultReportWidgets();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public static function defaultReportWidgets(): array
+    {
+        return ['summary', 'comparison', 'categoryBreakdown', 'merchantBreakdown', 'accountActivity', 'netWorth', 'netWorthTrend'];
     }
 
     /**
@@ -135,6 +155,14 @@ class Workspace extends Model
     }
 
     /**
+     * @return HasMany<TransactionExport, $this>
+     */
+    public function transactionExports(): HasMany
+    {
+        return $this->hasMany(TransactionExport::class);
+    }
+
+    /**
      * @return HasMany<TransactionEntry, $this>
      */
     public function transactionEntries(): HasMany
@@ -164,6 +192,14 @@ class Workspace extends Model
     public function transactionBookmarks(): HasMany
     {
         return $this->hasMany(TransactionBookmark::class);
+    }
+
+    /**
+     * @return HasMany<CategoryBudgetOverride, $this>
+     */
+    public function categoryBudgetOverrides(): HasMany
+    {
+        return $this->hasMany(CategoryBudgetOverride::class);
     }
 
     public function isOwnedBy(User $user): bool

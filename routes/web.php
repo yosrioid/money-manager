@@ -2,12 +2,16 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AccountGroupController;
+use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DayNoteController;
+use App\Http\Controllers\ImportController;
 use App\Http\Controllers\MerchantController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TransactionBookmarkController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\TransactionExportController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
@@ -31,9 +35,11 @@ Route::middleware(['auth', 'verified', 'workspace', 'workspace.lock'])->group(fu
 
     // Transactions
     Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('transactions/export', [TransactionController::class, 'export'])->name('transactions.export');
     Route::get('transactions/calendar', [TransactionController::class, 'calendar'])->name('transactions.calendar');
     Route::get('transactions/weekly', [TransactionController::class, 'weekly'])->name('transactions.weekly');
     Route::get('transactions/monthly', [TransactionController::class, 'monthly'])->name('transactions.monthly');
+    Route::get('transactions/monthly/export', [TransactionController::class, 'exportYear'])->name('transactions.monthly.export');
     Route::get('transactions/summary', [TransactionController::class, 'summary'])->name('transactions.summary');
     Route::get('transactions/day', [TransactionController::class, 'day'])->name('transactions.day');
     Route::put('transactions/day-notes/{date}', [DayNoteController::class, 'update'])
@@ -55,6 +61,16 @@ Route::middleware(['auth', 'verified', 'workspace', 'workspace.lock'])->group(fu
         ->name('transactions.statistics-inclusion.update');
     Route::get('transactions/{transaction}', [TransactionController::class, 'show'])->whereNumber('transaction')->name('transactions.show');
 
+    // Transaction exports (queued large CSV downloads)
+    Route::get('transactions/exports', [TransactionExportController::class, 'index'])->name('transactions.exports.index');
+    Route::post('transactions/exports', [TransactionExportController::class, 'store'])->name('transactions.exports.store');
+    Route::get('transactions/exports/{transaction_export}/download', [TransactionExportController::class, 'download'])->name('transactions.exports.download');
+
+    // Transaction import
+    Route::get('imports/transactions', [ImportController::class, 'create'])->name('imports.transactions.create');
+    Route::post('imports/transactions/preview', [ImportController::class, 'preview'])->name('imports.transactions.preview');
+    Route::post('imports/transactions', [ImportController::class, 'store'])->name('imports.transactions.store');
+
     // Transaction bookmarks
     Route::post('transaction-bookmarks', [TransactionBookmarkController::class, 'store'])->name('transaction-bookmarks.store');
     Route::patch('transaction-bookmarks/{transaction_bookmark}', [TransactionBookmarkController::class, 'update'])->name('transaction-bookmarks.update');
@@ -67,6 +83,19 @@ Route::middleware(['auth', 'verified', 'workspace', 'workspace.lock'])->group(fu
     Route::patch('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
     Route::patch('categories/{category}/move', [CategoryController::class, 'move'])->name('categories.move');
     Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+    // Budgets
+    Route::get('budgets', [BudgetController::class, 'index'])->name('budgets.index');
+    Route::get('budgets/weekly', [BudgetController::class, 'weekly'])->name('budgets.weekly');
+    Route::get('budgets/yearly', [BudgetController::class, 'yearly'])->name('budgets.yearly');
+    Route::get('budgets/income', [BudgetController::class, 'income'])->name('budgets.income');
+    Route::get('budgets/trend', [BudgetController::class, 'trend'])->name('budgets.trend');
+    Route::put('budgets/{category}/override', [BudgetController::class, 'updateOverride'])->name('budgets.overrides.update');
+    Route::delete('budgets/{category}/override', [BudgetController::class, 'destroyOverride'])->name('budgets.overrides.destroy');
+
+    // Reports
+    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
 
     // Merchants
     Route::get('merchants', [MerchantController::class, 'index'])->name('merchants.index');
