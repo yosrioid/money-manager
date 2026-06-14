@@ -14,6 +14,7 @@ use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\User;
 use Database\Seeders\CurrencySeeder;
+use Inertia\Testing\AssertableInertia as Assert;
 
 function createTransferWorkspace(): array
 {
@@ -335,4 +336,78 @@ test('transfer domain action rejects invalid amounts', function () {
     ))->toThrow(LogicException::class);
 
     expect(Transaction::query()->count())->toBe(0);
+});
+
+test('cross-currency transfer shows no exchange difference when the destination amount matches the recorded rate', function () {
+    $this->seed(CurrencySeeder::class);
+
+    [$user, $workspace] = createTransferWorkspace();
+    $sourceAccount = Account::factory()->for($workspace)->create(['currency_code' => 'IDR']);
+    $destinationAccount = Account::factory()->for($workspace)->create(['currency_code' => 'USD']);
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), transferPayload($sourceAccount, $destinationAccount, [
+            'amount' => 1_625_000,
+            'destination_amount' => 100_00,
+            'exchange_rate' => '16250.0000000000',
+        ]))
+        ->assertRedirect(route('accounts.index'));
+
+    $transaction = Transaction::query()->sole();
+
+    $this->actingAs($user)
+        ->get(route('transactions.show', $transaction))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('transactions/Show')
+            ->where('transaction.exchange_difference.amount', 0)
+            ->where('transaction.exchange_difference.currency_code', 'USD')
+        );
+});
+
+test('cross-currency transfer shows an exchange gain when the destination amount exceeds the recorded rate', function () {
+    $this->seed(CurrencySeeder::class);
+
+    [$user, $workspace] = createTransferWorkspace();
+    $sourceAccount = Account::factory()->for($workspace)->create(['currency_code' => 'IDR']);
+    $destinationAccount = Account::factory()->for($workspace)->create(['currency_code' => 'USD']);
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), transferPayload($sourceAccount, $destinationAccount, [
+            'amount' => 1_625_000,
+            'destination_amount' => 105_00,
+            'exchange_rate' => '16250.0000000000',
+        ]))
+        ->assertRedirect(route('accounts.index'));
+
+    $transaction = Transaction::query()->sole();
+
+    $this->actingAs($user)
+        ->get(route('transactions.show', $transaction))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('transactions/Show')
+            ->where('transaction.exchange_difference.amount', 500)
+            ->where('transaction.exchange_difference.currency_code', 'USD')
+        );
+});
+
+test('same-currency transfer has no exchange difference', function () {
+    [$user, $workspace] = createTransferWorkspace();
+    $sourceAccount = Account::factory()->for($workspace)->create();
+    $destinationAccount = Account::factory()->for($workspace)->create();
+
+    $this->actingAs($user)
+        ->post(route('transactions.store'), transferPayload($sourceAccount, $destinationAccount))
+        ->assertRedirect(route('accounts.index'));
+
+    $transaction = Transaction::query()->sole();
+
+    $this->actingAs($user)
+        ->get(route('transactions.show', $transaction))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('transactions/Show')
+            ->where('transaction.exchange_difference', null)
+        );
 });

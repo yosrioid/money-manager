@@ -6,6 +6,7 @@ use App\Domain\Budgets\CalculateBudgetUsage;
 use App\Domain\Export\GenerateReportSpreadsheet;
 use App\Domain\Export\GenerateTransactionsCsv;
 use App\Domain\Ledger\CalculateAccountBalance;
+use App\Domain\Ledger\CalculateExchangeDifference;
 use App\Domain\Ledger\CalculateNetAsset;
 use App\Domain\Ledger\ConvertToBaseCurrency;
 use App\Domain\Transactions\DuplicateTransaction;
@@ -45,6 +46,7 @@ class TransactionController extends Controller
     public function __construct(
         private readonly WorkspaceContext $workspaceContext,
         private readonly FilterTransactionsQuery $filterTransactionsQuery,
+        private readonly CalculateExchangeDifference $calculateExchangeDifference,
     ) {}
 
     public function index(Request $request): Response
@@ -702,6 +704,7 @@ class TransactionController extends Controller
                 'account' => $entry->account?->only(['id', 'name']),
                 'category' => $entry->category?->only(['id', 'name']),
             ])->all(),
+            'exchange_difference' => $this->calculateExchangeDifference->calculate($transaction),
         ];
     }
 

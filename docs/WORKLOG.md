@@ -50,6 +50,18 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-15 02:45 WIB - P5-14 Exchange Gain And Loss Handling Implemented
+
+- **Branch:** `feat/phase-5`.
+- **Feature IDs:** `P5-14`.
+- **Status:** Completed.
+- **Completed:** New pure domain service `App\Domain\Ledger\CalculateExchangeDifference::calculate(Transaction $transaction): ?array` returns `null` unless the transaction is a `transfer` with a recorded `exchange_rate` (i.e. a cross-currency transfer per `P5-11`/`P5-12`). For cross-currency transfers, it finds the source (negative-amount) and destination (positive-amount) account entries, looks up each entry's currency's `decimal_places` from `currencies`, and computes `impliedAmount = round(destinationEntry.base_amount * 10^(destDecimals - sourceDecimals) / exchangeRate)` - the destination-currency amount the recorded rate implies for the transferred (base-currency) amount. The returned `amount = destinationEntry.amount - impliedAmount` (in `destinationEntry.currency_code`) is the realized exchange gain (positive) or loss (negative) versus the recorded reference rate. `TransactionController::transformTransaction()` (used by `index`, the duplicate-drafts listing, and `show`) now includes `exchange_difference` (`{amount, currency_code}` or `null`). `transactions/Show.vue` shows an "Exchange gain"/"Exchange loss" line (green for gain, red for loss) in the transaction detail `dl` only when the difference is non-zero.
+- **Verification:** `php artisan test --compact` passed: 364 tests, 2760 assertions (new in `tests/Feature/TransferRecordingTest.php`: a cross-currency transfer whose destination amount matches the recorded rate shows `exchange_difference.amount === 0`; one where the destination amount exceeds the implied amount shows a positive `exchange_difference`; a same-currency transfer has `exchange_difference === null`). `vendor/bin/phpstan analyse --no-progress --memory-limit=1G` passed (0 errors) - required comparing `$transaction->getRawOriginal('type')` against `TransactionType::Transfer->value` rather than the cast enum, since Larastan infers `Transaction::$type` as `string` from the cast PHPDoc and would otherwise flag the enum comparison as always-true. `vendor/bin/pint --dirty --format agent` passed. `npm run lint` and `npx vue-tsc --noEmit` passed with no output.
+- **Decisions:** Scoped "conversion differences are represented explicitly" to a per-transaction, read-only computed value comparing the actual cross-currency transfer amounts against the transaction's own recorded `exchange_rate` (a "did this transfer execute at its recorded reference rate" check), rather than a workspace-level unrealized-gain valuation against `workspace_exchange_rates` (`P5-13`), since the latter has no well-defined baseline/cost-basis to compare against without additional ledger state.
+- **Blockers:** None.
+- **Uncommitted:** All of `P5-14` is uncommitted on `feat/phase-5`, pending commit.
+- **Next:** Commit `P5-14`, then continue with `P5-15` (time-deposit and savings workflows: restricted savings movements are represented as transfers).
+
 ### 2026-06-15 02:15 WIB - P5-13 Base-Currency Totals Implemented
 
 - **Branch:** `feat/phase-5`.

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft } from '@lucide/vue';
+import { computed } from 'vue';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -43,6 +44,7 @@ interface TransactionDetail {
     creator: { id: number; name: string } | null;
     tags: Tag[];
     entries: Entry[];
+    exchange_difference: { amount: number; currency_code: string } | null;
     reverses: TransactionLink | null;
     reversal: TransactionLink | null;
     replaces: TransactionLink | null;
@@ -57,10 +59,16 @@ interface AuditLogEntry {
     metadata: Record<string, unknown> | null;
 }
 
-defineProps<{
+const props = defineProps<{
     transaction: TransactionDetail;
     auditLogs: AuditLogEntry[];
 }>();
+
+const exchangeDifference = computed(() =>
+    props.transaction.exchange_difference?.amount
+        ? props.transaction.exchange_difference
+        : null,
+);
 
 defineOptions({
     layout: {
@@ -146,6 +154,23 @@ const formatDateTime = (value: string): string =>
                     <div>
                         <dt class="text-muted-foreground">Currency</dt>
                         <dd>{{ transaction.currency_code }}</dd>
+                    </div>
+                    <div v-if="exchangeDifference">
+                        <dt class="text-muted-foreground">
+                            Exchange {{ exchangeDifference.amount >= 0 ? 'gain' : 'loss' }}
+                        </dt>
+                        <dd
+                            :class="
+                                exchangeDifference.amount >= 0
+                                    ? 'text-emerald-600 dark:text-emerald-400'
+                                    : 'text-red-600 dark:text-red-400'
+                            "
+                        >
+                            {{ exchangeDifference.amount >= 0 ? '+' : '' }}{{
+                                exchangeDifference.amount
+                            }}
+                            {{ exchangeDifference.currency_code }}
+                        </dd>
                     </div>
                 </dl>
 
