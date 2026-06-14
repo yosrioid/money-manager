@@ -13,6 +13,8 @@ interface AccountData {
     type: string;
     currency_code: string;
     credit_limit: number | null;
+    statement_closing_day: number | null;
+    payment_due_day: number | null;
     balance: number;
     account_group_id: number | null;
     description: string | null;
@@ -146,6 +148,40 @@ const selectedType = ref(props.account?.type ?? props.accountTypes[0]?.value ?? 
                     outstanding balance.
                 </p>
                 <InputError :message="errors.credit_limit" />
+            </div>
+
+            <div v-if="selectedType === 'credit_card'" class="grid gap-2">
+                <Label for="statement_closing_day">Statement closing day</Label>
+                <Input
+                    id="statement_closing_day"
+                    name="statement_closing_day"
+                    type="number"
+                    min="1"
+                    max="28"
+                    :default-value="account?.statement_closing_day ?? 1"
+                    required
+                />
+                <p class="text-sm text-muted-foreground">
+                    Day of the month (1-28) when the statement closes.
+                </p>
+                <InputError :message="errors.statement_closing_day" />
+            </div>
+
+            <div v-if="selectedType === 'credit_card'" class="grid gap-2">
+                <Label for="payment_due_day">Payment due day</Label>
+                <Input
+                    id="payment_due_day"
+                    name="payment_due_day"
+                    type="number"
+                    min="1"
+                    max="28"
+                    :default-value="account?.payment_due_day ?? 1"
+                    required
+                />
+                <p class="text-sm text-muted-foreground">
+                    Day of the month (1-28) when the statement payment is due.
+                </p>
+                <InputError :message="errors.payment_due_day" />
             </div>
         </div>
 

@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'type',
     'currency_code',
     'credit_limit',
+    'statement_closing_day',
+    'payment_due_day',
     'description',
     'position',
     'is_visible',

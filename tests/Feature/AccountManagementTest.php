@@ -91,6 +91,8 @@ test('creating a credit card account requires a credit limit', function () {
             'type' => AccountType::CreditCard->value,
             'currency_code' => 'IDR',
             'opening_balance' => 0,
+            'statement_closing_day' => 25,
+            'payment_due_day' => 10,
         ])
         ->assertSessionHasErrors('credit_limit');
 
@@ -101,12 +103,30 @@ test('creating a credit card account requires a credit limit', function () {
             'currency_code' => 'IDR',
             'opening_balance' => 0,
             'credit_limit' => 5000000,
+            'statement_closing_day' => 25,
+            'payment_due_day' => 10,
         ])
         ->assertRedirect(route('accounts.index'));
 
     expect($workspace->accounts()->sole())
         ->name->toBe('Visa')
-        ->credit_limit->toBe(5000000);
+        ->credit_limit->toBe(5000000)
+        ->statement_closing_day->toBe(25)
+        ->payment_due_day->toBe(10);
+});
+
+test('creating a credit card account requires a billing cycle', function () {
+    [$user] = createUserWithPersonalWorkspace();
+
+    $this->actingAs($user)
+        ->post(route('accounts.store'), [
+            'name' => 'Visa',
+            'type' => AccountType::CreditCard->value,
+            'currency_code' => 'IDR',
+            'opening_balance' => 0,
+            'credit_limit' => 5000000,
+        ])
+        ->assertSessionHasErrors('statement_closing_day');
 });
 
 test('credit limit is rejected for non credit card accounts', function () {
@@ -123,7 +143,22 @@ test('credit limit is rejected for non credit card accounts', function () {
         ->assertSessionHasErrors('credit_limit');
 });
 
-test('changing an account type away from credit card clears its credit limit', function () {
+test('billing cycle days are rejected for non credit card accounts', function () {
+    [$user] = createUserWithPersonalWorkspace();
+
+    $this->actingAs($user)
+        ->post(route('accounts.store'), [
+            'name' => 'Main bank',
+            'type' => AccountType::BankAccount->value,
+            'currency_code' => 'IDR',
+            'opening_balance' => 0,
+            'statement_closing_day' => 25,
+            'payment_due_day' => 10,
+        ])
+        ->assertSessionHasErrors('statement_closing_day');
+});
+
+test('changing an account type away from credit card clears its credit limit and billing cycle', function () {
     [$user, $workspace] = createUserWithPersonalWorkspace();
     $account = Account::factory()->for($workspace)->creditCard(5000000)->create();
 
@@ -139,7 +174,9 @@ test('changing an account type away from credit card clears its credit limit', f
 
     expect($account->fresh())
         ->type->toBe(AccountType::BankAccount)
-        ->credit_limit->toBeNull();
+        ->credit_limit->toBeNull()
+        ->statement_closing_day->toBeNull()
+        ->payment_due_day->toBeNull();
 });
 
 test('account cannot reference a group from another workspace', function () {

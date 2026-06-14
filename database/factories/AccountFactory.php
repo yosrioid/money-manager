@@ -25,6 +25,8 @@ class AccountFactory extends Factory
             )),
             'currency_code' => 'IDR',
             'credit_limit' => null,
+            'statement_closing_day' => null,
+            'payment_due_day' => null,
             'description' => null,
             'position' => fake()->numberBetween(0, 100),
             'is_visible' => true,
@@ -49,11 +51,13 @@ class AccountFactory extends Factory
         return $this->state(['is_favorite' => true]);
     }
 
-    public function creditCard(int $creditLimit = 0): static
+    public function creditCard(int $creditLimit = 0, int $statementClosingDay = 25, int $paymentDueDay = 10): static
     {
         return $this->state([
             'type' => AccountType::CreditCard,
             'credit_limit' => $creditLimit,
+            'statement_closing_day' => $statementClosingDay,
+            'payment_due_day' => $paymentDueDay,
         ]);
     }
 }

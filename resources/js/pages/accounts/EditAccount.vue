@@ -11,6 +11,8 @@ interface Account {
     type: string;
     currency_code: string;
     credit_limit: number | null;
+    statement_closing_day: number | null;
+    payment_due_day: number | null;
     balance: number;
     account_group_id: number | null;
     description: string | null;

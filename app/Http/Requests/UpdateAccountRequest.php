@@ -31,6 +31,8 @@ class UpdateAccountRequest extends FormRequest
             'type' => ['required', Rule::enum(AccountType::class)],
             'currency_code' => ['required', 'string', 'size:3', Rule::exists('currencies', 'code')],
             'credit_limit' => ['nullable', 'integer', 'min:0'],
+            'statement_closing_day' => ['nullable', 'integer', 'between:1,28'],
+            'payment_due_day' => ['nullable', 'integer', 'between:1,28'],
             'account_group_id' => [
                 'nullable',
                 'integer',
@@ -68,6 +70,14 @@ class UpdateAccountRequest extends FormRequest
 
                 if ($type !== AccountType::CreditCard && $this->filled('credit_limit')) {
                     $validator->errors()->add('credit_limit', __('Credit limit is only applicable to credit card accounts.'));
+                }
+
+                if ($type === AccountType::CreditCard && (! $this->filled('statement_closing_day') || ! $this->filled('payment_due_day'))) {
+                    $validator->errors()->add('statement_closing_day', __('Statement closing and payment due days are required for credit card accounts.'));
+                }
+
+                if ($type !== AccountType::CreditCard && ($this->filled('statement_closing_day') || $this->filled('payment_due_day'))) {
+                    $validator->errors()->add('statement_closing_day', __('Statement closing and payment due days are only applicable to credit card accounts.'));
                 }
             },
         ];

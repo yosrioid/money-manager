@@ -73,6 +73,8 @@ class AccountController extends Controller
 
         if (AccountType::tryFrom($validated['type']) !== AccountType::CreditCard) {
             $validated['credit_limit'] = null;
+            $validated['statement_closing_day'] = null;
+            $validated['payment_due_day'] = null;
         }
 
         $accountGroupId = array_key_exists('account_group_id', $validated)

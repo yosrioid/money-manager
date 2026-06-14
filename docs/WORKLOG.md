@@ -50,6 +50,18 @@ Add new entries at the top of the `Entries` section:
 
 ## Entries
 
+### 2026-06-14 21:00 WIB - P5-02 Billing Cycle Implemented
+
+- **Branch:** `feat/phase-5`.
+- **Feature IDs:** `P5-02`.
+- **Status:** Completed.
+- **Completed:** Added nullable `statement_closing_day`/`payment_due_day` (1-28) columns to `accounts`, validated as required for `credit_card` accounts and rejected for every other type (mirrors `P5-01`'s `credit_limit` `after()` validation; cleared by `AccountController::update` on type change away from `credit_card`). `AccountForm.vue` shows both fields only for `credit_card` accounts. New `App\Domain\Accounts\CalculateCardBillingCycle::currentStatementPeriod()` computes the statement period (`start`/`end`) containing a reference date plus the resulting `payment_due` date, covering both same-month and next-month payment-due placement relative to the closing day. `AccountFactory::creditCard()` now sets a default 25th closing / 10th payment-due cycle.
+- **Verification:** `php artisan test --compact --filter="AccountManagementTest|AccountBalanceCalculationTest|CalculateCardBillingCycleTest"` passed: 20 tests, 104 assertions. Full suite `php artisan test --compact` passed: 330 tests, 2536 assertions. `vendor/bin/phpstan analyse --no-progress --memory-limit=1G` passed (0 errors). `npm run types:check` passed. `vendor/bin/pint --dirty --format agent` passed.
+- **Decisions:** Restricted `statement_closing_day`/`payment_due_day` to 1-28 to avoid month-length edge cases (29-31 do not exist in every month). `CalculateCardBillingCycle` is a pure calculation service operating on account attributes only - no ledger queries - so it could be unit-tested without a database.
+- **Blockers:** None.
+- **Uncommitted:** All of `P5-02` (migration, model, requests, controller, factory, domain service, Vue form, tests, doc updates) is uncommitted on `feat/phase-5`, pending commit.
+- **Next:** Commit `P5-02`, then continue with `P5-03` (outstanding card balance: current and statement outstanding amounts, building on `P5-01`/`P5-02`).
+
 ### 2026-06-14 20:10 WIB - P5-01 Full Suite Verified
 
 - **Branch:** `feat/phase-5`.
