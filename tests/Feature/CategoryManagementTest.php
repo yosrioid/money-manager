@@ -106,6 +106,77 @@ test('user can update category appearance and unsafe parent changes are rejected
         ->type->toBe(CategoryType::Expense);
 });
 
+test('an expense category can have a default monthly budget', function () {
+    [$user, $workspace] = createCategoryWorkspace();
+
+    $this->actingAs($user)->post(route('categories.store'), [
+        'name' => 'Groceries',
+        'type' => CategoryType::Expense->value,
+        'monthly_budget_amount' => 500000,
+    ])->assertRedirect(route('categories.index'));
+
+    $category = $workspace->categories()->where('name', 'Groceries')->sole();
+
+    expect($category->monthly_budget_amount)->toBe(500000);
+
+    $this->actingAs($user)->patch(route('categories.update', $category), [
+        'name' => $category->name,
+        'type' => $category->type->value,
+        'monthly_budget_amount' => 750000,
+    ])->assertRedirect(route('categories.index'));
+
+    expect($category->fresh()->monthly_budget_amount)->toBe(750000);
+});
+
+test('an income category can have planned monthly income', function () {
+    [$user, $workspace] = createCategoryWorkspace();
+
+    $this->actingAs($user)->post(route('categories.store'), [
+        'name' => 'Salary',
+        'type' => CategoryType::Income->value,
+        'monthly_budget_amount' => 500000,
+    ])->assertRedirect(route('categories.index'));
+
+    $category = $workspace->categories()->where('name', 'Salary')->sole();
+
+    expect($category->monthly_budget_amount)->toBe(500000);
+
+    $this->actingAs($user)->patch(route('categories.update', $category), [
+        'name' => $category->name,
+        'type' => $category->type->value,
+        'monthly_budget_amount' => 750000,
+    ])->assertRedirect(route('categories.index'));
+
+    expect($category->fresh()->monthly_budget_amount)->toBe(750000);
+});
+
+test('a category can enable budget carry-over', function () {
+    [$user, $workspace] = createCategoryWorkspace();
+
+    $category = Category::factory()->for($workspace)->expense()->create([
+        'monthly_budget_amount' => 500000,
+        'budget_carryover_enabled' => false,
+    ]);
+
+    $this->actingAs($user)->patch(route('categories.update', $category), [
+        'name' => $category->name,
+        'type' => $category->type->value,
+        'monthly_budget_amount' => 500000,
+        'budget_carryover_enabled' => true,
+    ])->assertRedirect(route('categories.index'));
+
+    expect($category->fresh()->budget_carryover_enabled)->toBeTrue();
+
+    $this->actingAs($user)->patch(route('categories.update', $category), [
+        'name' => $category->name,
+        'type' => $category->type->value,
+        'monthly_budget_amount' => 500000,
+        'budget_carryover_enabled' => false,
+    ])->assertRedirect(route('categories.index'));
+
+    expect($category->fresh()->budget_carryover_enabled)->toBeFalse();
+});
+
 test('cross workspace changes are forbidden and leaf categories are archived', function () {
     [$user, $workspace] = createCategoryWorkspace();
     [, $otherWorkspace] = createCategoryWorkspace();

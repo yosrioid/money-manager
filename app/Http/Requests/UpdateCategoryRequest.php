@@ -44,6 +44,8 @@ class UpdateCategoryRequest extends FormRequest
             'icon' => ['nullable', 'string', 'max:50'],
             'is_visible' => ['sometimes', 'boolean'],
             'is_favorite' => ['sometimes', 'boolean'],
+            'monthly_budget_amount' => ['nullable', 'integer', 'min:0'],
+            'budget_carryover_enabled' => ['sometimes', 'boolean'],
         ];
     }
 

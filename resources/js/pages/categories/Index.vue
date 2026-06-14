@@ -18,6 +18,8 @@ interface Category {
     icon: string | null;
     is_visible: boolean;
     is_favorite: boolean;
+    monthly_budget_amount: number | null;
+    budget_carryover_enabled: boolean;
     subcategories: Category[];
 }
 
@@ -106,6 +108,20 @@ const allParents = (): Category[] => [
                             placeholder="coffee"
                         />
                     </div>
+                    <div class="grid gap-2">
+                        <Label for="category-monthly-budget-amount"
+                            >Monthly budget / planned income</Label
+                        >
+                        <Input
+                            id="category-monthly-budget-amount"
+                            name="monthly_budget_amount"
+                            type="number"
+                            min="0"
+                            step="1"
+                            placeholder="Optional"
+                        />
+                        <InputError :message="errors.monthly_budget_amount" />
+                    </div>
                     <label
                         class="flex items-center gap-2 self-end pb-2 text-sm"
                     >
@@ -164,6 +180,29 @@ const allParents = (): Category[] => [
                             :default-value="category.icon ?? ''"
                             placeholder="Icon name"
                         />
+                        <div class="grid gap-2">
+                            <Label
+                                :for="`category-${category.id}-monthly-budget-amount`"
+                                >{{
+                                    category.type === 'income'
+                                        ? 'Planned income'
+                                        : 'Monthly budget'
+                                }}</Label
+                            >
+                            <Input
+                                :id="`category-${category.id}-monthly-budget-amount`"
+                                name="monthly_budget_amount"
+                                type="number"
+                                min="0"
+                                step="1"
+                                :default-value="
+                                    category.monthly_budget_amount ?? ''
+                                "
+                            />
+                            <InputError
+                                :message="errors.monthly_budget_amount"
+                            />
+                        </div>
                         <label class="flex items-center gap-2 text-sm">
                             <input type="hidden" name="is_visible" value="0" />
                             <input
@@ -185,6 +224,21 @@ const allParents = (): Category[] => [
                                 class="size-4 rounded border-input"
                             />
                             Favorite
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input
+                                type="hidden"
+                                name="budget_carryover_enabled"
+                                value="0"
+                            />
+                            <input
+                                name="budget_carryover_enabled"
+                                type="checkbox"
+                                value="1"
+                                :checked="category.budget_carryover_enabled"
+                                class="size-4 rounded border-input"
+                            />
+                            Carry over budget
                         </label>
                         <div class="flex gap-2">
                             <Button
@@ -276,6 +330,29 @@ const allParents = (): Category[] => [
                             :default-value="child.icon ?? ''"
                             placeholder="Icon name"
                         />
+                        <div class="grid gap-2">
+                            <Label
+                                :for="`category-${child.id}-monthly-budget-amount`"
+                                >{{
+                                    child.type === 'income'
+                                        ? 'Planned income'
+                                        : 'Monthly budget'
+                                }}</Label
+                            >
+                            <Input
+                                :id="`category-${child.id}-monthly-budget-amount`"
+                                name="monthly_budget_amount"
+                                type="number"
+                                min="0"
+                                step="1"
+                                :default-value="
+                                    child.monthly_budget_amount ?? ''
+                                "
+                            />
+                            <InputError
+                                :message="errors.monthly_budget_amount"
+                            />
+                        </div>
                         <label class="flex items-center gap-2 text-sm">
                             <input type="hidden" name="is_visible" value="0" />
                             <input
@@ -297,6 +374,21 @@ const allParents = (): Category[] => [
                                 class="size-4 rounded border-input"
                             />
                             Favorite
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input
+                                type="hidden"
+                                name="budget_carryover_enabled"
+                                value="0"
+                            />
+                            <input
+                                name="budget_carryover_enabled"
+                                type="checkbox"
+                                value="1"
+                                :checked="child.budget_carryover_enabled"
+                                class="size-4 rounded border-input"
+                            />
+                            Carry over budget
                         </label>
                         <div class="flex gap-2">
                             <Button

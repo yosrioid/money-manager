@@ -39,6 +39,8 @@ class StoreCategoryRequest extends FormRequest
             'color' => ['nullable', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'icon' => ['nullable', 'string', 'max:50'],
             'is_visible' => ['sometimes', 'boolean'],
+            'monthly_budget_amount' => ['nullable', 'integer', 'min:0'],
+            'budget_carryover_enabled' => ['sometimes', 'boolean'],
         ];
     }
 }
